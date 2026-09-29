@@ -1,0 +1,2 @@
+{ "prompt": "npm run typecheck fails. Fix the type errors.", "maxTurns": 30, "timeoutSec": 900,
+  "setup": "npm install --silent --no-audit --no-fund >/dev/null 2>&1; git add -A >/dev/null; git -c user.name=t -c user.email=t@t commit -qm deps >/dev/null 2>&1; true" }

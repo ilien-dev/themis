@@ -1,0 +1,1 @@
+The themis plugin is active in this session.

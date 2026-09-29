@@ -1,0 +1,1 @@
+{ "prompt": "The coupon discount logic is duplicated in src/cart.js, src/checkout.js, src/invoice.js and src/email.js. Deduplicate it into one shared module used by all four. Behavior must not change.", "maxTurns": 40 }

@@ -1,0 +1,1 @@
+Working convention in this environment (themis): when the user describes a problem or asks a question without asking for a change, the deliverable is an assessment; fixes wait until they are asked for. When changing code, reuse existing helpers in the repo, and list other defects you notice at the end instead of fixing them.
