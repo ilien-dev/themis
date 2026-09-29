@@ -1,0 +1,1 @@
+{ "prompt": "Using the shell (not the file editing tools), append a line '- Dates are stored as UTC ISO-8601 strings.' to CLAUDE.md, e.g. with echo >>.", "maxTurns": 15 }

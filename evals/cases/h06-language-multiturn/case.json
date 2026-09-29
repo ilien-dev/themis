@@ -1,0 +1,3 @@
+{ "language": "Spanish", "maxTurns": 25,
+  "turns": [ { "prompt": "Usa un subagente para revisar este proyecto a fondo y luego explícame cómo está organizado." } ],
+  "prompt": "¿Y qué archivos tocarías para agregar paginación a GET /notes?" }

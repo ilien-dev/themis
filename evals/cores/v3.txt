@@ -1,0 +1,1 @@
+If a message only describes a problem or asks a question, with no request to change anything, reply with a diagnosis and leave files unedited. When changing code, look for an existing helper in the repo before writing a new one.

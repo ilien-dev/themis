@@ -1,0 +1,1 @@
+{ "prompt": "/themis:daedalus 01", "basePrompt": "Implement the ticket in .themis/tickets/01-search.md.", "maxTurns": 40 }

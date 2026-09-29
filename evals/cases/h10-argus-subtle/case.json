@@ -1,0 +1,3 @@
+{ "prompt": "/themis:argus Add a GET /notes.csv endpoint that exports all notes as CSV with the columns id,text,createdAt in that order, served as text/csv.",
+  "basePrompt": "Review my uncommitted changes against this request and report problems: Add a GET /notes.csv endpoint that exports all notes as CSV with the columns id,text,createdAt in that order, served as text/csv.",
+  "maxTurns": 25 }

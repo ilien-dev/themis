@@ -1,0 +1,1 @@
+{ "prompt": "/themis:apollo Product pages show \"NaN stars\" for some products.", "basePrompt": "Product pages show \"NaN stars\" for some products. Debug and fix it.", "maxTurns": 40 }

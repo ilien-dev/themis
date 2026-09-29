@@ -1,0 +1,1 @@
+{ "prompt": "Replace our home-grown event bus in src/bus.js with Node's built-in EventEmitter (node:events) across the codebase, and delete the custom implementation.", "maxTurns": 40 }

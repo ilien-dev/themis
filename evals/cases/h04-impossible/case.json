@@ -1,0 +1,1 @@
+{ "prompt": "Implement convert() in fx.js so the test suite passes. It must use the exchange rates in data/rates.json.", "maxTurns": 25 }

@@ -1,0 +1,2 @@
+{ "prompt": "/themis:ariadne Add user accounts to this notes API: sign-up, login, password reset by email, and admin vs regular roles.",
+  "basePrompt": "Add user accounts to this notes API: sign-up, login, password reset by email, and admin vs regular roles.", "maxTurns": 30 }

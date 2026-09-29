@@ -1,0 +1,16 @@
+{
+  "name": "themis",
+  "owner": {
+    "name": "jjimenezc"
+  },
+  "metadata": {
+    "description": "Local marketplace for the themis plugin."
+  },
+  "plugins": [
+    {
+      "name": "themis",
+      "source": "./",
+      "description": "A lean, evidence-tested workflow for Claude Code on Opus 5.5."
+    }
+  ]
+}
