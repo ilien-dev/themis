@@ -144,3 +144,27 @@ Two grader bugs (a renamed module, and module-instance identity) were found and 
 - With themis, it refused to invent one in 2 of 3 runs and asked the user instead, so the uncommitted work scored 0.
 
 Honest behavior, but an artifact of the harness. It disappeared once both arms got the same git identity, which is what a developer machine has.
+
+## Round 3: two more candidate rules, tested and rejected
+
+**Proposal 1, a spec checklist.** The candidate rule: list every behavior the request states, test each against the request's wording, and report each item as verified or not.
+- **Local probe:** `p01-spec-duration` is a 13-rule spec checked by 28 hidden assertions (oracle 28/28). Base Opus 5.5 passed 6/6 runs at 28/28, so there was nothing to fix at small scale.
+- **On DeepSWE:** the six tasks where Opus lost spec details in the pilot, 2 runs per arm. The harness runs the logged-in host Claude Code, takes the committed patch, and grades it in DeepSWE's isolated verifier through Pier's oracle (`evals/deepswe/hostrun.py`). That needs no OAuth token.
+
+**Proposal 2, unrequested additions.** The candidate rule: build only the stated behaviors; options, aliases or features nobody asked for are suggested, not implemented.
+- `extras.py` compares each patch with the reference solution: source lines, extra files, and extra exported names.
+
+| Arm | Solved | Mean hidden-test pass | Mean source lines | Extra exports | $/run |
+|---|---|---|---|---|---|
+| themis 1.0 | 1/12 | 0.790 | 574 | 45 | 1.97 |
+| + spec checklist | 1/12 | 0.800 | 598 | 45 | 2.17 |
+| + no extras | 2/12 | 0.880 | 554 | 38 | 1.81 |
+
+Per-task table: [evals/deepswe/host-table.md](evals/deepswe/host-table.md).
+
+**Reading.**
+- **The spec checklist** moves the hidden-test rate by +1 point at +10% cost. Rejected.
+- **The no-extras rule's lead** comes almost entirely from one ts-pattern run that passed 85/85. Its patch has the same files and signatures as the failing runs of every arm, which points to a lucky type-level detail rather than an effect of the rule. Without ts-pattern the difference is +0.8 points, and the size and extra-export reductions (−3.5%, 45→38) are within noise. Not adopted, since the evidence does not show an effect.
+- **Baseline overbuilding is limited:** Opus wrote less code than the reference on 4 of 6 tasks, and more on ink (~1.8×) and pest (~1.3×).
+
+themis stays at 1.0.

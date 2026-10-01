@@ -1,0 +1,24 @@
+{
+  "name": "themis",
+  "version": "1.0.0",
+  "description": "A lean, evidence-tested workflow for Claude Code on Opus 5.5: one resident rule, a CLAUDE.md size cap, and six on-demand skills.",
+  "author": {
+    "name": "jjimenezc"
+  },
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "guardrails",
+    "opus",
+    "claude-md"
+  ],
+  "userConfig": {
+    "claude_md_cap": {
+      "type": "number",
+      "title": "CLAUDE.md token cap",
+      "description": "Maximum estimated tokens for a CLAUDE.md file including its imports. 0 disables the cap.",
+      "default": 2500,
+      "min": 0
+    }
+  }
+}

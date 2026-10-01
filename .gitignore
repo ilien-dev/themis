@@ -11,3 +11,6 @@ evals/deepswe/archive/
 evals/deepswe/oracle-check/
 evals/deepswe/*.crt
 evals/deepswe/*.log
+evals/deepswe/host-cache/
+evals/deepswe/host-runs/
+evals/deepswe/__pycache__/
