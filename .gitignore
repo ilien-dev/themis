@@ -4,7 +4,7 @@ evals/mined/
 evals/deepswe/repo/
 evals/deepswe/pier/
 evals/deepswe/.venv/
-evals/deepswe/plugin/
+evals/deepswe/plugin*/
 evals/deepswe/runs*/
 evals/deepswe/pilot-*/
 evals/deepswe/archive/
