@@ -6,8 +6,8 @@ TASKS="ink-grid-box-layout pest-character-class-coalescing awilix-async-containe
 superjson-error-stack-serialization fd-deterministic-multi-key-sorting ts-pattern-match-each"
 ROUNDS=${ROUNDS:-2}
 export PYTHONUTF8=1
-export THEMIS_EXTRA_CA="$PWD/kaspersky-root.crt"
-ENV=/c/Users/jesus/.config/themis/deepswe.env
+[ -f extra-ca.crt ] && export THEMIS_EXTRA_CA="$PWD/extra-ca.crt"
+ENV=${DEEPSWE_ENV:-$HOME/.config/themis/deepswe.env}
 for r in $(seq 1 $ROUNDS); do
   for t in $TASKS; do
     for arm in v10 spec; do

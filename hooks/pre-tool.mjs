@@ -48,7 +48,7 @@ function checkCap(file, toolInput) {
   if (before !== null && total < estimateTokens(before) + importTokens(file, before)) return; // shrinking is allowed
   deny(`${basename(file)} would be ~${total} tokens (${own} own + ${imports} imported); the cap is ${cap}. ` +
     'Make room instead of growing it: merge or drop lines the model would follow anyway, or move procedures into a skill or doc referenced by path. ' +
-    '/themis:hestia audit does this.');
+    'Load the themis:hestia skill and follow its edit section.');
 }
 
 run(async (input) => {

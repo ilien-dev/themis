@@ -1,11 +1,16 @@
 ---
 name: hestia
-description: "Create or audit the project's CLAUDE.md so it holds only what the model cannot infer, under the themis token cap (default 2500, the size Boris Cherny reports for his own; imports included)."
+description: "CLAUDE.md: create (init), prune (audit) or edit it so it keeps only what Claude cannot infer from the repo, under the themis size cap."
+when_to_use: "Use before creating or editing any CLAUDE.md or CLAUDE.local.md, including adding rules or conventions to it, and when a CLAUDE.md edit is rejected for its size."
 argument-hint: "[init | audit]"
-disable-model-invocation: true
 ---
 
-Mode: $ARGUMENTS (default: `audit` if `CLAUDE.md` or `.claude/CLAUDE.md` exists, else `init`). Cap: 2500 estimated tokens (characters ÷ 3.6), including files pulled in with `@path`. The themis hook rejects edits that exceed it.
+Mode: $ARGUMENTS
+- `init` or `audit`: run that section below.
+- Anything else, or loaded by Claude in the middle of a task: run **edit**. Change only what was requested; do not audit the rest of the file.
+- Empty, invoked by the user: `audit` if `CLAUDE.md` or `.claude/CLAUDE.md` exists, else `init`.
+
+Cap: 2500 estimated tokens (characters ÷ 3.6), including files pulled in with `@path`. The themis hook rejects edits that exceed it.
 
 ## What belongs
 
@@ -33,6 +38,12 @@ Each line must pass: *would the model make a mistake in this repo without it?*
 2. Run the test and build commands you find, if cheap, to confirm they work.
 3. Draft only lines that pass the test above. No heading for the project; plain `##` sections only when there are several lines of one kind.
 4. Show the draft with its token estimate, then write `CLAUDE.md`.
+
+## edit
+
+1. Read the target file and its `@imports`, and estimate the total.
+2. Write each new line in the shortest form that keeps its meaning. Lines the user explicitly asked for go in; if one fails the test above, add it anyway and say in one line why it may not be needed.
+3. If the result would exceed the cap, merge or condense lines close to the change, then say what you condensed. If that is not enough, stop and propose `/themis:hestia audit`.
 
 ## audit
 

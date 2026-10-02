@@ -6,9 +6,10 @@ TASKS="pest-character-class-coalescing fd-deterministic-multi-key-sorting true-m
 eicrud-keyset-pagination-cursor ts-pattern-match-each ofetch-per-origin-circuit-breaker superjson-error-stack-serialization
 awilix-async-container-initialization"
 export PYTHONUTF8=1
-ENV=/c/Users/jesus/.config/themis/deepswe.env
-export THEMIS_EXTRA_CA="C:/Users/jesus/Documents/Projects/themis/evals/deepswe/kaspersky-root.crt"
-PLUGIN="C:/Users/jesus/Documents/Projects/themis/evals/deepswe/plugin"
+ENV=${DEEPSWE_ENV:-$HOME/.config/themis/deepswe.env}
+# Optional extra root CA for TLS-intercepting proxies or antivirus (PEM file).
+[ -f extra-ca.crt ] && export THEMIS_EXTRA_CA="$PWD/extra-ca.crt"
+PLUGIN="$PWD/plugin"
 for t in $TASKS; do
   for arm in base themis; do
     out="pilot-$arm"
