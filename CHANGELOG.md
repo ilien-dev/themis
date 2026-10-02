@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 — 2026-10-02
+
+- Visual identity in `assets/`: the coin emblem (a blindfolded Themis in profile), horizontal lockups for light and dark, a companion mark and favicons, one icon per skill, and a social preview. All vector, text set as outlines.
+- README animations, light and dark: `hero`, `flow`, `describe` (case h03) and `cap` (the CLAUDE.md cap and hestia).
+- `assets/README.md` documents the palette, type, licences, the Codex prompts and how to rebuild every file.
+- No change to the plugin's behavior.
+
 ## 1.1.0 — 2026-10-01
 
 - Skill descriptions rewritten to lead with their role (PLAN, BUILD, DEBUG, REVIEW, SHIP, CLAUDE.md) and say exactly what each does.

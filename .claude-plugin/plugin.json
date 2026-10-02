@@ -1,7 +1,7 @@
 {
   "name": "themis",
   "displayName": "themis",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A lean, evidence-tested workflow for Claude Code on Opus 5.5: one resident rule, a CLAUDE.md size cap, and six on-demand skills.",
   "author": {
     "name": "jjimenezc",
