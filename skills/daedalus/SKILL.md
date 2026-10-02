@@ -1,6 +1,6 @@
 ---
 name: daedalus
-description: "Implement one ticket or spec item end to end: branch, test-first where there is logic, real check, acceptance criteria ticked with evidence, one commit."
+description: "BUILD one ticket or short task: new branch, tests first where there is logic, real checks, ticket criteria ticked with evidence, one commit. Never pushes."
 argument-hint: "[ticket path or number, or a short task]"
 disable-model-invocation: true
 ---

@@ -108,6 +108,8 @@ test('manifest, hooks and skills are consistent', () => {
   for (const s of ['ariadne', 'daedalus', 'apollo', 'argus', 'hermes', 'hestia']) {
     const md = readFileSync(join(root, 'skills', s, 'SKILL.md'), 'utf8').replace(/\r/g, '');
     assert.match(md, /^---\nname: [a-z]+\ndescription: "[^"]+"/, s);
-    assert.match(md, /disable-model-invocation: true/, s);
+    // hestia is the only skill Claude may load on its own (when it touches CLAUDE.md)
+    if (s === 'hestia') assert.match(md, /\nwhen_to_use: "[^"]+"/, s);
+    else assert.match(md, /disable-model-invocation: true/, s);
   }
 });

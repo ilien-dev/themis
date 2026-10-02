@@ -84,7 +84,7 @@ def grade(task, patch, dest):
     shutil.copytree(TASKS / task, tcopy)
     (tcopy / 'solution' / 'solution.patch').write_bytes(patch)
     env = dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8',
-               THEMIS_EXTRA_CA=str(HERE / 'kaspersky-root.crt'))
+               THEMIS_EXTRA_CA=str(HERE / 'extra-ca.crt') if (HERE / 'extra-ca.crt').exists() else '')
     sh([str(PIER), 'run', '-p', str(tcopy), '--agent', 'oracle', '--env', 'docker', '-o', str(tmp / 'jobs')],
        check=False, timeout=3600, env=env)
     rw = list((tmp / 'jobs').glob('*/*/verifier/reward.json'))

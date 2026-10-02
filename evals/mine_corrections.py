@@ -43,7 +43,7 @@ for d in sorted(os.listdir(ROOT)):
                 if not t or t.startswith('<') or 'tool_use_id' in t:
                     continue
                 if CORRECTION.search(t):
-                    rows.append({'project': d.replace('C--Users-jesus-', '').replace('C--Users-jesus', 'home'),
+                    rows.append({'project': re.sub(r'^C--Users-[^-]+-?', '', d) or 'home',
                                  'session': os.path.basename(f)[:8], 'user': t[:700], 'prev': last_assistant[-500:]})
 with open(os.path.join(OUT, 'corrections.jsonl'), 'w', encoding='utf-8') as out:
     for r in rows:

@@ -1,6 +1,6 @@
 ---
 name: argus
-description: "One-pass review of the current changes against what was asked: missing requirements, unrequested changes, overbuilt code. Reports only; never edits."
+description: "REVIEW the current diff against what was asked: lists missing, unasked and overbuilt items with file:line. Read-only, never edits."
 argument-hint: "[the request or spec path; defaults to .themis/spec.md]"
 disable-model-invocation: true
 context: fork

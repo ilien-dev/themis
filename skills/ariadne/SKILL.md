@@ -1,6 +1,6 @@
 ---
 name: ariadne
-description: "Start a piece of work: size it, align on the decisions that matter, and for large work write a spec and tickets under .themis/."
+description: "PLAN: start any request here. Sizes it: trivial or normal gets done now; large gets up to 4 key questions, then .themis/spec.md and tickets; unclear gets a research proposal."
 argument-hint: "[what you want to build or change]"
 disable-model-invocation: true
 ---

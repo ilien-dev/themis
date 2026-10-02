@@ -1,16 +1,23 @@
 {
   "name": "themis",
   "owner": {
-    "name": "jjimenezc"
+    "name": "jjimenezc",
+    "url": "https://github.com/ilien-dev"
   },
   "metadata": {
-    "description": "Local marketplace for the themis plugin."
+    "description": "Marketplace for the themis plugin."
   },
   "plugins": [
     {
       "name": "themis",
       "source": "./",
-      "description": "A lean, evidence-tested workflow for Claude Code on Opus 5.5."
+      "description": "One resident rule, a CLAUDE.md size cap and six on-demand skills, each kept only after it beat the no-plugin baseline in A/B sessions on Opus 5.5.",
+      "category": "development",
+      "tags": [
+        "workflow",
+        "guardrails",
+        "claude-md"
+      ]
     }
   ]
 }

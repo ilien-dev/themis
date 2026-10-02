@@ -1,6 +1,6 @@
 ---
 name: apollo
-description: "Diagnose a bug or regression: build a failing reproduction first, test ranked hypotheses one at a time, fix the causal layer, add a regression test."
+description: "DEBUG and FIX a bug (edits code): failing reproduction first, ranked hypotheses tested one by one, fix where the cause lives, regression test."
 argument-hint: "[symptom, error or failing command]"
 disable-model-invocation: true
 ---

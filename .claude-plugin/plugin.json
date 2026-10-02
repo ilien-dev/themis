@@ -1,10 +1,14 @@
 {
   "name": "themis",
-  "version": "1.0.0",
+  "displayName": "themis",
+  "version": "1.1.0",
   "description": "A lean, evidence-tested workflow for Claude Code on Opus 5.5: one resident rule, a CLAUDE.md size cap, and six on-demand skills.",
   "author": {
-    "name": "jjimenezc"
+    "name": "jjimenezc",
+    "url": "https://github.com/ilien-dev"
   },
+  "homepage": "https://github.com/ilien-dev/themis",
+  "repository": "https://github.com/ilien-dev/themis",
   "license": "MIT",
   "keywords": [
     "workflow",

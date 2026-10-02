@@ -1,6 +1,6 @@
 ---
 name: hermes
-description: "Prepare the change for delivery: tidy commits, write the commit message and PR body with evidence and merge risk. Asks before any push."
+description: "SHIP: write the commit message or PR description with test evidence and merge risk. Asks before pushing or opening a PR."
 argument-hint: "[commit | pr]"
 disable-model-invocation: true
 ---
