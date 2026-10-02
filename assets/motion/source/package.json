@@ -1,0 +1,8 @@
+{
+  "name": "themis-motion",
+  "private": true,
+  "description": "Renders the README animations in assets/motion/ from scenes.html",
+  "type": "module",
+  "scripts": { "export": "node export.mjs" },
+  "devDependencies": { "playwright": "^1.55.0" }
+}

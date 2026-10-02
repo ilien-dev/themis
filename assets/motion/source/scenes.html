@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>themis motion</title>
+<!--
+  The README animations. Each scene is a function of time: draw(t) always gives the same frame,
+  so export.mjs renders a GIF by setting t and taking screenshots. Open this file in a browser to
+  preview every scene; window.themisMotion is the export API.
+-->
+<style>
+@font-face{font-family:"Cinzel";font-weight:600;src:url(fonts/cinzel-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-weight:400;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-weight:500;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2")}
+/* GitHub's own grounds, so the GIFs sit flush on the README page */
+.stage{--bg:#ffffff;--ink:#101B2D;--mute:#5F6673;--line:#D9D3C7;--panel:#F2EEE6;--ac:#1D6A99;--acsoft:#DCE8F0;--no:#B4432A;--nosoft:#F4E1DA}
+.stage[data-v="dark"]{--bg:#0d1117;--ink:#ECE6DA;--mute:#8B93A1;--line:#243042;--panel:#131C2B;--ac:#5BB0DD;--acsoft:#13293A;--no:#E0705A;--nosoft:#2E1A16}
+.stage{margin:0 0 32px;border:1px solid #888;width:fit-content}
+.stage svg{display:block}
+.bg{fill:var(--bg)} .ink{fill:var(--ink)} .mu{fill:var(--mute)} .ac{fill:var(--ac)} .no{fill:var(--no)}
+.pn{fill:var(--panel)} .acs{fill:var(--acsoft)} .nos{fill:var(--nosoft)}
+.sl{stroke:var(--line);fill:none} .sa{stroke:var(--ac);fill:none} .sn{stroke:var(--no);fill:none} .sm{stroke:var(--mute);fill:none}
+text{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.cz{font-family:"Cinzel",Georgia,serif;font-weight:600}
+.b{font-weight:500}
+body{font:14px system-ui;margin:24px;background:#777}
+</style>
+<body>
+<p><button id="v-dark">dark</button> <button id="v-light">light</button></p>
+<div id="stages"></div>
+<script>
+(() => {
+const clamp = x => Math.max(0, Math.min(1, x));
+const P = (t, a, b) => clamp((t - a) / (b - a));
+const E = u => u < .5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
+const L = (a, b, u) => a + (b - a) * u;
+const f1 = n => +n.toFixed(1);
+const O = (el, v) => { el.style.opacity = f1(clamp(v) * 100) / 100; };
+const TR = (el, x, y, s = 1) => el.setAttribute("transform", `translate(${f1(x)} ${f1(y)}) scale(${s.toFixed(3)})`);
+const TY = (el, full, u) => { el.textContent = full.slice(0, Math.round(clamp(u) * full.length)); };
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const icon = (name, x, y, s, k = "") => `<image ${k ? `data-k="${k}"` : ""} data-icon="${name}" x="${x}" y="${y}" width="${s}" height="${s}"/>`;
+const fadeLoop = (t, dur) => Math.min(P(t, 0, .4), 1 - P(t, dur - .6, dur));
+
+const S = {};
+
+/* hero · the coin is struck, then candidate parts are weighed one at a time */
+const CARDS = [
+  ["describe a problem → get an assessment", true, "h03 · 0/3 without the plugin → 12/12 with it"],
+  ["tell it to match claims to evidence", false, "base model already 3/3 · no effect measured"],
+  ["cap CLAUDE.md near 2,500 tokens", true, "c15 · 0/3 stayed under the cap → 3/3"],
+  ["guard test files from edits", false, "h08 · never tampered with tests, 3/3 base"],
+  ["check the reply language on Stop", false, "0 language drifts in 25 sessions without it"],
+];
+const C0 = 2.0, CP = 2.6;
+S.hero = {
+  w: 960, h: 420, dur: C0 + CARDS.length * CP + .4, poster: C0 + .95,
+  svg() {
+    let s = `<image data-k="coin" href="../../themis-emblem.svg" x="-150" y="-150" width="300" height="300"/>`;
+    s += `<text class="cz ink" x="382" y="150" font-size="92" letter-spacing="11">` + [..."THEMIS"].map((c, i) => `<tspan data-k="w${i}">${c}</tspan>`).join("") + `</text>`;
+    s += `<text class="ink" x="386" y="198" font-size="22"><tspan data-k="tg1"></tspan><tspan data-k="tg2" class="ac b"></tspan><tspan data-k="tg3"></tspan></text>`;
+    s += `<text data-k="lbl" class="mu" x="386" y="252" font-size="13" letter-spacing="2">WEIGHED AGAINST THE BASELINE</text>`;
+    CARDS.forEach(([name, kept, ev], i) => {
+      s += `<g data-k="c${i}"><rect class="pn" x="0" y="0" width="540" height="72" rx="6"/>`
+        + `<text class="ink" x="18" y="30" font-size="17">${esc(name)}</text>`
+        + `<line data-k="x${i}" class="sm" x1="16" y1="25" x2="16" y2="25" stroke-width="2"/>`
+        + `<text class="mu" x="18" y="56" font-size="13">${esc(ev)}</text>`
+        + `<g data-k="v${i}" transform="translate(470 10)"><rect class="${kept ? "acs" : "nos"}" x="-44" y="0" width="100" height="26" rx="13"/>`
+        + `<text class="${kept ? "ac" : "no"} b" x="6" y="18" font-size="13" text-anchor="middle" letter-spacing="1.5">${kept ? "KEPT" : "REMOVED"}</text></g></g>`;
+    });
+    s += `<text data-k="foot" class="mu" x="40" y="400" font-size="13">every component A/B tested on claude-opus-5-5 · what did not move a number was cut</text>`;
+    return s;
+  },
+  draw(t, $) {
+    const strike = E(P(t, 0, .7));
+    TR($.coin, 190, 205, L(1.12, 1, strike)); O($.coin, P(t, 0, .45));
+    for (let i = 0; i < 6; i++) $["w" + i].setAttribute("fill-opacity", f1(P(t, .35 + i * .1, .65 + i * .1)));
+    const tg = P(t, .9, 1.9), full = "Only what was measured stays.";
+    const n = Math.round(tg * full.length);
+    $.tg1.textContent = full.slice(0, Math.min(n, 14)); $.tg2.textContent = full.slice(14, Math.min(n, 22)); $.tg3.textContent = full.slice(22, n);
+    O($.lbl, P(t, 1.6, 2));
+    CARDS.forEach(([name, kept], i) => {
+      const a = C0 + i * CP, inn = E(P(t, a, a + .35)), out = P(t, a + CP - .35, a + CP);
+      TR($["c" + i], 386, L(282, 270, inn) - out * 8);
+      O($["c" + i], t < a ? 0 : Math.min(inn, 1 - out));
+      const st = E(P(t, a + .55, a + .8));
+      const v = $["v" + i]; v.setAttribute("transform", `translate(470 10) scale(${L(1.6, 1, st).toFixed(3)})`); O(v, st);
+      $["x" + i].setAttribute("x2", f1(kept ? 16 : L(16, 18 + name.length * 10.2, E(P(t, a + .85, a + 1.2)))));
+    });
+    O($.foot, P(t, 1.8, 2.3));
+  },
+};
+
+/* flow · the plugin's parts in the order a piece of work meets them */
+const NODES = {
+  plan: [320, 120, "ariadne", "PLAN"], build: [520, 120, "daedalus", "BUILD"],
+  review: [720, 120, "argus", "REVIEW"], ship: [920, 120, "hermes", "SHIP"],
+  debug: [520, 300, "apollo", "DEBUG + FIX"], claude: [320, 300, "hestia", "CLAUDE.md"],
+};
+const NW = 170, NH = 128;
+const STEPS = [
+  { s: 0, on: ["hs"], cap: "SessionStart adds one rule: describing a problem gets an assessment, not an edit." },
+  { s: 2.2, on: ["plan"], cap: "/themis:ariadne sizes the request; large work gets up to 4 questions, a spec, tickets." },
+  { s: 4.4, on: ["build"], cap: "/themis:daedalus builds one ticket: branch, tests first, real checks, one commit." },
+  { s: 6.6, on: ["debug"], cap: "/themis:apollo when it breaks: failing reproduction first, fix where the cause lives." },
+  { s: 8.8, on: ["review"], cap: "/themis:argus reads the diff against the request: missing, unasked, overbuilt." },
+  { s: 11, on: ["ship"], cap: "/themis:hermes writes the commit or PR with evidence and merge risk; asks before pushing." },
+  { s: 13.2, on: ["hp", "claude"], cap: "Touching CLAUDE.md? The cap hook checks its size; hestia keeps what Claude can't infer." },
+];
+const FDUR = 16;
+const mid = k => [NODES[k][0] + NW / 2, NODES[k][1] + NH / 2];
+S.flow = {
+  w: 1120, h: 452, dur: FDUR, poster: 10.2,
+  svg() {
+    let s = `<g transform="translate(0 -66)"><rect class="pn" x="24" y="120" width="250" height="308" rx="8"/>`
+      + `<text class="mu" x="44" y="152" font-size="12" letter-spacing="2">CLAUDE CODE HOOKS</text>`;
+    for (const [k, y, name, note] of [["hs", 176, "SessionStart", "resident rule, ~80 tokens"], ["hp", 300, "PreToolUse", "CLAUDE.md size cap"]]) {
+      s += `<rect class="sl" data-k="${k}r" x="44" y="${y}" width="210" height="76" rx="6" stroke-width="1.5"/>`
+        + `<rect class="acs" data-k="${k}" x="44" y="${y}" width="210" height="76" rx="6" style="opacity:0"/>`
+        + `<text class="ink b" x="60" y="${y + 32}" font-size="16">${name}</text><text class="mu" x="60" y="${y + 56}" font-size="12">${note}</text>`;
+    }
+    const edge = (a, b) => { const [x1, y1] = a, [x2, y2] = b; return `<path class="sl" stroke-width="2" d="M${x1} ${y1} L${x2} ${y2}"/>`; };
+    s += edge([NODES.plan[0] + NW, mid("plan")[1]], [NODES.build[0], mid("build")[1]]);
+    s += edge([NODES.build[0] + NW, mid("build")[1]], [NODES.review[0], mid("review")[1]]);
+    s += edge([NODES.review[0] + NW, mid("review")[1]], [NODES.ship[0], mid("ship")[1]]);
+    s += `<path class="sl" stroke-width="2" stroke-dasharray="5 5" d="M${mid("build")[0]} ${NODES.build[1] + NH} V${NODES.debug[1]}"/>`;
+    s += `<path class="sl" stroke-width="2" stroke-dasharray="5 5" d="M254 338 H${NODES.claude[0]}"/>`;
+    s += `<path class="sl" stroke-width="2" stroke-dasharray="5 5" d="M254 214 C290 214 290 184 ${NODES.plan[0]} 184"/>`;
+    for (const [k, [x, y, skill, role]] of Object.entries(NODES)) {
+      s += `<rect class="pn" x="${x}" y="${y}" width="${NW}" height="${NH}" rx="8"/>`
+        + `<rect class="acs" data-k="${k}" x="${x}" y="${y}" width="${NW}" height="${NH}" rx="8" style="opacity:0"/>`
+        + `<rect class="sa" data-k="${k}s" x="${x}" y="${y}" width="${NW}" height="${NH}" rx="8" stroke-width="2" style="opacity:0"/>`
+        + icon(skill, x + 16, y + 16, 44)
+        + `<text class="ac b" x="${x + 16}" y="${y + 88}" font-size="13" letter-spacing="2">${role}</text>`
+        + `<text class="ink" x="${x + 16}" y="${y + 110}" font-size="15">${skill}</text>`;
+    }
+    s += `<text class="mu" x="320" y="88" font-size="12" letter-spacing="2">ON-DEMAND SKILLS · /themis:&lt;name&gt;</text>`;
+    s += `<circle data-k="dot" r="7" class="ac" style="opacity:0"/>`;
+    s += `<rect class="pn" x="24" y="452" width="1072" height="48" rx="8"/><text data-k="cap" class="ink" x="44" y="482" font-size="15"></text>`;
+    s += STEPS.map((_, i) => `<circle data-k="pip${i}" cx="${1000 + i * 13}" cy="476" r="4" class="mu"/>`).join("") + `</g>`;
+    return s;
+  },
+  draw(t, $) {
+    let cur = 0;
+    STEPS.forEach((st, i) => { if (t >= st.s) cur = i; });
+    const keys = ["hs", "hp", ...Object.keys(NODES)];
+    for (const k of keys) {
+      let v = 0;
+      STEPS.forEach((st, i) => { if (st.on.includes(k)) { const end = i + 1 < STEPS.length ? STEPS[i + 1].s : FDUR - .6; v = Math.max(v, Math.min(P(t, st.s + .15, st.s + .45), 1 - P(t, end, end + .3))); } });
+      O($[k], v); if ($[k + "s"]) O($[k + "s"], v);
+    }
+    const route = [["plan", "build", 4.4], ["build", "debug", 6.6], ["debug", "review", 8.8], ["review", "ship", 11]];
+    let dot = null;
+    for (const [a, b, s0] of route) { const u = P(t, s0 - .5, s0 + .1); if (u > 0 && u < 1) { const [x1, y1] = mid(a), [x2, y2] = mid(b); dot = [L(x1, x2, E(u)), L(y1, y2, E(u))]; } }
+    O($.dot, dot ? 1 : 0); if (dot) { $.dot.setAttribute("cx", f1(dot[0])); $.dot.setAttribute("cy", f1(dot[1])); }
+    const st = STEPS[cur], full = st.cap;
+    TY($.cap, full, P(t, st.s + .1, st.s + .9));
+    O($.cap, 1 - P(t, FDUR - .6, FDUR));
+    STEPS.forEach((_, i) => $["pip" + i].setAttribute("class", i === cur ? "ac" : "mu"));
+  },
+};
+
+/* describe · the same message, with and without the plugin (case h03) */
+const ASK = "Some customers see an order total one cent lower than the sum of the line items.";
+const LEFT = [["ink b", "● Edit src/cart.js"], ["no", "- return Math.floor(sum * 100) / 100"], ["ac", "+ return Math.round(sum * 100) / 100"], ["ink", "Fixed the rounding in cart.js."]];
+const RIGHT = [["ink", "Cause: the total is floored after"], ["ink", "summing float cents, so values like"], ["ink", "19.999999 lose a cent."], ["mu", " "], ["ink b", "No files changed."], ["ink", "Want me to fix it in cart.js?"]];
+S.describe = {
+  w: 820, h: 420, dur: 11, poster: 7.4,
+  svg() {
+    let s = `<rect class="pn" x="24" y="20" width="772" height="64" rx="8"/><text class="mu" x="44" y="46" font-size="12" letter-spacing="2">YOU</text>`
+      + `<text data-k="ask" class="ink" x="44" y="70" font-size="14"></text>`;
+    for (const [side, x, title, lines] of [["l", 24, "WITHOUT THE PLUGIN", LEFT], ["r", 416, "WITH THEMIS", RIGHT]]) {
+      s += `<rect class="sl" x="${x}" y="100" width="380" height="250" rx="8" stroke-width="1.5"/>`
+        + `<text class="${side === "r" ? "ac" : "mu"} b" x="${x + 20}" y="128" font-size="12" letter-spacing="2">${title}</text>`;
+      lines.forEach(([cls, txt], i) => { s += `<text data-k="${side}${i}" class="${cls}" x="${x + 20}" y="${162 + i * 26}" font-size="14" data-full="${esc(txt)}"></text>`; });
+    }
+    s += `<g data-k="fl"><rect class="nos" x="24" y="362" width="380" height="40" rx="8"/><text class="no b" x="44" y="387" font-size="13">0/3 replied with an assessment</text></g>`;
+    s += `<g data-k="fr"><rect class="acs" x="416" y="362" width="380" height="40" rx="8"/><text class="ac b" x="436" y="387" font-size="13">12/12 replied with an assessment</text></g>`;
+    return s;
+  },
+  draw(t, $) {
+    TY($.ask, ASK, P(t, .2, 1.8));
+    const lines = (side, n, a, per) => { for (let i = 0; i < n; i++) { const el = $[side + i]; TY(el, el.dataset.full, P(t, a + i * per, a + (i + 1) * per)); } };
+    lines("l", LEFT.length, 2.2, .6); lines("r", RIGHT.length, 2.2, .55);
+    O($.fl, P(t, 5.8, 6.3)); O($.fr, P(t, 6.1, 6.6));
+  },
+};
+
+/* cap · an edit would push CLAUDE.md past the cap; the hook denies it and hestia makes room */
+const MX = 44, MW = 732, MMAX = 3000, CAP = 2500;
+const mx = v => MX + MW * v / MMAX;
+S.cap = {
+  w: 820, h: 440, dur: 12.5, poster: 8.8,
+  svg() {
+    let s = `<rect class="pn" x="24" y="20" width="772" height="64" rx="8"/><text class="mu" x="44" y="46" font-size="12" letter-spacing="2">YOU</text>`
+      + `<text data-k="ask" class="ink" x="44" y="70" font-size="14"></text>`
+      + `<text data-k="tool" class="ink b" x="44" y="124" font-size="14">● Edit CLAUDE.md  (+10 lines)</text>`
+      + `<text class="mu" x="44" y="164" font-size="12" letter-spacing="2">CLAUDE.md + @imports, estimated tokens</text>`
+      + `<rect class="pn" x="${MX}" y="176" width="${MW}" height="22" rx="4"/>`
+      + `<rect data-k="bar" class="ac" x="${MX}" y="176" width="0" height="22" rx="4"/>`
+      + `<line class="sn" x1="${f1(mx(CAP))}" y1="168" x2="${f1(mx(CAP))}" y2="206" stroke-width="2"/>`
+      + `<text class="no" x="${f1(mx(CAP) + 8)}" y="222" font-size="12">cap 2,500</text>`
+      + `<text data-k="val" class="b" x="${MX}" y="192" font-size="13" text-anchor="end" style="fill:var(--bg)"></text>`
+      + `<g data-k="deny"><rect class="nos" x="24" y="240" width="772" height="40" rx="8"/><text class="no b" x="44" y="265" font-size="13">PreToolUse · deny: CLAUDE.md would be ~2,760 tokens; the cap is 2,500.</text></g>`
+      + `<g data-k="hes">${icon("hestia", 44, 296, 28)}<text class="ac b" x="84" y="316" font-size="14">hestia · edit mode</text></g>`
+      + `<text data-k="h0" class="ink" x="84" y="344" font-size="13" data-full="merged 4 lines Claude already follows into 1"></text>`
+      + `<text data-k="h1" class="ink" x="84" y="368" font-size="13" data-full="moved the deploy steps to docs/deploy.md, kept a pointer"></text>`
+      + `<g data-k="ok"><rect class="acs" x="24" y="386" width="772" height="40" rx="8"/><text class="ac b" x="44" y="411" font-size="13">✓ Edit applied · all 10 conventions in · ~2,470 tokens, under the cap</text></g>`;
+    return s;
+  },
+  draw(t, $) {
+    TY($.ask, "Add these 10 conventions to CLAUDE.md.", P(t, .2, 1.4));
+    O($.tool, P(t, 1.6, 1.9));
+    let v = L(2310, 2760, E(P(t, 2, 3)));
+    v = L(v, 2470, E(P(t, 6.6, 7.6)));
+    const shown = t < 1.9 ? 0 : v;
+    $.bar.setAttribute("width", f1(MW * shown / MMAX));
+    $.bar.setAttribute("class", shown > CAP ? "no" : "ac");
+    $.val.textContent = shown ? `~${Math.round(shown).toLocaleString("en-US")}` : "";
+    $.val.setAttribute("x", f1(mx(shown) - 8));
+    O($.deny, P(t, 3.2, 3.6) * (1 - P(t, 7.4, 7.8) * .55));
+    O($.hes, P(t, 4.4, 4.8));
+    TY($.h0, $.h0.dataset.full, P(t, 5, 5.8)); TY($.h1, $.h1.dataset.full, P(t, 5.8, 6.6));
+    O($.ok, P(t, 7.8, 8.2));
+  },
+};
+
+/* ---------- runtime ---------- */
+function mount(fig) {
+  const id = fig.dataset.scene, sc = S[id], v = fig.dataset.v;
+  fig.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${sc.w} ${sc.h}" width="${sc.w}" height="${sc.h}"><rect width="${sc.w}" height="${sc.h}" class="bg"/>${sc.svg()}</svg>`;
+  fig.querySelectorAll("[data-icon]").forEach(el => el.setAttribute("href", `../../skills/${el.dataset.icon}-${v}.svg`));
+  const $ = {}; fig.querySelectorAll("[data-k]").forEach(el => { $[el.dataset.k] = el; });
+  return { sc, $, fig };
+}
+let variant = "dark", live = [];
+function boot() {
+  const root = document.getElementById("stages");
+  root.innerHTML = Object.keys(S).map(id => `<figure class="stage" data-scene="${id}" data-v="${variant}"></figure>`).join("");
+  live = [...root.querySelectorAll(".stage")].map(mount);
+}
+document.getElementById("v-dark").onclick = () => { variant = "dark"; boot(); };
+document.getElementById("v-light").onclick = () => { variant = "light"; boot(); };
+const t0 = performance.now();
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function loop(now) {
+  for (const s of live) s.sc.draw(reduce ? s.sc.poster : ((now - t0) / 1000) % s.sc.dur, s.$);
+  requestAnimationFrame(loop);
+}
+boot(); requestAnimationFrame(loop);
+
+/* ---------- export API: one scene alone, at native size ---------- */
+window.themisMotion = {
+  scenes: () => Object.keys(S),
+  prepare(id, v = "dark") {
+    live = [];
+    document.body.innerHTML = `<div id="export-stage"><figure class="stage" data-scene="${id}" data-v="${v}" style="margin:0;border:0"></figure></div>`;
+    document.body.style.cssText = "margin:0;padding:0;background:" + (v === "light" ? "#ffffff" : "#0d1117");
+    this._s = mount(document.querySelector("#export-stage .stage"));
+    const sc = S[id];
+    return { w: sc.w, h: sc.h, dur: sc.dur, poster: sc.poster };
+  },
+  frame(t) { this._s.sc.draw(t, this._s.$); },
+};
+})();
+</script>
+</body>
+</html>
