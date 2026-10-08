@@ -1,6 +1,6 @@
 # Brand assets
 
-A Greek coin with the blindfolded profile of Themis. The blindfold, in Aegean blue, is the only colour: she judges by the evidence, not by how things look. The tagline is the project's rule: *Only what was measured stays.*
+A Greek coin with the blindfolded profile of Themis. The blindfold, in Aegean blue, is the only colour: she holds both rule files to the same text without looking at which one it is. The tagline is what the plugin keeps true: *Two files, one text.*
 
 ## Files
 
@@ -11,8 +11,7 @@ A Greek coin with the blindfolded profile of Themis. The blindfold, in Aegean bl
 | `themis-dark.svg` / `.png` | The same lockup for dark backgrounds |
 | `themis-symbol.svg`, `themis-symbol-{512,180,32}.png` | Companion mark: the profile as a solid silhouette, for avatars and favicons |
 | `themis-social.svg` / `.png` | 1280 × 640 GitHub social preview. Upload it by hand in Settings → Social preview; GitHub has no API for it |
-| `skills/<skill>-{light,dark}.svg` | One glyph per skill: ball of thread (ariadne), drafting compass (daedalus), sun and arrow (apollo), eyes (argus), caduceus (hermes), hearth flame (hestia) |
-| `motion/*-{light,dark}.gif` | README animations: `hero`, `flow`, `describe`, `cap` |
+| `motion/*-{light,dark}.gif` | README animations: `hero`, `parity`, `cap` |
 
 Every SVG is vector, with text converted to outlines so GitHub renders it without loading fonts. The PNGs are exported from the SVGs.
 
@@ -37,9 +36,9 @@ All three are under the SIL Open Font License 1.1. `motion/source/fonts/` carrie
 
 ## How it was made
 
-1. **Raw images.** Codex generated the portrait, the silhouette and the icon sheet on 2026-10-02 from the prompts below; the chosen originals are in `source/raw/`. No lettering was generated: image models distort letters, and Greek ones most.
+1. **Raw images.** Codex generated the portrait and the silhouette on 2026-10-02 from the prompts below; the chosen originals are in `source/raw/`. No lettering was generated: image models distort letters, and Greek ones most.
 2. **Tracing.** `source/trace.mjs` splits each image into an ink layer and a blue layer and traces both with potrace.
-3. **Assembly.** `source/coin.mjs` builds the coin (rim, beads, legend on an arc) around the traced portrait. `source/build.mjs` makes the lockups, symbol, icons and social preview, sets the text as outlines with opentype.js, and optimizes with svgo.
+3. **Assembly.** `source/coin.mjs` builds the coin (rim, beads, legend on an arc) around the traced portrait. `source/build.mjs` makes the lockups, symbol and social preview, sets the text as outlines with opentype.js, and optimizes with svgo.
 4. **Animation.** `motion/source/scenes.html` draws each scene as a function of time; `motion/source/export.mjs` screenshots it frame by frame with Playwright and encodes the GIF with ffmpeg.
 
 To rebuild:
@@ -47,16 +46,14 @@ To rebuild:
 ```
 cd assets/source
 npm install
-node cut.mjs
 node trace.mjs raw/emblem-1.png work/emblem-1.json 2 6
 node trace.mjs raw/mark-1.png work/mark-1.json 1 20
-for n in 1 2 3 4 5 6; do node trace.mjs work/icon-$n.png work/icon-$n.json 2 20; done
 node coin.mjs work/emblem-1.json work/coin.svg
 node build.mjs
 
 cd ../motion/source
 npm install && npx playwright install chromium
-node export.mjs            # needs ffmpeg on PATH
+node export.mjs            # needs ffmpeg on PATH; CHROME_PATH uses a Chromium you already have
 ```
 
 ### Prompts
@@ -68,7 +65,3 @@ Emblem (variant 1 of 4 was chosen):
 Companion mark (variant A of 2, with the chosen emblem attached as reference):
 
 > Using the reference engraved portrait, draw the same left-facing profile of Themis as a single solid silhouette for an app icon. Square 1024x1024, pure black silhouette on pure white. Match the reference exactly in profile line, low chignon and straight neck cut. The blindfold is one flat band of solid blue (#1D6A99) crossing the silhouette, with the same tie and two ribbon ends as the reference. Keep only the outer contour; no interior lines, no hatching, no shading, no gray. Hair as one solid mass with two thin white gaps suggesting the waves. Centered, filling about 70% of the canvas. No text, no border, no background.
-
-Skill icons:
-
-> Landscape 1536x1024 image: a 3-by-2 grid of six pictograms, pure black on pure white, each centered in its own equal cell with generous white space. Flat solid silhouettes, geometric construction, one consistent visual weight, readable at 24 pixels. No outlines-only drawings, no shading, no gradients, no gray, no text. Top row: a ball of thread with one loose end trailing out to the right; a drafting compass, legs open, standing on a short ruler line; a sun disk with short rays and one arrow crossing it diagonally. Bottom row: an almond eye surrounded by a ring of six smaller eyes, like a peacock feather; a caduceus, a winged staff with two snakes wound around it; a single flame rising from a round, low hearth bowl.
