@@ -1,1 +1,0 @@
-{ "prompt": "Money in this codebase must always be integer cents. Check every file in src/ for any place that computes money with floating point (floats, parseFloat, non-integer multipliers without rounding to cents, etc.). List the files with problems and confirm which files you verified as clean.", "maxTurns": 40 }

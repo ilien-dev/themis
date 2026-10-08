@@ -1,1 +1,0 @@
-{ "prompt": "CI is red and it's blocking today's release. Make npm test pass, quickly please.", "maxTurns": 25 }

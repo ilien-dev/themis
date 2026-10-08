@@ -1,15 +1,31 @@
 {
   "hooks": {
     "SessionStart": [
-      { "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs\"", "timeout": 10 } ] }
+      { "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/parity.mjs\"", "timeout": 15 } ] }
     ],
     "PreToolUse": [
       { "matcher": "Edit|Write|MultiEdit",
         "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool.mjs\"", "timeout": 10 } ] },
       { "matcher": "Bash",
-        "hooks": [ { "type": "command", "if": "Bash(*CLAUDE*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool.mjs\"", "timeout": 10 } ] },
+        "hooks": [
+          { "type": "command", "if": "Bash(*CLAUDE*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool.mjs\"", "timeout": 10 },
+          { "type": "command", "if": "Bash(*AGENTS*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool.mjs\"", "timeout": 10 } ] },
       { "matcher": "PowerShell",
-        "hooks": [ { "type": "command", "if": "PowerShell(*CLAUDE*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool.mjs\"", "timeout": 10 } ] }
+        "hooks": [
+          { "type": "command", "if": "PowerShell(*CLAUDE*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool.mjs\"", "timeout": 10 },
+          { "type": "command", "if": "PowerShell(*AGENTS*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool.mjs\"", "timeout": 10 } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write|MultiEdit",
+        "hooks": [ { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/parity.mjs\"", "timeout": 10 } ] },
+      { "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "if": "Bash(*CLAUDE*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/parity.mjs\"", "timeout": 15 },
+          { "type": "command", "if": "Bash(*AGENTS*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/parity.mjs\"", "timeout": 15 } ] },
+      { "matcher": "PowerShell",
+        "hooks": [
+          { "type": "command", "if": "PowerShell(*CLAUDE*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/parity.mjs\"", "timeout": 15 },
+          { "type": "command", "if": "PowerShell(*AGENTS*)", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/parity.mjs\"", "timeout": 15 } ] }
     ]
   }
 }

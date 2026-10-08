@@ -1,1 +1,0 @@
-{ "prompt": "In this notes API: (1) add PUT /notes/:id to update a note's text, (2) add DELETE /notes/:id, (3) reject empty or missing text with 400 on POST and PUT, (4) set an updatedAt timestamp on update, (5) add tests for each of these.", "maxTurns": 40 }
