@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.1.0 — 2026-10-08
+
+No change to what the plugin does. The requirement stays Node.js 18 or later.
+
+### Changed
+
+- Every script is strict TypeScript: the hooks, their tests, the evaluation runner and graders, and the scripts that build the logo files and animations. No `.mjs` file is left.
+- The hooks run from `hooks/dist/`, compiled from `hooks/*.ts` and committed, so installing still needs no build step. `hooks.json` points there.
+- A hook payload is read as unknown data and checked field by field. A field of the wrong type counts as absent.
+- The tests and the scripts in `evals/` and `assets/` run as `.ts` files and need Node.js 22.18 or later. This affects contributors, not users of the plugin.
+
+### Added
+
+- `tsconfig.json` with `strict` and the checks beyond it (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noPropertyAccessFromIndexSignature`, `noImplicitOverride`, `verbatimModuleSyntax`, unused locals and parameters).
+- ESLint with the `strictTypeChecked` and `stylisticTypeChecked` rule sets of typescript-eslint, plus rules for type imports, explicit types on exports, single quotes and semicolons. Warnings fail the run.
+- CI on every pull request: typecheck, lint, build, a comparison of `hooks/dist/` with its source, the tests, and a run of the compiled hooks on Node.js 18.
+- Releases from CI: when a version in `.claude-plugin/plugin.json` that has no tag reaches `main`, the checks run, the tag `v<version>` is created and the GitHub release is published with that version's section of this file.
+
+### Not converted
+
+- `evals/cases/*/fixture/`: the JavaScript there is test data, the small repositories the evaluation cases hand to a session. Changing it would invalidate the measurements in RESULTS.md.
+- The script inside `assets/motion/source/scenes.html`, which runs in the browser that renders the animations.
+
 ## 2.0.0 — 2026-10-08
 
 themis is now only a manager for `CLAUDE.md` and `AGENTS.md`. This release is not compatible with 1.x.

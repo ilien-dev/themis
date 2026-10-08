@@ -2,13 +2,13 @@
 
 ## What runs on your machine
 
-themis ships two Node.js hooks (Node 18+ required). Both read the hook payload from stdin, exit 0 on any unexpected input and make no network calls.
+themis ships two Node.js hooks (Node 18+ required). They are written in TypeScript (`hooks/*.ts`) and run from the compiled files in `hooks/dist/`, which are committed and which CI rebuilds and compares on every pull request. They have no dependencies. Both read the hook payload from stdin, exit 0 on any unexpected input and make no network calls.
 
 | Hook | Event | What it reads | What it can do |
 |---|---|---|---|
-| `hooks/pre-tool.mjs` | `PreToolUse` (`Edit`, `Write`, `MultiEdit`, shell commands mentioning `CLAUDE` or `AGENTS`) | The targeted `CLAUDE.md`, `CLAUDE.local.md` or `AGENTS.md`, the files it `@imports`, and its twin in the same directory | Denies the tool call when the file would exceed the size cap, when a shell command writes to a rule file, or when `CLAUDE.md` and `AGENTS.md` already differ. Asks for confirmation on a `Write` to a pair that differs. Writes nothing |
-| `hooks/parity.mjs` | `PostToolUse` (same tools) | The edited rule file and its twin | Overwrites or creates one file: the `AGENTS.md` next to an edited `CLAUDE.md`, or the `CLAUDE.md` next to an edited `AGENTS.md`, with the same bytes. Never in `~/.claude/` or a managed-policy directory |
-| `hooks/parity.mjs` | `SessionStart`, and `PostToolUse` on shell commands mentioning `CLAUDE` or `AGENTS` | Runs `git rev-parse` and `git ls-files` in the working directory to find rule files (a bounded directory walk outside a git repository), then reads each `CLAUDE.md` and `AGENTS.md` it finds | Adds a note to the session context listing pairs that are not identical. Writes nothing |
+| `hooks/dist/pre-tool.js` | `PreToolUse` (`Edit`, `Write`, `MultiEdit`, shell commands mentioning `CLAUDE` or `AGENTS`) | The targeted `CLAUDE.md`, `CLAUDE.local.md` or `AGENTS.md`, the files it `@imports`, and its twin in the same directory | Denies the tool call when the file would exceed the size cap, when a shell command writes to a rule file, or when `CLAUDE.md` and `AGENTS.md` already differ. Asks for confirmation on a `Write` to a pair that differs. Writes nothing |
+| `hooks/dist/parity.js` | `PostToolUse` (same tools) | The edited rule file and its twin | Overwrites or creates one file: the `AGENTS.md` next to an edited `CLAUDE.md`, or the `CLAUDE.md` next to an edited `AGENTS.md`, with the same bytes. Never in `~/.claude/` or a managed-policy directory |
+| `hooks/dist/parity.js` | `SessionStart`, and `PostToolUse` on shell commands mentioning `CLAUDE` or `AGENTS` | Runs `git rev-parse` and `git ls-files` in the working directory to find rule files (a bounded directory walk outside a git repository), then reads each `CLAUDE.md` and `AGENTS.md` it finds | Adds a note to the session context listing pairs that are not identical. Writes nothing |
 
 The copy can be turned off with the `parity` option.
 
