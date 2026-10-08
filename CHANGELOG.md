@@ -14,6 +14,7 @@ themis is now only a manager for `CLAUDE.md` and `AGENTS.md`. This release is no
 ### Changed
 
 - The skill `hestia` is now `themis`: `/themis:hestia` becomes `/themis:themis`. Its `init`, `audit` and edit behavior is the same, extended to `AGENTS.md`.
+- The shell block denies a command only when it writes to a rule file: a redirect, `tee`, `sed -i`, `perl -i`, `Set-Content`, `Add-Content` or `Out-File` aimed at one. In 1.x any command that named `CLAUDE.md` and had a `>` anywhere was denied, including `cat CLAUDE.md 2>&1` and `git diff CLAUDE.md > out.patch`.
 - The hooks now write a file: the twin of the rule file Claude just edited. In 1.x they wrote nothing.
 - The tagline, lockups, social preview and README animations describe the new plugin. The skill icons are gone.
 
