@@ -37,23 +37,23 @@ All three are under the SIL Open Font License 1.1. `motion/source/fonts/` carrie
 ## How it was made
 
 1. **Raw images.** Codex generated the portrait and the silhouette on 2026-10-02 from the prompts below; the chosen originals are in `source/raw/`. No lettering was generated: image models distort letters, and Greek ones most.
-2. **Tracing.** `source/trace.mjs` splits each image into an ink layer and a blue layer and traces both with potrace.
-3. **Assembly.** `source/coin.mjs` builds the coin (rim, beads, legend on an arc) around the traced portrait. `source/build.mjs` makes the lockups, symbol and social preview, sets the text as outlines with opentype.js, and optimizes with svgo.
-4. **Animation.** `motion/source/scenes.html` draws each scene as a function of time; `motion/source/export.mjs` screenshots it frame by frame with Playwright and encodes the GIF with ffmpeg.
+2. **Tracing.** `source/trace.ts` splits each image into an ink layer and a blue layer and traces both with potrace.
+3. **Assembly.** `source/coin.ts` builds the coin (rim, beads, legend on an arc) around the traced portrait. `source/build.ts` makes the lockups, symbol and social preview, sets the text as outlines with opentype.js, and optimizes with svgo.
+4. **Animation.** `motion/source/scenes.html` draws each scene as a function of time; `motion/source/export.ts` screenshots it frame by frame with Playwright and encodes the GIF with ffmpeg.
 
-To rebuild:
+To rebuild (the scripts are TypeScript and run as they are on Node.js 22.18 or later):
 
 ```
 cd assets/source
 npm install
-node trace.mjs raw/emblem-1.png work/emblem-1.json 2 6
-node trace.mjs raw/mark-1.png work/mark-1.json 1 20
-node coin.mjs work/emblem-1.json work/coin.svg
-node build.mjs
+node trace.ts raw/emblem-1.png work/emblem-1.json 2 6
+node trace.ts raw/mark-1.png work/mark-1.json 1 20
+node coin.ts work/emblem-1.json work/coin.svg
+node build.ts
 
 cd ../motion/source
 npm install && npx playwright install chromium
-node export.mjs            # needs ffmpeg on PATH; CHROME_PATH uses a Chromium you already have
+node export.ts            # needs ffmpeg on PATH; CHROME_PATH uses a Chromium you already have
 ```
 
 ### Prompts

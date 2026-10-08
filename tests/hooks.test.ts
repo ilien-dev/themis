@@ -1,29 +1,38 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import type { SpawnSyncReturns } from 'node:child_process';
 import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, symlinkSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const hooks = join(root, 'hooks');
-const { twinOf } = await import('../hooks/lib.mjs');
+import { twinOf } from '../hooks/lib.ts';
 
-function hook(name, input, env = {}) {
+// The hooks are tested as Claude Code runs them: the compiled files in hooks/dist/.
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const hooks = join(root, 'hooks', 'dist');
+
+type Env = Record<string, string>;
+type Fields = Record<string, unknown>;
+interface HookOutput {
+  hookSpecificOutput?: { permissionDecision?: string; permissionDecisionReason?: string; additionalContext?: string };
+}
+
+function hook(name: string, input: string | Fields, env: Env = {}): HookOutput | null {
   const r = spawnSync(process.execPath, [join(hooks, name)], {
     input: typeof input === 'string' ? input : JSON.stringify(input),
     env: { ...process.env, ...env },
     encoding: 'utf8',
   });
   assert.equal(r.status, 0, r.stderr);
-  return r.stdout ? JSON.parse(r.stdout) : null;
+  return r.stdout ? JSON.parse(r.stdout) as HookOutput : null;
 }
-const decision = (o) => o?.hookSpecificOutput?.permissionDecision ?? null;
-const reason = (o) => o?.hookSpecificOutput?.permissionDecisionReason ?? '';
-const context = (o) => o?.hookSpecificOutput?.additionalContext ?? null;
+const decision = (o: HookOutput | null): string | null => o?.hookSpecificOutput?.permissionDecision ?? null;
+const reason = (o: HookOutput | null): string => o?.hookSpecificOutput?.permissionDecisionReason ?? '';
+const context = (o: HookOutput | null): string => o?.hookSpecificOutput?.additionalContext ?? '';
 
-function project(files = {}) {
+function project(files: Record<string, string> = {}): string {
   const dir = mkdtempSync(join(tmpdir(), 'themis-t-'));
   for (const [p, c] of Object.entries(files)) {
     mkdirSync(dirname(join(dir, p)), { recursive: true });
@@ -31,16 +40,27 @@ function project(files = {}) {
   }
   return dir;
 }
-const text = (dir, file) => readFileSync(join(dir, file), 'utf8');
-const pre = (dir, tool_name, tool_input, env) => hook('pre-tool.mjs', { tool_name, tool_input, cwd: dir }, env);
-const write = (dir, content, file = 'CLAUDE.md', env) => pre(dir, 'Write', { file_path: file, content }, env);
-const post = (dir, tool_name, tool_input, env) =>
-  hook('parity.mjs', { hook_event_name: 'PostToolUse', tool_name, tool_input, cwd: dir }, env);
-const start = (dir, env) => hook('parity.mjs', { hook_event_name: 'SessionStart', source: 'startup', cwd: dir }, env);
-const git = (dir, ...args) => spawnSync('git', args, { cwd: dir, encoding: 'utf8' });
+const text = (dir: string, file: string): string => readFileSync(join(dir, file), 'utf8');
+const pre = (dir: string, tool_name: string, tool_input: Fields, env?: Env): HookOutput | null =>
+  hook('pre-tool.js', { tool_name, tool_input, cwd: dir }, env);
+const write = (dir: string, content: string, file = 'CLAUDE.md', env?: Env): HookOutput | null =>
+  pre(dir, 'Write', { file_path: file, content }, env);
+const post = (dir: string, tool_name: string, tool_input: Fields, env?: Env): HookOutput | null =>
+  hook('parity.js', { hook_event_name: 'PostToolUse', tool_name, tool_input, cwd: dir }, env);
+const start = (dir: string, env?: Env): HookOutput | null =>
+  hook('parity.js', { hook_event_name: 'SessionStart', source: 'startup', cwd: dir }, env);
+const git = (dir: string, ...args: string[]): SpawnSyncReturns<string> => spawnSync('git', args, { cwd: dir, encoding: 'utf8' });
+
+interface HooksJson {
+  hooks: Record<string, { hooks: { if?: string }[] }[]>;
+}
+interface Manifest {
+  version: string;
+  userConfig: Record<string, unknown>;
+}
 
 test('malformed and empty input exit 0 silently', () => {
-  for (const h of ['parity.mjs', 'pre-tool.mjs']) {
+  for (const h of ['parity.js', 'pre-tool.js']) {
     const r = spawnSync(process.execPath, [join(hooks, h)], { input: '{not json', encoding: 'utf8' });
     assert.equal(r.status, 0);
     assert.equal(r.stdout, '');
@@ -50,7 +70,7 @@ test('malformed and empty input exit 0 silently', () => {
 
 test('BOM-prefixed input is accepted', () => {
   const body = JSON.stringify({ tool_name: 'Write', tool_input: { file_path: 'CLAUDE.md', content: 'x'.repeat(10000) }, cwd: project() });
-  assert.equal(decision(hook('pre-tool.mjs', '﻿' + body)), 'deny');
+  assert.equal(decision(hook('pre-tool.js', '\uFEFF' + body)), 'deny');
 });
 
 test('cap: write over the cap is denied, under is allowed, other files ignored', () => {
@@ -66,7 +86,7 @@ test('cap: write over the cap is denied, under is allowed, other files ignored',
 test('cap: growing past the cap is denied; shrinking an oversized file is allowed', () => {
   for (const name of ['CLAUDE.md', 'AGENTS.md']) {
     const dir = project({ [name]: 'a'.repeat(8900) + '\nOLD' });
-    const edit = (d, ti) => pre(d, 'Edit', { file_path: join(d, name), ...ti });
+    const edit = (d: string, ti: Fields): HookOutput | null => pre(d, 'Edit', { file_path: join(d, name), ...ti });
     assert.equal(decision(edit(dir, { old_string: 'OLD', new_string: 'b'.repeat(300) })), 'deny', name);
     assert.equal(edit(dir, { old_string: 'OLD', new_string: 'b'.repeat(20) }), null, name);
     const over = project({ [name]: 'a'.repeat(12000) });
@@ -93,7 +113,7 @@ test('cap: configurable and disableable', () => {
 
 test('shell writes to a rule file are denied; other shell commands pass', () => {
   const dir = project();
-  const bash = (command, tool_name = 'Bash') => pre(dir, tool_name, { command });
+  const bash = (command: string, tool_name = 'Bash'): HookOutput | null => pre(dir, tool_name, { command });
   for (const f of ['CLAUDE.md', 'AGENTS.md', 'CLAUDE.local.md']) {
     for (const c of [`echo rule >> ${f}`, `sed -i 's/a/b/' ${f}`, `cat x | tee ${f}`]) assert.equal(decision(bash(c)), 'deny', c);
     assert.equal(decision(bash(`Add-Content ${f} 'x'`, 'PowerShell')), 'deny', f);
@@ -104,10 +124,10 @@ test('shell writes to a rule file are denied; other shell commands pass', () => 
 
 test('shell block looks at what the command writes to, not at any ">" in it', () => {
   const dir = project();
-  const bash = (command, tool_name = 'Bash') => pre(dir, tool_name, { command });
+  const bash = (command: string, tool_name = 'Bash'): HookOutput | null => pre(dir, tool_name, { command });
   for (const f of ['CLAUDE.md', 'AGENTS.md']) {
     for (const c of [
-      `cat ${f} 2>&1`, `cmp CLAUDE.md AGENTS.md > /dev/null 2>&1`, `git diff ${f} > out.patch`, `wc -c ${f} >> sizes.txt`,
+      `cat ${f} 2>&1`, 'cmp CLAUDE.md AGENTS.md > /dev/null 2>&1', `git diff ${f} > out.patch`, `wc -c ${f} >> sizes.txt`,
       `node -e "console.log([1].map(x => x))" ${f}`, `git commit -m "${f} -> shorter"`, `cat ${f} | tee copy.txt`,
       `grep -c x ${f} 2>/dev/null`, `sed -n 1,5p ${f}`,
     ]) assert.equal(bash(c), null, c);
@@ -195,7 +215,7 @@ test('parity: CLAUDE.local.md, the user and managed directories, and other files
   assert.equal(start(dir), null);
 
   const managed = process.platform === 'win32'
-    ? [join(process.env.ProgramFiles || 'C:\\Program Files', 'ClaudeCode')]
+    ? [join(process.env['ProgramFiles'] || 'C:\\Program Files', 'ClaudeCode')]
     : ['/Library/Application Support/ClaudeCode', '/etc/claude-code'];
   for (const d of managed) assert.equal(twinOf(join(d, 'CLAUDE.md')), null, d);
 });
@@ -223,7 +243,7 @@ test('parity: a file that imports its twin is left alone and reported', () => {
 
 test('parity: a symlinked pair is left alone', (t) => {
   const dir = project({ 'AGENTS.md': 'rules\n' });
-  try { symlinkSync(join(dir, 'AGENTS.md'), join(dir, 'CLAUDE.md')); } catch { return t.skip('symlinks are not available here'); }
+  try { symlinkSync(join(dir, 'AGENTS.md'), join(dir, 'CLAUDE.md')); } catch { t.skip('symlinks are not available here'); return; }
   assert.equal(pre(dir, 'Edit', { file_path: 'AGENTS.md', old_string: 'rules', new_string: 'r' }), null);
   assert.equal(post(dir, 'Write', { file_path: 'AGENTS.md', content: 'rules\n' }), null);
   assert.match(context(start(dir)), /symlink/);
@@ -282,15 +302,18 @@ test('parity: can be turned off', () => {
 });
 
 test('manifest, hooks and skill are consistent', () => {
-  const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8'));
-  assert.equal(manifest.version, '2.0.0');
+  const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')) as Manifest;
+  assert.equal(manifest.version, '2.1.0');
   assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity']);
-  const hooksJson = readFileSync(join(hooks, 'hooks.json'), 'utf8');
-  for (const f of hooksJson.match(/hooks\/[\w-]+\.mjs/g)) assert.ok(readFileSync(join(root, f)), f);
+  const hooksJson = readFileSync(join(root, 'hooks', 'hooks.json'), 'utf8');
+  const handlers = (JSON.parse(hooksJson) as HooksJson).hooks;
+  const scripts = hooksJson.match(/hooks\/dist\/[\w-]+\.js/g) ?? [];
+  assert.ok(scripts.length > 0);
+  for (const f of scripts) assert.ok(existsSync(join(root, f)), f);
   // `if` takes one rule, so each shell and each file name needs its own handler
   for (const event of ['PreToolUse', 'PostToolUse'])
     for (const rule of ['Bash(*CLAUDE*)', 'Bash(*AGENTS*)', 'PowerShell(*CLAUDE*)', 'PowerShell(*AGENTS*)'])
-      assert.ok(JSON.parse(hooksJson).hooks[event].some((m) => m.hooks.some((h) => h.if === rule)), `${event} ${rule}`);
+      assert.ok(handlers[event]?.some((m) => m.hooks.some((h) => h.if === rule)), `${event} ${rule}`);
   assert.deepEqual(readdirSync(join(root, 'skills')), ['themis']);
   assert.ok(!existsSync(join(root, 'agents')));
   const md = readFileSync(join(root, 'skills', 'themis', 'SKILL.md'), 'utf8').replace(/\r/g, '');

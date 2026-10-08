@@ -17,7 +17,7 @@ What was measured about the parts that themis 2.0.0 keeps. The numbers come from
 ## What these numbers do not cover
 
 - **They were not re-run for 2.0.0.** They were taken on 1.0.0, when the skill was called `hestia`, was user-invoked only, and ran next to a resident rule that 2.0.0 removes. The skill's text on what belongs in the file is unchanged; its AGENTS.md and sync parts are new.
-- **Parity has no session-level measurement.** Copying an edit to the other file, refusing an edit while the two differ and the session-start report are covered by the hook tests in `tests/hooks.test.mjs`, which are deterministic. How reliably a model asks the user instead of choosing a version was not measured.
+- **Parity has no session-level measurement.** Copying an edit to the other file, refusing an edit while the two differ and the session-start report are covered by the hook tests in `tests/hooks.test.ts`, which are deterministic. How reliably a model asks the user instead of choosing a version was not measured.
 - n is 3 per cell, so small effects are invisible.
 - The fixtures are small Node repos.
 - Graders are deterministic regexes and file checks. In the themis arm they now also require `AGENTS.md` to be an exact copy of `CLAUDE.md`; that check has not been run in a session.
@@ -26,8 +26,8 @@ What was measured about the parts that themis 2.0.0 keeps. The numbers come from
 ## Re-running
 
 ```
-node evals/run.mjs --case "c1*,c20*" --arms base,themis --runs 3 --tag mytag   # billed sessions
-node evals/report.mjs base=mytag themis=mytag
+node evals/run.ts --case "c1*,c20*" --arms base,themis --runs 3 --tag mytag   # billed sessions
+node evals/report.ts base=mytag themis=mytag
 ```
 
 Each case's fixture, prompt and grader are in `evals/cases/`. The cases and results for the parts removed in 2.0.0 are in the git history before that release.

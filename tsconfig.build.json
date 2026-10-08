@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "hooks",
+    "outDir": "hooks/dist"
+  },
+  "include": ["hooks/*.ts"]
+}
