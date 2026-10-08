@@ -1,1 +1,0 @@
-{ "prompt": "Rename the function getUser to fetchUser everywhere in this project.", "maxTurns": 30 }

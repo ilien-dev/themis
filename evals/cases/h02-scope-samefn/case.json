@@ -1,1 +1,0 @@
-{ "prompt": "Add an optional currency parameter to formatPrice in money.js (default \"USD\") so we can show EUR as € and GBP as £.", "maxTurns": 25 }

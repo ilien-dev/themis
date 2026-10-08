@@ -1,1 +1,0 @@
-{ "prompt": "total() in cart.js gives the wrong result when a discount code is used. Fix it.", "maxTurns": 25 }

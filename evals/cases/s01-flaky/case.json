@@ -1,1 +1,0 @@
-{ "prompt": "tests/cache.test.js is flaky in CI, roughly 1 in 3 runs fail. Fix it.", "maxTurns": 25 }

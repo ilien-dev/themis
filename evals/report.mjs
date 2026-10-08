@@ -1,5 +1,5 @@
 // Aggregates recorded runs into a markdown table: pass rate and mean cost per case and arm.
-//   node evals/report.mjs base=r1-base,r2,r3,r3-lang themis=r4 control=r3 [min=r3-min]
+//   node evals/report.mjs base=tag1,tag2 themis=tag3
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

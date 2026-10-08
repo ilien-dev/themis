@@ -11,12 +11,12 @@
     {
       "name": "themis",
       "source": "./",
-      "description": "One resident rule, a CLAUDE.md size cap and six on-demand skills, each kept only after it beat the no-plugin baseline in A/B sessions on Opus 5.5.",
+      "description": "Manages CLAUDE.md and AGENTS.md: one skill to create, prune and edit them, a size cap, and hooks that keep the two files identical.",
       "category": "development",
       "tags": [
-        "workflow",
-        "guardrails",
-        "claude-md"
+        "claude-md",
+        "agents-md",
+        "guardrails"
       ]
     }
   ]

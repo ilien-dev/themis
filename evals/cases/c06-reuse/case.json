@@ -1,1 +1,0 @@
-{ "prompt": "greet() should show the user's name capitalized, e.g. \"Hello, John\" instead of \"hello, john\". Please fix greet.js.", "maxTurns": 20 }
