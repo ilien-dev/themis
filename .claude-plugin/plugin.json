@@ -1,7 +1,7 @@
 {
   "name": "themis",
   "displayName": "themis",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Manages CLAUDE.md and AGENTS.md: one skill to create, prune and edit them, and hooks that cap their size and keep the two files identical.",
   "author": {
     "name": "jjimenezc",

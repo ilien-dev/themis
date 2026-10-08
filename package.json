@@ -1,0 +1,27 @@
+{
+  "name": "themis",
+  "version": "2.1.0",
+  "private": true,
+  "description": "Development tooling for the themis plugin. The plugin itself has no dependencies: Claude Code runs the compiled hooks in hooks/dist/.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "test": "node --test tests/hooks.test.ts",
+    "check": "npm run typecheck && npm run lint && npm run build && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^22.20.5",
+    "eslint": "^10.12.0",
+    "jiti": "^2.7.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1"
+  }
+}

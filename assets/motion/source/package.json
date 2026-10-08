@@ -3,6 +3,6 @@
   "private": true,
   "description": "Renders the README animations in assets/motion/ from scenes.html",
   "type": "module",
-  "scripts": { "export": "node export.mjs" },
+  "scripts": { "export": "node export.ts" },
   "devDependencies": { "playwright": "^1.55.0" }
 }

@@ -103,7 +103,7 @@ Turn parity off with the `parity` option if you want only one of the two files; 
 
 ## Install
 
-Requires [Node.js](https://nodejs.org) 18 or later on `PATH` (the hooks are Node scripts).
+Requires [Node.js](https://nodejs.org) 18 or later on `PATH` (the hooks are Node scripts, compiled from TypeScript and shipped in `hooks/dist/`; installing needs no build step).
 
 ```
 /plugin marketplace add ilien-dev/themis
@@ -135,12 +135,21 @@ Coming from 1.x? Version 2.0.0 removes five skills and the resident rule; see th
 
 The only file a hook ever writes is the `CLAUDE.md` or `AGENTS.md` next to the one Claude just edited. They make no network calls and fail silent on unexpected input. See [SECURITY.md](SECURITY.md).
 
-## Tests
+## Development
+
+Everything is strict TypeScript. The hooks in `hooks/*.ts` are compiled to `hooks/dist/`, which is committed because Claude Code runs a plugin straight from its repository. The tests and the scripts in `evals/` and `assets/` run as `.ts` files, which needs Node.js 22.18 or later.
 
 ```
-node --test tests/hooks.test.mjs          # hook tests: cap, shell block, parity
+npm ci
+npm run check                              # typecheck, lint, build and test, in that order
+npm run build                              # hooks/*.ts -> hooks/dist/*.js; commit the result
+npm test                                   # hook tests: cap, shell block, parity
 claude plugin validate . --strict          # manifest and components
 ```
+
+`npm run typecheck` and `npm run lint` also cover the scripts in `assets/`, so they need `npm ci` in `assets/source` and `assets/motion/source` first.
+
+CI runs the same checks on every pull request and fails when `hooks/dist/` does not match its source. To release, raise `version` in `.claude-plugin/plugin.json` and `package.json` and add a section to `CHANGELOG.md`: when that reaches `main`, CI creates the tag `v<version>` and publishes the GitHub release.
 
 What was measured in real sessions, and what was not, is in [RESULTS.md](RESULTS.md).
 

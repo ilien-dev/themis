@@ -1,13 +1,18 @@
 // Aggregates recorded runs into a markdown table: pass rate and mean cost per case and arm.
-//   node evals/report.mjs base=tag1,tag2 themis=tag3
+//   node evals/report.ts base=tag1,tag2 themis=tag3
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { RunRecord } from './types.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), 'results');
-const arms = process.argv.slice(2).map((a) => { const [name, tags] = a.split('='); return { name, tags: tags.split(',') }; });
+const arms = process.argv.slice(2).map((a) => {
+  const [name, tags] = a.split('=');
+  if (!name || !tags) throw new Error(`expected <arm>=<tag>[,<tag>], got ${a}`);
+  return { name, tags: tags.split(',') };
+});
 
-const rows = {}; // case -> arm -> runs
+const rows: Record<string, Record<string, RunRecord[]>> = {}; // case -> arm -> runs
 for (const { name, tags } of arms) {
   const armKey = name === 'min' ? 'themis' : name;
   for (const tag of tags) {
@@ -15,7 +20,7 @@ for (const { name, tags } of arms) {
     for (const c of readdirSync(join(ROOT, tag))) {
       if (c.endsWith('.json')) continue;
       for (const f of readdirSync(join(ROOT, tag, c)).filter((f) => f.startsWith(armKey + '-') && f.endsWith('.json'))) {
-        const r = JSON.parse(readFileSync(join(ROOT, tag, c, f), 'utf8'));
+        const r = JSON.parse(readFileSync(join(ROOT, tag, c, f), 'utf8')) as RunRecord;
         if (r.invalid || r.pass === null) continue;
         ((rows[c] ??= {})[name] ??= []).push(r);
       }
@@ -23,11 +28,11 @@ for (const { name, tags } of arms) {
   }
 }
 
-const cell = (rs) => (rs?.length ? `${rs.filter((r) => r.pass).length}/${rs.length}` : '—');
-const cost = (rs) => (rs?.length ? '$' + (rs.reduce((s, r) => s + (r.cost || 0), 0) / rs.length).toFixed(3) : '—');
+const cell = (rs: RunRecord[] | undefined): string => (rs?.length ? `${rs.filter((r) => r.pass).length}/${rs.length}` : '—');
+const cost = (rs: RunRecord[] | undefined): string => (rs?.length ? '$' + (rs.reduce((s, r) => s + (r.cost ?? 0), 0) / rs.length).toFixed(3) : '—');
 const names = arms.map((a) => a.name);
 console.log(`| case | ${names.map((n) => `${n} pass`).join(' | ')} | ${names.map((n) => `${n} $/run`).join(' | ')} |`);
 console.log(`|---|${names.map(() => '---:').join('|')}|${names.map(() => '---:').join('|')}|`);
 for (const c of Object.keys(rows).sort()) {
-  console.log(`| ${c} | ${names.map((n) => cell(rows[c][n])).join(' | ')} | ${names.map((n) => cost(rows[c][n])).join(' | ')} |`);
+  console.log(`| ${c} | ${names.map((n) => cell(rows[c]?.[n])).join(' | ')} | ${names.map((n) => cost(rows[c]?.[n])).join(' | ')} |`);
 }

@@ -2,25 +2,27 @@
 // and refuse an edit that would hide a difference between CLAUDE.md and AGENTS.md.
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
-import { run, emit, option, estimateTokens, read, imports, RULE_FILE, writesRuleFile, twinOf, pairState } from './lib.mjs';
+import { run, emit, option, estimateTokens, read, imports, RULE_FILE, writesRuleFile, twinOf, pairState } from './lib.ts';
+import type { ToolInput } from './lib.ts';
 
-function decide(permissionDecision, reason) {
+function decide(permissionDecision: 'deny' | 'ask', reason: string): true {
   emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision, permissionDecisionReason: reason } });
   return true;
 }
-const deny = (reason) => decide('deny', reason);
+const deny = (reason: string): true => decide('deny', reason);
 
-function applyEdits(file, input) {
+function applyEdits(file: string, input: ToolInput): string {
   if (input.content !== undefined) return input.content; // Write
   let text = read(file) ?? '';
   for (const e of input.edits ?? [input]) {
     if (e.old_string === undefined) continue;
-    text = e.replace_all ? text.split(e.old_string).join(e.new_string) : text.replace(e.old_string, () => e.new_string);
+    const next = e.new_string ?? '';
+    text = e.replace_all ? text.split(e.old_string).join(next) : text.replace(e.old_string, () => next);
   }
   return text;
 }
 
-function importTokens(file, text) {
+function importTokens(file: string, text: string): number {
   let total = 0;
   for (const p of imports(file, text)) {
     const t = existsSync(p) && statSync(p).isFile() ? read(p) : null;
@@ -29,7 +31,7 @@ function importTokens(file, text) {
   return total;
 }
 
-function checkCap(file, toolInput) {
+function checkCap(file: string, toolInput: ToolInput): boolean {
   const cap = Number(option('claude_md_cap', '2500'));
   if (!cap) return false;
   const next = applyEdits(file, toolInput);
@@ -44,8 +46,8 @@ function checkCap(file, toolInput) {
     'Load the themis:themis skill and follow its edit section.');
 }
 
-// The copy that follows an edit (parity.mjs) is only safe when the two files matched before it.
-function checkParity(file, tool, toolInput) {
+// The copy that follows an edit (parity.ts) is only safe when the two files matched before it.
+function checkParity(file: string, tool: string | undefined, toolInput: ToolInput): boolean {
   const twin = twinOf(file);
   if (!twin) return false;
   const [name, other] = [basename(file), basename(twin)];
@@ -63,11 +65,11 @@ function checkParity(file, tool, toolInput) {
     '(load the themis:themis skill, sync section). Then Write the agreed full text to one of them; themis copies it to the other.');
 }
 
-run(async (input) => {
-  const ti = input.tool_input || {};
-  const cwd = input.cwd || process.cwd();
+await run((input) => {
+  const ti = input.tool_input;
+  const cwd = input.cwd;
   if (input.tool_name === 'Bash' || input.tool_name === 'PowerShell') {
-    if (writesRuleFile(String(ti.command || ''))) {
+    if (writesRuleFile(ti.command)) {
       deny('CLAUDE.md and AGENTS.md have a size cap and are kept identical, both checked on Edit and Write. Edit them with those tools instead of the shell.');
     }
     return;

@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
+      - run: npm ci
+      # The scripts in assets/ are typechecked and linted against their own dependencies.
+      - run: npm ci --ignore-scripts
+        working-directory: assets/source
+      - run: npm ci --ignore-scripts
+        working-directory: assets/motion/source
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - name: hooks/dist matches its source
+        run: |
+          git status --porcelain -- hooks/dist
+          test -z "$(git status --porcelain -- hooks/dist)"
+      - run: npm test
+      - name: Versions agree
+        run: test "$(node -p "require('./package.json').version")" = "$(node -p "require('./.claude-plugin/plugin.json').version")"
+
+  # Users need only Node.js 18: run the compiled hooks there, without any install.
+  node18:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 18
+      - name: A write over the cap is denied
+        run: |
+          node -e 'console.log(JSON.stringify({ tool_name: "Write", tool_input: { file_path: "AGENTS.md", content: "x".repeat(10000) }, cwd: process.cwd() }))' \
+            | node hooks/dist/pre-tool.js | grep -q '"permissionDecision":"deny"'
+      - name: A pair that differs is reported at session start
+        run: |
+          dir="$(mktemp -d)"
+          echo one > "$dir/AGENTS.md"
+          echo two > "$dir/CLAUDE.md"
+          node -e 'console.log(JSON.stringify({ hook_event_name: "SessionStart", cwd: process.argv[1] }))' "$dir" \
+            | node hooks/dist/parity.js | grep -q 'differ: '
