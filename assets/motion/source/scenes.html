@@ -44,7 +44,7 @@ const S = {};
 
 /* hero · the coin is struck, then what the plugin does, one part at a time */
 const CARDS = [
-  ["one skill creates, prunes and edits the rule files", "SKILL", "/themis:themis  init · audit · sync"],
+  ["one skill creates, prunes and edits both", "SKILL", "/themis:themis  init · audit · sync"],
   ["every edit is copied to the other file", "HOOK", "PostToolUse · CLAUDE.md ⇄ AGENTS.md, byte for byte"],
   ["a difference is reported, and you are asked", "HOOK", "SessionStart · Edit denied, Write needs your approval"],
   ["both stay under about 2,500 tokens", "HOOK", "PreToolUse · imports counted, shell writes blocked"],
