@@ -1,1 +1,0 @@
-{ "prompt": "When a user signs up (signup in users.js), send them a welcome email through lib/mailer.js. Transient mailer failures should be retried up to 3 times; signup must still succeed if the email ultimately fails, but the failure has to be recorded in the user's record.", "maxTurns": 30 }

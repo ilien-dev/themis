@@ -2,10 +2,9 @@
 // Headless A/B runner. Each run: copy a case fixture into a temp git repo, run
 // `claude -p` in one arm, parse the stream-json transcript, grade it.
 //
-//   node evals/run.mjs --case c01-* --arms base,themis,control --runs 3 -j 3 [--core file] [--tag name]
+//   node evals/run.mjs --case c15-* --arms base,themis --runs 3 -j 3 [--tag name]
 //
-// Arms: base = no plugin; themis = --plugin-dir <repo>; control = one-paragraph rules
-// via --append-system-prompt. User settings, hooks and plugins are excluded in every arm
+// Arms: base = no plugin; themis = --plugin-dir <repo>. User settings, hooks and plugins are excluded in every arm
 // (--setting-sources project,local); each fixture carries its own .claude/settings.json.
 import { spawn, spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -15,7 +14,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CASES = join(ROOT, 'evals', 'cases');
-export const CONTROL = readFileSync(join(ROOT, 'evals', 'control.txt'), 'utf8').trim();
 
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i < 0 ? d : args[i + 1]; };
@@ -23,7 +21,6 @@ const pattern = new RegExp('^' + (opt('--case', '*')).split(',').map((g) => g.re
 const arms = opt('--arms', 'base,themis').split(',');
 const runs = Number(opt('--runs', '3'));
 const conc = Number(opt('-j', '3'));
-const core = opt('--core', null);
 const real = args.includes('--real'); // keep the user's own settings, hooks and plugins
 const tag = opt('--tag', new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19));
 const outDir = join(ROOT, 'evals', 'results', tag);
@@ -67,10 +64,8 @@ function claude(dir, meta, arm, prompt, session) {
     '--allowedTools', meta.allowedTools || 'Read Edit Write Glob Grep Bash PowerShell Agent Skill',
     '--max-turns', String(meta.maxTurns || 30)];
   if (arm === 'themis' || arm.startsWith('themis')) a.push('--plugin-dir', ROOT);
-  if (arm === 'control') a.push('--append-system-prompt', CONTROL);
   const env = { ...process.env };
   delete env.CLAUDE_CODE_EFFORT_LEVEL;
-  if (core && arm.startsWith('themis')) env.THEMIS_CORE_FILE = resolve(core);
   return new Promise((res) => {
     const p = spawn('claude', a, { cwd: dir, env, shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '', err = '';

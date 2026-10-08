@@ -1,2 +1,0 @@
-{ "prompt": "/themis:hermes pr", "basePrompt": "Write the pull request description for this branch.", "maxTurns": 20,
-  "setup": "git checkout -qb feat/search && git add -A && git -c user.name=t -c user.email=t@t commit -qm 'Add case-insensitive search to listNotes'" }
