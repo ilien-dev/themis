@@ -1,1 +1,0 @@
-{ "prompt": "Rename the `qty` field on order lines to `quantity` across the code.", "maxTurns": 30 }

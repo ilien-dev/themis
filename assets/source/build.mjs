@@ -1,15 +1,14 @@
 // Assemble every brand file from the traced layers: coin emblem, companion symbol,
-// horizontal lockups, skill icons, favicons and the social preview.
+// horizontal lockups, favicons and the social preview.
 //   node build.mjs [outDir=..] [markVariant=1]   (after trace.mjs and coin.mjs, see ../README.md)
 import opentype from "opentype.js";
 import { Resvg } from "@resvg/resvg-js";
 import { optimize } from "svgo";
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathData } from "./lib.mjs";
 
 const [, , OUT = "..", MARK = "1"] = process.argv;
-mkdirSync(join(OUT, "skills"), { recursive: true });
 const W = "work";
 const P = {
   marble: "#F2EEE6", night: "#101B2D", aegean: "#1D6A99", aegeanLight: "#5BB0DD",
@@ -80,7 +79,7 @@ function lockup(theme) {
   const accent = theme === "light" ? P.aegean : P.aegeanLight;
   const H = 300, coin = `<g transform="translate(10 10) scale(${(280 / 1024).toFixed(5)})">${coinBody}</g>`;
   const word = text(FONT.cinzel, "THEMIS", 132, 330, 178, 0.12);
-  const tag = text(FONT.mono, "Only what was measured stays.", 31, 336, 238, 0.02);
+  const tag = text(FONT.mono, "Two files, one text.", 31, 336, 238, 0.02);
   const w = Math.ceil(Math.max(330 + word.width, 336 + tag.width) + 12);
   return svgDoc(w, H, "themis", coin + `<path fill="${ink}" d="${word.d}"/><path fill="${accent}" d="${tag.d}"/>`);
 }
@@ -89,21 +88,13 @@ for (const theme of ["light", "dark"]) {
   png(`themis-${theme}.png`, s, 1400);
 }
 
-// 4. Skill icons, in each theme's ink.
-const SKILLS = ["ariadne", "daedalus", "apollo", "argus", "hermes", "hestia"];
-SKILLS.forEach((name, i) => {
-  const t = json(join(W, `icon-${i + 1}.json`));
-  for (const [theme, ink] of [["light", P.night], ["dark", P.inkDark]])
-    save(`skills/${name}-${theme}.svg`, svgDoc(96, 96, name, fit(t, 48, 48, 84, { ink })));
-});
-
-// 5. Social preview, 1280 × 640, on the night ground.
+// 4. Social preview, 1280 × 640, on the night ground.
 {
   const coin = `<g transform="translate(70 100) scale(${(440 / 1024).toFixed(5)})">${coinBody}</g>`;
   const word = text(FONT.cinzel, "THEMIS", 118, 584, 280, 0.12);
-  const tag = text(FONT.mono, "Only what was measured stays.", 32, 588, 345, 0.02);
-  const flow = text(FONT.monoMed, "PLAN  BUILD  REVIEW  SHIP", 24, 586, 460, 0.18);
-  const sub = text(FONT.mono, "A Claude Code plugin, every part A/B tested", 24, 586, 505, 0.02);
+  const tag = text(FONT.mono, "Two files, one text.", 32, 588, 345, 0.02);
+  const flow = text(FONT.monoMed, "CLAUDE.md  =  AGENTS.md", 24, 586, 460, 0.18);
+  const sub = text(FONT.mono, "A Claude Code plugin for the rule files", 24, 586, 505, 0.02);
   const body = `<rect width="1280" height="640" fill="${P.ground}"/>${coin}`
     + `<path fill="${P.inkDark}" d="${word.d}"/><path fill="${P.aegeanLight}" d="${tag.d}"/>`
     + `<path fill="${P.stoneDark}" d="${flow.d}"/><path fill="${P.stoneDark}" d="${sub.d}"/>`;

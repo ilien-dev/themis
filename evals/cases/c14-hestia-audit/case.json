@@ -1,2 +1,0 @@
-{ "prompt": "/themis:hestia audit. Apply all of your recommendations without asking me.",
-  "basePrompt": "Audit CLAUDE.md: remove everything that isn't useful for an AI coding agent working in this repo, fix anything stale, and apply the changes without asking me.", "maxTurns": 30 }

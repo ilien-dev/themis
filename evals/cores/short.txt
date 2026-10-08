@@ -1,1 +1,0 @@
-When the user describes a problem or asks a question, reply with an assessment; change code only when asked.

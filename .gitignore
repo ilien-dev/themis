@@ -1,16 +1,2 @@
 evals/results/
 node_modules/
-evals/mined/
-evals/deepswe/repo/
-evals/deepswe/pier/
-evals/deepswe/.venv/
-evals/deepswe/plugin*/
-evals/deepswe/runs*/
-evals/deepswe/pilot-*/
-evals/deepswe/archive/
-evals/deepswe/oracle-check/
-evals/deepswe/*.crt
-evals/deepswe/*.log
-evals/deepswe/host-cache/
-evals/deepswe/host-runs/
-evals/deepswe/__pycache__/

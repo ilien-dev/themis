@@ -3,7 +3,7 @@
 //
 //   npm install && npx playwright install chromium
 //   node export.mjs                  # every scene
-//   node export.mjs hero flow        # only these
+//   node export.mjs hero parity      # only these
 //   node export.mjs --poster         # one PNG per scene at its poster frame, for review
 //
 // Each scene is a function of time, so a frame is drawn by setting t and taking a
@@ -21,7 +21,6 @@ const here = dirname(fileURLToPath(import.meta.url));
 const out = join(here, "..");
 const FPS = Number(process.env.FPS || 15);
 const SCALE = Number(process.env.SCALE || 2);
-const SCENE_SCALE = { flow: 1.5 };
 const args = process.argv.slice(2);
 const poster = args.includes("--poster");
 const wanted = args.filter(a => !a.startsWith("--"));
@@ -33,7 +32,7 @@ const ids = (await probe.evaluate(() => window.themisMotion.scenes())).filter(id
 await probe.close();
 
 for (const id of ids) {
-  const scale = process.env.SCALE ? SCALE : SCENE_SCALE[id] || SCALE;
+  const scale = SCALE;
   const page = await browser.newPage({ deviceScaleFactor: scale });
   for (const v of ["dark", "light"]) {
     await page.goto(pathToFileURL(join(here, "scenes.html")).href, { waitUntil: "networkidle" });

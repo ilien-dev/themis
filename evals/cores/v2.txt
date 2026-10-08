@@ -1,1 +1,0 @@
-If a message only describes a problem or asks a question, with no request to change anything, reply with a diagnosis and leave files unedited. Requests to change something are handled as usual.

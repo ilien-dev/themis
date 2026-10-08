@@ -1,1 +1,0 @@
-{ "prompt": "Only src/routes/users.js validates its input. Add the same kind of validation to every other handler in src/routes/ (all 12 of them), following the users.js pattern: strings are required and trimmed, numeric fields must be non-negative integers.", "maxTurns": 80, "timeoutSec": 1500 }
