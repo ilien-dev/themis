@@ -55,9 +55,24 @@ export const SHELL_RULE_FILE = /(CLAUDE(\.local)?|AGENTS)\.md/i;
 const TWIN = { 'claude.md': 'AGENTS.md', 'agents.md': 'CLAUDE.md' };
 const same = (a, b) => resolve(a).toLowerCase() === resolve(b).toLowerCase();
 
+// A shell command that writes to a rule file: a redirect, tee, sed/perl -i or a PowerShell
+// cmdlet whose target is one. A ">" aimed elsewhere (2>&1, > out.txt, =>) does not count.
+const RULE_PATH = String.raw`["']?(?:[^\s"'|;&<>]*[\\/])?(?:CLAUDE(?:\.local)?|AGENTS)\.md\b`;
+const PS_WRITE = String.raw`\b(?:Set-Content|Add-Content|Out-File)\b`;
+const SHELL_WRITE = new RegExp([
+  String.raw`(?<![=-])>>?\s*${RULE_PATH}`,
+  String.raw`\btee\b[^|;&]*\s${RULE_PATH}`,
+  String.raw`\b(?:sed|perl)\s+-i[\s\S]*\s${RULE_PATH}`,
+  String.raw`${PS_WRITE}\s+${RULE_PATH}`,
+  String.raw`${PS_WRITE}[^|;]*\s-(?:Path|FilePath|LiteralPath)\s+${RULE_PATH}`,
+].join('|'), 'i');
+export const writesRuleFile = (cmd) => SHELL_WRITE.test(cmd);
+
 // The user's ~/.claude and the managed-policy directories are Claude Code's own: no AGENTS.md there.
+const OWN_DIRS = [join(homedir(), '.claude'), '/Library/Application Support/ClaudeCode', '/etc/claude-code',
+  join(process.env.ProgramFiles || 'C:\\Program Files', 'ClaudeCode')];
 function paired(dir) {
-  return !/^(false|0|no|off)$/i.test(option('parity', 'true')) &&!same(dir, join(homedir(), '.claude')) && !/^(ClaudeCode|claude-code)$/.test(basename(dir));
+  return !/^(false|0|no|off)$/i.test(option('parity', 'true')) && !OWN_DIRS.some((d) => same(dir, d));
 }
 
 // The file that must match this one, or null (CLAUDE.local.md and other files have none).

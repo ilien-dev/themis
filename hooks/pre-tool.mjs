@@ -2,7 +2,7 @@
 // and refuse an edit that would hide a difference between CLAUDE.md and AGENTS.md.
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
-import { run, emit, option, estimateTokens, read, imports, RULE_FILE, SHELL_RULE_FILE, twinOf, pairState } from './lib.mjs';
+import { run, emit, option, estimateTokens, read, imports, RULE_FILE, writesRuleFile, twinOf, pairState } from './lib.mjs';
 
 function decide(permissionDecision, reason) {
   emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision, permissionDecisionReason: reason } });
@@ -67,8 +67,7 @@ run(async (input) => {
   const ti = input.tool_input || {};
   const cwd = input.cwd || process.cwd();
   if (input.tool_name === 'Bash' || input.tool_name === 'PowerShell') {
-    const cmd = String(ti.command || '');
-    if (SHELL_RULE_FILE.test(cmd) && /(>>?|\btee\b|\b(sed|perl)\s+-i|Set-Content|Add-Content|Out-File)/.test(cmd)) {
+    if (writesRuleFile(String(ti.command || ''))) {
       deny('CLAUDE.md and AGENTS.md have a size cap and are kept identical, both checked on Edit and Write. Edit them with those tools instead of the shell.');
     }
     return;

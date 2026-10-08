@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const hooks = join(root, 'hooks');
+const { twinOf } = await import('../hooks/lib.mjs');
 
 function hook(name, input, env = {}) {
   const r = spawnSync(process.execPath, [join(hooks, name)], {
@@ -101,6 +102,24 @@ test('shell writes to a rule file are denied; other shell commands pass', () => 
   assert.equal(bash('echo AGENTS > notes.txt'), null);
 });
 
+test('shell block looks at what the command writes to, not at any ">" in it', () => {
+  const dir = project();
+  const bash = (command, tool_name = 'Bash') => pre(dir, tool_name, { command });
+  for (const f of ['CLAUDE.md', 'AGENTS.md']) {
+    for (const c of [
+      `cat ${f} 2>&1`, `cmp CLAUDE.md AGENTS.md > /dev/null 2>&1`, `git diff ${f} > out.patch`, `wc -c ${f} >> sizes.txt`,
+      `node -e "console.log([1].map(x => x))" ${f}`, `git commit -m "${f} -> shorter"`, `cat ${f} | tee copy.txt`,
+      `grep -c x ${f} 2>/dev/null`, `sed -n 1,5p ${f}`,
+    ]) assert.equal(bash(c), null, c);
+    for (const c of [`Get-Content ${f} | Out-File copy.txt`, `Get-Content ${f} 2>$null`, `Set-Content notes.txt (Get-Content ${f})`]) assert.equal(bash(c, 'PowerShell'), null, c);
+    for (const c of [
+      `echo x > ${f}`, `echo x >${f}`, `echo x >> "./docs/${f}"`, `cat > sub/${f} <<EOF`, `printf x 2>&1 >> ${f}`,
+      `cat x | tee -a ${f}`, `sed -i 's|a|b|' ${f}`, `perl -i -pe 's/a/b/' ${f}`,
+    ]) assert.equal(decision(bash(c)), 'deny', c);
+    for (const c of [`'x' | Out-File ${f}`, `Set-Content -Path ${f} -Value x`, `Add-Content .\\${f} 'x'`, `'x' > ${f}`]) assert.equal(decision(bash(c, 'PowerShell')), 'deny', c);
+  }
+});
+
 test('parity: an edit to one file is copied to the other, byte for byte', () => {
   const dir = project({ 'CLAUDE.md': 'a\r\nb\n', 'AGENTS.md': 'a\r\nb\n' });
   assert.equal(pre(dir, 'Edit', { file_path: 'CLAUDE.md', old_string: 'b', new_string: 'c' }), null);
@@ -169,14 +188,25 @@ test('parity: CLAUDE.local.md, the user and managed directories, and other files
   assert.ok(!existsSync(join(home, '.claude', 'AGENTS.md')));
   assert.equal(start(join(home, '.claude'), env), null);
 
-  const dir = project({ 'CLAUDE.local.md': 'me\n', 'README.md': 'r\n', 'ClaudeCode/CLAUDE.md': 'managed\n', 'claude-code/CLAUDE.md': 'managed\n' });
+  const dir = project({ 'CLAUDE.local.md': 'me\n', 'README.md': 'r\n' });
   post(dir, 'Write', { file_path: 'CLAUDE.local.md', content: 'me\n' });
   post(dir, 'Write', { file_path: 'README.md', content: 'r\n' });
-  post(dir, 'Write', { file_path: 'ClaudeCode/CLAUDE.md', content: 'managed\n' });
-  post(dir, 'Write', { file_path: 'claude-code/CLAUDE.md', content: 'managed\n' });
-  assert.deepEqual(readdirSync(dir).sort(), ['CLAUDE.local.md', 'ClaudeCode', 'README.md', 'claude-code']);
-  assert.deepEqual(readdirSync(join(dir, 'ClaudeCode')), ['CLAUDE.md']);
+  assert.deepEqual(readdirSync(dir).sort(), ['CLAUDE.local.md', 'README.md']);
   assert.equal(start(dir), null);
+
+  const managed = process.platform === 'win32'
+    ? [join(process.env.ProgramFiles || 'C:\\Program Files', 'ClaudeCode')]
+    : ['/Library/Application Support/ClaudeCode', '/etc/claude-code'];
+  for (const d of managed) assert.equal(twinOf(join(d, 'CLAUDE.md')), null, d);
+});
+
+test('parity: a project directory that happens to be called claude-code or ClaudeCode is paired like any other', () => {
+  const dir = project({ 'ClaudeCode/CLAUDE.md': 'a\n', 'claude-code/AGENTS.md': 'b\n' });
+  assert.match(context(start(dir)), /ClaudeCode\/CLAUDE\.md exists/);
+  post(dir, 'Write', { file_path: 'ClaudeCode/CLAUDE.md', content: 'a\n' });
+  post(dir, 'Write', { file_path: 'claude-code/AGENTS.md', content: 'b\n' });
+  assert.equal(text(dir, 'ClaudeCode/AGENTS.md'), 'a\n');
+  assert.equal(text(dir, 'claude-code/CLAUDE.md'), 'b\n');
 });
 
 test('parity: a file that imports its twin is left alone and reported', () => {
