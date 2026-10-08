@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/motion/hero-dark.gif">
-    <img src="assets/motion/hero-light.gif" width="820" alt="The themis coin, a blindfolded Themis in profile, next to the wordmark and the line: Two files, one text. Four cards follow: one skill creates, prunes and edits the rule files; every edit is copied to the other file; a difference is reported and you are asked; both stay under about 2,500 tokens.">
+    <img src="assets/motion/hero-light.gif" width="820" alt="The themis coin, a blindfolded Themis in profile, next to the wordmark and the line: Two files, one text. Four cards follow: one skill creates, prunes and edits both; every edit is copied to the other file; a difference is reported and you are asked; both stay under about 2,500 tokens.">
   </picture>
 </p>
 
@@ -78,7 +78,7 @@ Shell commands that write to those files (`>`, `>>`, `tee`, `sed -i`, `perl -i`,
 **A difference is never resolved for you.** If the two files already differ when Claude tries to edit one, somebody changed one of them outside themis: in an editor, with `git checkout`, in a merge. Copying would silently discard one side, so the `PreToolUse` hook stops instead:
 
 - `Edit` and `MultiEdit` are denied. Claude is told which two files differ and to ask you which text is right.
-- `Write`, which replaces the whole file, raises a permission prompt that says both files will get this text. This is how a difference gets resolved: the skill shows you the diff, you choose one side or a merge, and you approve the write.
+- `Write`, which replaces the whole file, raises a permission prompt that says both files will get this text. This is how a difference gets resolved: the skill shows you the diff, you choose one side or a merge, and you approve the write. In an unattended `claude -p` run nobody can answer the prompt, so the write is denied and the difference stays for a person to resolve.
 - Creating the missing file of a pair is allowed only as an exact copy of the one that exists.
 
 **Differences are reported.** At session start, and after any shell command that names one of the files, themis checks every pair: the working directory up to the repository root, and every directory below it (from `git ls-files`, so ignored directories are skipped). If all pairs match it says nothing. Otherwise Claude gets one line per pair, such as `differ: CLAUDE.md (modified 2026-10-08 07:59 UTC) and AGENTS.md (modified 2026-10-07 18:02 UTC)`, with the instruction to tell you and not to choose a version.

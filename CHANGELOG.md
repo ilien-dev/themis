@@ -25,7 +25,7 @@ themis is now only a manager for `CLAUDE.md` and `AGENTS.md`. This release is no
 
 ### Migrating from 1.x
 
-- **Removed commands.** `/themis:ariadne`, `/themis:daedalus`, `/themis:apollo`, `/themis:argus` and `/themis:hermes` no longer exist and have no replacement in themis. Claude Code's built-in `/code-review` and `/simplify` cover review; planning, building, debugging and commit messages are plain requests again. To keep the old skills, pin the plugin to 1.1.1, or copy their `SKILL.md` files from the `v1.1.1` tag into your own `.claude/skills/`.
+- **Removed commands.** `/themis:ariadne`, `/themis:daedalus`, `/themis:apollo`, `/themis:argus` and `/themis:hermes` no longer exist and have no replacement in themis. Claude Code's built-in `/code-review` and `/simplify` cover review; planning, building, debugging and commit messages are plain requests again. To keep the old skills, pin the marketplace to the last 1.x release (`/plugin marketplace add ilien-dev/themis#v1.1.1`), or copy their `SKILL.md` files from the `v1.1.1` tag into your own `.claude/skills/`.
 - **The resident rule.** Sessions no longer start with "describing a problem gets an assessment, not an edit; reuse helpers; list other defects". If you relied on it, put that sentence in your own `CLAUDE.md`.
 - **`.themis/` folders.** `ariadne` wrote `.themis/spec.md` and tickets into your projects, and `daedalus` read them. Nothing reads them now. themis does not delete or touch them: keep them as plain documents, move what is still useful into your tracker, or remove the folder.
 - **`/themis:hestia`** is `/themis:themis`. Update any docs, aliases or `CLAUDE.md` lines that name it.

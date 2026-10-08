@@ -57,7 +57,7 @@ const same = (a, b) => resolve(a).toLowerCase() === resolve(b).toLowerCase();
 
 // The user's ~/.claude and the managed-policy directories are Claude Code's own: no AGENTS.md there.
 function paired(dir) {
-  return option('parity', 'true') !== 'false' && !same(dir, join(homedir(), '.claude')) && !/^(ClaudeCode|claude-code)$/.test(basename(dir));
+  return !/^(false|0|no|off)$/i.test(option('parity', 'true')) &&!same(dir, join(homedir(), '.claude')) && !/^(ClaudeCode|claude-code)$/.test(basename(dir));
 }
 
 // The file that must match this one, or null (CLAUDE.local.md and other files have none).
