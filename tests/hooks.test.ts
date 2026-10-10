@@ -222,7 +222,8 @@ test('parity: CLAUDE.local.md, the user and managed directories, and other files
 
 test('parity: a project directory that happens to be called claude-code or ClaudeCode is paired like any other', () => {
   const dir = project({ 'ClaudeCode/CLAUDE.md': 'a\n', 'claude-code/AGENTS.md': 'b\n' });
-  assert.match(context(start(dir)), /ClaudeCode\/CLAUDE\.md exists/);
+  const differing = project({ 'ClaudeCode/CLAUDE.md': 'a\n', 'ClaudeCode/AGENTS.md': 'b\n' });
+  assert.match(context(start(join(differing, 'ClaudeCode'))), /differ: CLAUDE\.md/);
   post(dir, 'Write', { file_path: 'ClaudeCode/CLAUDE.md', content: 'a\n' });
   post(dir, 'Write', { file_path: 'claude-code/AGENTS.md', content: 'b\n' });
   assert.equal(text(dir, 'ClaudeCode/AGENTS.md'), 'a\n');
@@ -254,32 +255,48 @@ test('parity: session start is silent when every pair matches', () => {
   assert.equal(start(project({ 'CLAUDE.md': 'a\n', 'AGENTS.md': 'a\n', 'sub/CLAUDE.md': 'b\n', 'sub/AGENTS.md': 'b\n', 'CLAUDE.local.md': 'me\n' })), null);
 });
 
-test('parity: session start names each pair that differs or is incomplete, and tells Claude to ask', () => {
-  const dir = project({
-    'CLAUDE.md': 'a\n', 'AGENTS.md': 'changed by hand\n',
-    'pkg/api/AGENTS.md': 'api\n',
-    'ok/CLAUDE.md': 'same\n', 'ok/AGENTS.md': 'same\n',
-    'node_modules/dep/AGENTS.md': 'vendored\n',
-  });
+test('parity: session start names each pair that differs, and tells Claude to ask', () => {
+  const dir = project({ 'CLAUDE.md': 'a\n', 'AGENTS.md': 'changed by hand\n' });
   const ctx = context(start(dir));
   assert.match(ctx, /differ: CLAUDE\.md .* AGENTS\.md/);
-  assert.match(ctx, /pkg\/api\/AGENTS\.md exists, pkg\/api\/CLAUDE\.md does not/);
-  assert.doesNotMatch(ctx, /ok\//);
-  assert.doesNotMatch(ctx, /node_modules/);
   assert.match(ctx, /ask/i);
   assert.match(ctx, /themis:themis/);
 });
 
-test('parity: in a git repo, session start covers the directories above the working directory and skips ignored ones', () => {
+test('parity: a directory with only one of the two files is not reported', () => {
+  assert.equal(start(project({ 'CLAUDE.md': 'a\n' })), null);
+  assert.equal(start(project({ '.claude/AGENTS.md': 'a\n' })), null);
+  const dir = project({ 'CLAUDE.md': 'a\n', 'AGENTS.md': 'a\n', 'pkg/AGENTS.md': 'api\n' });
+  if (git(dir, 'init', '-q').status !== 0) return;
+  assert.equal(start(dir), null);
+});
+
+test('parity: outside a git repo, session start looks at the working directory only', () => {
+  // a session opened in a home directory must not report on the projects under it
+  const home = project({
+    'projects/one/CLAUDE.md': 'a\n', 'projects/one/AGENTS.md': 'b\n',
+    'projects/two/CLAUDE.md': 'only\n',
+    'deep/er/still/AGENTS.md': 'x\n', 'deep/er/still/CLAUDE.md': 'y\n',
+  });
+  assert.equal(start(home), null);
+  assert.equal(post(home, 'Bash', { command: 'cat projects/one/CLAUDE.md' }), null);
+  assert.match(context(start(join(home, 'projects', 'one'))), /differ: CLAUDE\.md .* AGENTS\.md/);
+});
+
+test('parity: in a git repo, session start covers the directories above and below the working directory and skips ignored ones', () => {
   const dir = project({
-    'CLAUDE.md': 'a\n', 'AGENTS.md': 'b\n', '.gitignore': 'dist/\n',
-    'app/src/x.js': '', 'app/CLAUDE.md': 'app\n', 'dist/AGENTS.md': 'built\n',
+    'CLAUDE.md': 'a\n', 'AGENTS.md': 'b\n', '.gitignore': 'dist/\nnode_modules/\n',
+    'app/src/x.js': '', 'app/src/pkg/CLAUDE.md': 'p\n', 'app/src/pkg/AGENTS.md': 'q\n',
+    'other/CLAUDE.md': 'o\n', 'other/AGENTS.md': 'o\n',
+    'dist/AGENTS.md': 'built\n', 'dist/CLAUDE.md': 'other\n',
+    'node_modules/dep/AGENTS.md': 'vendored\n', 'node_modules/dep/CLAUDE.md': 'v2\n',
   });
   if (git(dir, 'init', '-q').status !== 0) return;
   const ctx = context(start(join(dir, 'app', 'src')));
-  assert.match(ctx, /differ: .*CLAUDE\.md/);
-  assert.match(ctx, /app\/CLAUDE\.md exists/);
-  assert.doesNotMatch(ctx, /dist/);
+  assert.match(ctx, /differ: \S*[\\/]themis-t-\w+\/CLAUDE\.md/);
+  assert.match(ctx, /differ: pkg\/CLAUDE\.md/);
+  assert.doesNotMatch(ctx, /other\//);
+  assert.doesNotMatch(ctx, /dist|node_modules/);
 });
 
 test('parity: after a shell command that names a rule file, a difference is reported', () => {
@@ -303,7 +320,7 @@ test('parity: can be turned off', () => {
 
 test('manifest, hooks and skill are consistent', () => {
   const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')) as Manifest;
-  assert.equal(manifest.version, '2.1.0');
+  assert.equal(manifest.version, '2.1.1');
   assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity']);
   const hooksJson = readFileSync(join(root, 'hooks', 'hooks.json'), 'utf8');
   const handlers = (JSON.parse(hooksJson) as HooksJson).hooks;

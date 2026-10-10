@@ -1,6 +1,6 @@
 {
   "name": "themis",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "description": "Development tooling for the themis plugin. The plugin itself has no dependencies: Claude Code runs the compiled hooks in hooks/dist/.",
   "type": "module",

@@ -1,4 +1,4 @@
-import { readFileSync, existsSync, lstatSync, statSync, realpathSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, lstatSync, statSync, realpathSync } from 'node:fs';
 import { dirname, basename, resolve, isAbsolute, join, relative } from 'node:path';
 import { homedir } from 'node:os';
 import { spawnSync } from 'node:child_process';
@@ -119,46 +119,29 @@ function gitLines(cwd, args) {
     const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, windowsHide: true });
     return r.status === 0 ? r.stdout.split(/[\0\n]/).filter(Boolean) : null;
 }
-// Directories that may hold a pair: the ones Claude Code loads at launch (the working directory up
-// to the repo root, and their .claude/) and the ones below it that it loads on demand.
-function ruleDirs(cwd) {
+// Directories that may hold a pair. In a git repo: the ones Claude Code loads at launch (the working
+// directory up to the repo root, and their .claude/) and the ones below it that it loads on demand.
+// Outside one there is no project to speak of, so only the working directory itself: a session
+// opened in a home directory must not report on every project under it.
+function ruleDirs(from) {
+    const cwd = resolve(from); // one spelling per directory, whatever separators the payload used
     const dirs = new Set();
     const add = (d) => { dirs.add(d); dirs.add(join(d, '.claude')); };
+    add(cwd);
     const top = gitLines(cwd, ['rev-parse', '--show-toplevel'])?.[0];
-    if (top)
-        for (let d = cwd;; d = dirname(d)) {
-            add(d);
-            if (same(d, top) || d === dirname(d))
-                break;
-        }
-    const listed = top ? gitLines(cwd, ['ls-files', '-z', '-co', '--exclude-standard', '--', '*CLAUDE.md', '*AGENTS.md']) : null;
-    if (listed)
-        for (const f of listed)
-            add(dirname(resolve(cwd, f)));
-    else {
-        // Not a git repo: a bounded walk that skips dot directories and node_modules.
-        const queue = [[cwd, 0]];
-        for (let n = 0; n < 2000; n++) {
-            const item = queue.shift();
-            if (!item)
-                break;
-            const [d, depth] = item;
-            add(d);
-            if (depth === 4)
-                continue;
-            let entries = [];
-            try {
-                entries = readdirSync(d, { withFileTypes: true });
-            }
-            catch { /* unreadable */ }
-            for (const e of entries)
-                if (e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules')
-                    queue.push([join(d, e.name), depth + 1]);
-        }
+    if (!top)
+        return [...dirs];
+    for (let d = cwd; !same(d, top) && d !== dirname(d);) {
+        d = dirname(d);
+        add(d);
     }
+    for (const f of gitLines(cwd, ['ls-files', '-z', '-co', '--exclude-standard', '--', '*CLAUDE.md', '*AGENTS.md']) ?? [])
+        add(dirname(resolve(cwd, f)));
     return [...dirs];
 }
-// One line per pair that is not two identical files; paths are relative to cwd when below it.
+// One line per pair whose two files both exist and are not identical copies; paths are relative to
+// cwd when below it. A directory with only one of the two is not reported: the user has not asked
+// for a pair there. Editing that file, or the skill's sync mode, creates the other.
 export function parityProblems(cwd) {
     const rel = (p) => (relative(cwd, p).startsWith('..') ? p : relative(cwd, p)).replace(/\\/g, '/');
     const when = (p) => statSync(p).mtime.toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
@@ -170,10 +153,6 @@ export function parityProblems(cwd) {
         const state = pairState(c, a);
         if (state === 'differ')
             out.push(`differ: ${rel(c)} (modified ${when(c)}) and ${rel(a)} (modified ${when(a)})`);
-        else if (state === 'missing') {
-            const [has, lacks] = existsSync(c) ? [c, a] : [a, c];
-            out.push(`incomplete: ${rel(has)} exists, ${rel(lacks)} does not`);
-        }
         else if (state === 'import' || state === 'symlink')
             out.push(`linked by ${state}, not two copies: ${rel(c)} and ${rel(a)}`);
     }

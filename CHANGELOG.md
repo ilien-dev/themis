@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.1 — 2026-10-10
+
+### Fixed
+
+- A session opened outside a git repository, such as a home directory, reported on the `CLAUDE.md` and `AGENTS.md` of every project up to four levels below it. Outside a repository themis now checks the working directory and its `.claude/` only. Inside one nothing changes: the working directory up to the repository root, and every directory below it.
+
+### Changed
+
+- A directory that holds only one of the two files is no longer reported at session start or after a shell command. Only a pair whose two files both exist can be out of step. The missing file is still created when you edit the one that exists, or by `sync`.
+
 ## 2.1.0 — 2026-10-08
 
 No change to what the plugin does. The requirement stays Node.js 18 or later.

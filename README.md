@@ -81,7 +81,7 @@ Shell commands that write to those files (`>`, `>>`, `tee`, `sed -i`, `perl -i`,
 - `Write`, which replaces the whole file, raises a permission prompt that says both files will get this text. This is how a difference gets resolved: the skill shows you the diff, you choose one side or a merge, and you approve the write. In an unattended `claude -p` run nobody can answer the prompt, so the write is denied and the difference stays for a person to resolve.
 - Creating the missing file of a pair is allowed only as an exact copy of the one that exists.
 
-**Differences are reported.** At session start, and after any shell command that names one of the files, themis checks every pair: the working directory up to the repository root, and every directory below it (from `git ls-files`, so ignored directories are skipped). If all pairs match it says nothing. Otherwise Claude gets one line per pair, such as `differ: CLAUDE.md (modified 2026-10-08 07:59 UTC) and AGENTS.md (modified 2026-10-07 18:02 UTC)`, with the instruction to tell you and not to choose a version.
+**Differences are reported.** At session start, and after any shell command that names one of the files, themis checks every pair in the project: the working directory up to the repository root, and every directory below it (from `git ls-files`, so ignored directories are skipped). Outside a git repository it checks the working directory only, so a session opened in your home directory says nothing about the projects under it. A directory with only one of the two files is not reported. If all pairs match it says nothing. Otherwise Claude gets one line per pair, such as `differ: CLAUDE.md (modified 2026-10-08 07:59 UTC) and AGENTS.md (modified 2026-10-07 18:02 UTC)`, with the instruction to tell you and not to choose a version.
 
 What parity covers:
 
@@ -131,7 +131,7 @@ Coming from 1.x? Version 2.0.0 removes five skills and the resident rule; see th
 |---|---|---|
 | `PreToolUse` | `Edit`, `Write`, `MultiEdit`; shell commands that mention `CLAUDE` or `AGENTS` | Denies an edit over the cap, a shell write to a rule file, and an edit to a pair that already differs. Asks you to confirm a `Write` to such a pair. |
 | `PostToolUse` | `Edit`, `Write`, `MultiEdit`; shell commands that mention `CLAUDE` or `AGENTS` | Copies the edited file to its twin. After a shell command, reports pairs that differ. |
-| `SessionStart` | every start, resume, `/clear` and compaction | Reports pairs that differ, are incomplete, or are linked instead of copied. Silent otherwise. |
+| `SessionStart` | every start, resume, `/clear` and compaction | Reports pairs that differ or are linked instead of copied. Silent otherwise. |
 
 The only file a hook ever writes is the `CLAUDE.md` or `AGENTS.md` next to the one Claude just edited. They make no network calls and fail silent on unexpected input. See [SECURITY.md](SECURITY.md).
 
