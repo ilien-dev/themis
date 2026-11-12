@@ -1,4 +1,5 @@
-import { join } from 'node:path';
+import { closeSync, openSync, readSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { read } from '../../lib.ts';
 import { isRecord, parseJsonc } from '../read-config.ts';
 import {
@@ -300,7 +301,93 @@ function pathToken(raw: string): string | null {
 }
 
 const exists = (p: string, facts: Facts): boolean => facts.inRepo && facts.filesKnown && alive(p, facts);
-const spanIsLivePath = (facts: Facts) => (s: string): boolean => { const p = pathToken(s); return p !== null && exists(p, facts); };
+
+// ---- What a described path may say: the words of the path, of the file it names, or of the files under it ----
+
+// Lowercase, one light suffix off (-ing, -ed, -es, -s) and a final e, so "parses", "parse" and "parsing" meet.
+function norm(w: string): string {
+  let x = w;
+  for (const s of ['ing', 'ed', 'es', 's']) if (x.endsWith(s) && x.length - s.length >= 3) { x = x.slice(0, -s.length); break; }
+  return x.length >= 4 && x.endsWith('e') ? x.slice(0, -1) : x;
+}
+// The words of code or prose: identifiers split on camelCase, snake_case and kebab-case. Linear.
+const identWords = (text: string): string[] =>
+  words(text.replace(/([a-z\d])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').replace(/_/g, ' ')).map(norm);
+
+const PATH_NEUTRAL: ReadonlySet<string> = new Set([
+  'a', 'an', 'the', 'and', 'or', 'for', 'of', 'with', 'via', 'used', 'using', 'that', 'which', 'to', 'in', 'on', 'by', 'from', 'into', 'as', 'at',
+  'el', 'la', 'los', 'las', 'un', 'una', 'y', 'o', 'de', 'del', 'con', 'en', 'para', 'por', 'que', 'al', 'mediante',
+].map(norm));
+// Role nouns: what kind of thing a file or folder is, which says nothing the listing does not.
+const ROLE_NOUNS: ReadonlySet<string> = new Set([
+  'helpers', 'helper', 'utilities', 'utility', 'utils', 'components', 'component', 'tests', 'test', 'config', 'configuration', 'types', 'type',
+  'constants', 'hooks', 'routes', 'route', 'handlers', 'handler', 'models', 'model', 'services', 'service', 'scripts', 'script', 'styles',
+  'assets', 'docs', 'documentation', 'entry', 'point', 'main', 'module', 'modules', 'wrapper', 'client', 'server', 'api', 'logic', 'code',
+  'functions', 'function', 'definitions', 'schema', 'pages', 'page', 'views', 'layout', 'store', 'state', 'middleware',
+  'utilidades', 'ayudantes', 'componentes', 'pruebas', 'configuración', 'tipos', 'constantes', 'rutas', 'manejadores', 'modelos',
+  'servicios', 'estilos', 'recursos', 'documentación', 'entrada', 'punto', 'principal', 'módulo', 'módulos', 'cliente', 'servidor',
+  'lógica', 'código', 'funciones', 'función', 'definiciones', 'esquema', 'páginas', 'página', 'vistas', 'estado',
+].map(norm));
+
+const posix = (p: string): string => p.replaceAll('\\', '/');
+type Target ={ readonly kind: 'file'; readonly file: string } | { readonly kind: 'dir'; readonly files: readonly string[] };
+const MAX_DIR_ENTRIES = 500;
+
+// The one tracked file a path names, or the files under the directory it names; null when it is ambiguous
+// (two files end with it) or not in the listing.
+function targetOf(p: string, facts: Facts): Target | null {
+  const fromDir = posix(relative(facts.root, join(facts.dir, p)));
+  let file: string | null = null;
+  let many = false;
+  const under: string[] = [];
+  for (const f of facts.files) {
+    if (f === p || f === fromDir || f.endsWith(`/${p}`)) { if (file !== null && file !== f) many = true; file = f; continue; }
+    const inner = f.indexOf(`/${p}/`);
+    const i = f.startsWith(`${p}/`) ? p.length + 1 : inner < 0 ? -1 : inner + p.length + 2;
+    if (i >= 0 && under.length < MAX_DIR_ENTRIES) under.push(f.slice(i));
+  }
+  if (file !== null) return many ? null : { kind: 'file', file };
+  return under.length === 0 ? null : { kind: 'dir', files: under };
+}
+
+function dirWords(files: readonly string[]): Set<string> {
+  const out = new Set<string>();
+  for (const f of files) for (const w of identWords(f)) out.add(w);
+  return out;
+}
+
+// The words and identifiers of a file's first 64 KB, read once per Facts, within 2 MB per Facts. Null when
+// the file is missing on disk, unreadable or binary, or the budget is spent.
+const HEAD_BYTES = 64 * 1024;
+const READ_BUDGET = 2 * 1024 * 1024;
+interface FileWords { readonly words: ReadonlySet<string>; readonly identifiers: ReadonlySet<string> }
+const READS = new WeakMap<Facts, { used: number; files: Map<string, FileWords | null> }>();
+function fileWords(file: string, facts: Facts): FileWords | null {
+  let state = READS.get(facts);
+  if (state === undefined) { state = { used: 0, files: new Map() }; READS.set(facts, state); }
+  const known = state.files.get(file);
+  if (known !== undefined) return known;
+  if (state.used >= READ_BUDGET) return null; // not cached: the budget belongs to this run, not to the file
+  let result: FileWords | null = null;
+  let fd: number | null = null;
+  try {
+    fd = openSync(join(facts.root, file), 'r');
+    const buf = Buffer.alloc(Math.min(HEAD_BYTES, READ_BUDGET - state.used));
+    const n = readSync(fd, buf, 0, buf.length, 0);
+    state.used += n;
+    const head = buf.subarray(0, n);
+    if (!head.includes(0)) {
+      const text = head.toString('utf8');
+      result = { words: new Set(identWords(text)), identifiers: new Set(text.match(/[A-Za-z_$][\w$]*/g) ?? []) };
+    }
+  } catch {
+    result = null;
+  } finally {
+    if (fd !== null) closeSync(fd);
+  }
+  state.files.set(file, result);
+  return result;
+}
 
 // "- `lib/nvidia.js` — Executes nvidia-smi", "- **Cache** (lib/cache.js:5): In-memory LRU cache".
 const PATH_FIRST = /^(?:\*\*`([^`\n]{1,200})`\*\*|`([^`\n]{1,200})`|\*\*([^*`\n]{1,200}?):?\*\*|([^\s`*():]{1,200}))/;
@@ -326,15 +413,23 @@ export const describedPath: Check = (rule, facts) => {
   const sep = SEPARATOR.exec(rest);
   if (path === null || sep === null) return null;
   const description = rest.slice(sep[0].length);
+  // The blacklists stay as a guard; the whitelist below decides.
   if (name !== '' && !plainDescription(name, () => false)) return null;
-  if (!plainDescription(description, spanIsLivePath(facts)) || !toolsAreDeps(description, facts)) return null;
+  if (!plainDescription(description, () => true) || !toolsAreDeps(description, facts)) return null;
   if (!exists(path, facts)) return null;
-  // A bare name that several files share ("index.ts"): the rule may be the only place that says which one.
-  if (!path.includes('/')) {
-    let n = 0;
-    for (const f of facts.files) if ((f === path || f.endsWith(`/${path}`)) && ++n > 1) return null;
+  const target = targetOf(path, facts);
+  if (target === null) return null;
+  const known = target.kind === 'file' ? fileWords(target.file, facts) : { words: dirWords(target.files), identifiers: new Set<string>() };
+  if (known === null) return null; // missing on disk, unreadable, binary, or past the read budget
+  // A span counts only as a plain identifier the file itself holds; any other span is more than a description.
+  if (!spans(description).every((s) => /^[A-Za-z_$][\w$]*$/.test(s) && known.identifiers.has(s))) return null;
+  const own = new Set(identWords(path));
+  let matched = 0;
+  for (const w of identWords(`${name} ${description.replace(/`[^`\n]*`/g, ' ')}`)) {
+    if (own.has(w) || known.words.has(w)) matched++;
+    else if (!PATH_NEUTRAL.has(w) && !ROLE_NOUNS.has(w)) return null; // a word the repository does not hold is information
   }
-  return answer('inferable-path', `path: ${path}`);
+  return matched >= 2 ? answer('inferable-path', `path: ${path}`) : null;
 };
 
 // The dependencies of the manifest by the keys a rule may write them with. Computed once per Facts.
@@ -415,8 +510,10 @@ function sameVersion(seg: Segment, range: string): boolean | null {
 }
 
 const LABEL = /^(?:\*\*([^*\n]{1,40}?):?\*\*:?|([\p{L}][\p{L} ]{0,30}?):)\s*/u;
+// Linear enough only because a stack line is at most SHORT (600) characters: the leading \s+ backtracks
+// over a run of spaces. Do not use it on longer text.
 const VERSION = /\s+v?(\d+)(?:\.(\d+|x))?(?:\.(?:\d+|x))*(\uE003)?$/;
-interface Segment { readonly dep: string; readonly marked: boolean; readonly major: number | null; readonly minor: number | null; readonly orLater: boolean; readonly text: string }
+interface Segment { readonly dep: string; readonly unambiguous: boolean; readonly major: number | null; readonly minor: number | null; readonly orLater: boolean; readonly text: string }
 
 // One segment of a stack list, or null when it is anything but a dependency with an optional version,
 // neutral role words and a parenthesis of neutral words or other dependencies.
@@ -428,7 +525,7 @@ function segment(raw: string, held: readonly string[], restore: (x: string) => s
     if (!parts.every((p) => words(p).every((w) => STACK_NEUTRAL.has(w)) || resolveDep(p.replace(/[`*]/g, '').trim(), facts) !== null)) return null;
   }
   s = s.replace(/\s*\uE001\d+\uE001\s*/g, ' ').trim();
-  const marked = /^\*\*.*\*\*$|^`.*`$/.test(s);
+  const backticked = /^`.*`$/.test(s.replace(/^\*\*|\*\*$/g, ''));
   s = s.replace(/^\*\*|\*\*$/g, '').replace(/^`|`$/g, '').trim();
   const stripRoles = (x: string): string => {
     let out = x;
@@ -443,7 +540,10 @@ function segment(raw: string, held: readonly string[], restore: (x: string) => s
   if (v !== null) s = stripRoles(s.slice(0, v.index));
   const dep = s === '' ? null : resolveDep(s, facts); // a digit left in the name must belong to a dependency's name
   if (dep === null) return null;
-  return { dep, marked: marked || /^[\p{Lu}@]|[.\-/@]/u.test(s), major: v === null ? null : Number(v[1]),
+  // Unambiguous: in backticks, a name no ordinary word has (a dot, a dash, a digit, a scope, two words), or a
+  // spelling of the technology table. A capital alone is not a mark: every line and segment may start with one.
+  const unambiguous = backticked || /[^\p{L}]/u.test(s) || TECH_BY_SPELLING.has(s);
+  return { dep, unambiguous, major: v === null ? null : Number(v[1]),
     minor: v?.[2] === undefined || v[2] === 'x' ? null : Number(v[2]), orLater: v?.[3] !== undefined, text: raw.trim() };
 }
 
@@ -453,17 +553,8 @@ export const stackList: Check = (rule, facts) => {
   const text = rule.text.replace(LIST_MARKER, '').trim();
   if (NEGATION.test(text) || ABSOLUTE.test(text) || !LATIN.test(text)) return null;
 
-  // "**dependency**: description": the abstentions of a described path.
-  const own = /^(?:\*\*`?([^*`\n]{1,60}?)`?\*\*|`([^`\n]{1,60})`)\s*(?:[:–—]|-{1,2}(?=\s))\s*(.+)$/.exec(text);
-  const ownName = own?.[1] ?? own?.[2];
-  if (own !== null && ownName !== undefined && !STACK_LABELS.has(ownName.toLowerCase())) {
-    const dep = resolveDep(ownName.trim(), facts);
-    const description = own[3] ?? '';
-    if (dep === null || rule.kind !== 'item' || rivalPresent(dep, facts)) return null;
-    if (!plainDescription(description, spanIsLivePath(facts)) || !toolsAreDeps(description, facts)) return null;
-    return answer('inferable-stack', `${pkg.path}: ${depGroup(facts, dep)}.${dep}`);
-  }
-
+  // "**dependency**: description" is not a list: nothing in the repository can check the description
+  // ("**lodash**: being phased out"), so it is kept whatever it says.
   // A list, after an optional label from the closed list.
   let list = text;
   let labelled = false;
@@ -486,7 +577,7 @@ export const stackList: Check = (rule, facts) => {
   if (/[()]/.test(list)) return null;
   list = list.replace(/(\d)\+/g, '$1\uE003');
   const raw = list.split(/\s*(?:,|·|\||\+|\/|&|(?<![\p{L}])(?:and|y)(?![\p{L}]))\s*/u).filter((x) => x.trim() !== '');
-  if (raw.length === 0 || raw.length > 15 || (!labelled && raw.length < 2)) return null;
+  if (raw.length < 2 || raw.length > 15) return null; // one segment is a choice ("HTTP: Axios"), not a list
   const restore = (x: string): string => x.replace(/\uE002(\d+)\uE002/g, (_, i: string) => held[Number(i)] ?? '');
   const segs: Segment[] = [];
   for (const r of raw) {
@@ -496,16 +587,30 @@ export const stackList: Check = (rule, facts) => {
   }
   const named = new Set(segs.map((x) => x.dep));
   if (segs.some((x) => rivalPresent(x.dep, facts, named))) return null;
-  if (!segs.some((x) => x.marked)) return null; // lowercase ordinary words alone ("debug and colors") are prose
+  // A dependency named by an ordinary word ("debug", "colors") counts only in backticks, or when every
+  // other segment is unambiguous: a capital at the start of a line or segment earns it nothing.
+  for (const seg of segs) {
+    if (!seg.unambiguous && (segs.length < 2 || segs.some((o) => o !== seg && !o.unambiguous))) return null;
+  }
 
+  let stale: Segment | null = null;
   for (const seg of segs) {
     if (seg.major === null) continue;
-    const range = pkg.versions[seg.dep] ?? '';
+    const ranges = [...new Set((pkg.versions[seg.dep] ?? []).map((x) => x.trim()))];
+    const range = ranges[0];
+    // One range across the groups, and one major in the rule: anything else the manifest cannot settle.
+    if (ranges.length !== 1 || range === undefined) return null;
+    if (segs.some((o) => o.dep === seg.dep && o.major !== null && o.major !== seg.major)) return null;
     const same = sameVersion(seg, range);
     if (same === null) return null; // a version the manifest cannot confirm is information
     if (!same) {
-      return { verdict: 'conflict', code: 'stale-version', question: 1, evidence: `${pkg.path}: ${depGroup(facts, seg.dep)}.${seg.dep} is ${range}; the rule says "${seg.text}"` };
+      if (seg.major < 1 || !/^[\^~]?\d+(?:\.\d+){0,2}$/.test(range) || (versionOf(range)?.major ?? 0) < 1) return null;
+      stale ??= seg;
     }
+  }
+  if (stale !== null) {
+    const range = (pkg.versions[stale.dep] ?? [])[0] ?? '';
+    return { verdict: 'conflict', code: 'stale-version', question: 1, evidence: `${pkg.path}: ${depGroup(facts, stale.dep)}.${stale.dep} is ${range}; the rule says "${stale.text}"` };
   }
   return answer('inferable-stack', `${pkg.path}: ${[...new Set(segs.map((x) => `${depGroup(facts, x.dep)}.${x.dep}`))].join(', ')}`);
 };
@@ -584,14 +689,9 @@ export const projectOverview: Check = (rule, facts) => {
   if (sources === '') return null;
   const covered = (w: string): boolean => vocab.has(w) || vocab.has(stem(w));
   const content = all.filter((w) => !FUNCTION_WORDS.has(w));
-  if (content.length < 6 || content.filter(covered).length < 0.8 * content.length) return null;
-  // One sentence the README does not hold is new information, whatever the whole paragraph scores.
-  for (const sentence of text.split(/[.!?:;]+(?:\s|$)/)) {
-    if (words(sentence).filter((w) => !FUNCTION_WORDS.has(w) && !covered(w)).length >= 2) return null;
-    // A capitalised word the sources lack ("…invoices in Stripe") is a new fact even alone.
-    const tokens = sentence.match(/[\p{L}\p{N}_]+/gu) ?? [];
-    if (tokens.slice(1).some((t) => /^\p{Lu}/u.test(t) && !covered(t.toLowerCase()))) return null;
-  }
+  // Every content word must come from the sources: one new word ("Columns are fixed.", "…in Stripe") is a
+  // new fact, however well the rest of the paragraph scores.
+  if (content.length < 6 || !content.every(covered)) return null;
   return answer('inferable-overview', sources);
 };
 

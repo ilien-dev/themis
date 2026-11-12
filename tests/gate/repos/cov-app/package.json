@@ -24,7 +24,11 @@
     "@xyflow/react": "^12.3.0",
     "debug": "^4.3.7",
     "colors": "^1.4.0",
-    "dagre": "^0.8.5"
+    "dagre": "^0.8.5",
+    "lodash": "^4.17.21",
+    "zustand": "^5.0.0",
+    "axios": "^1.7.0",
+    "ky": "^1.7.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",

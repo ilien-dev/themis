@@ -57,18 +57,23 @@ test('the /init sentence followed by a rule is kept', () => {
 });
 
 // Detector 2: a path and a plain description.
+// Each file holds the words a plain description of it may use; the descriptions that must be kept use others.
 const PATHS = {
-  'package.json': '{"name":"gpu"}', 'lib/nvidia.js': '', 'lib/tracking-cache.js': '', 'src/generated/schema.ts': '', 'src/db/schema.sql': '',
-  'src/legacy/bill.ts': '', 'src/api/index.ts': '', 'apps/mobile/app.json': '', 'src/extension.ts': '', 'build/index.ts': '',
+  'package.json': '{"name":"gpu"}',
+  'lib/nvidia.js': '// Executes nvidia-smi through the driver tool and parses the CSV output from it.\nexport function querySmi() {}\n',
+  'lib/tracking-cache.js': '// In-memory LRU cache.\nexport class TrackingCache {}\n',
+  'src/generated/schema.ts': 'export const schema = {};\n', 'src/db/schema.sql': 'create table invoices (id int);\n',
+  'src/legacy/bill.ts': 'export function bill() {}\n', 'src/api/users-handler.ts': 'export const users = 1;\n', 'src/api/invoice-routes.ts': 'export const routes = 1;\n',
+  'src/extension.ts': '// Main entry point: handles activation and hover providers.\nexport function activate() {}\n', 'build/index.ts': '',
+  'src/facturas/cobro.ts': '// Lógica de facturación y cobro.\nexport const cobro = 1;\n',
 };
 test('an existing path with a short plain description is inferable', () => {
   const a = ask(q1, '- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output', PATHS);
   assert.deepEqual(a, { verdict: 'cut', code: 'inferable-path', question: 1, evidence: 'path: lib/nvidia.js' });
   assert.equal(code(q1, '- **TrackingCache** (lib/tracking-cache.js:5): In-memory LRU cache', PATHS), 'inferable-path');
-  assert.equal(code(q1, '- **Mobile App** (`apps/mobile/`): React Native app for field data collection', PATHS), 'inferable-path');
   assert.equal(code(q1, '- **extension.ts** - Main entry point, handles activation and hover providers', PATHS), 'inferable-path');
-  assert.equal(code(q1, '- `src/api/`: HTTP handlers', PATHS), 'inferable-path');
-  assert.equal(code(q1, '- `src/legacy/` — código de facturación', PATHS), 'inferable-path');
+  assert.equal(code(q1, '- `src/api/`: users and invoice routes', PATHS), 'inferable-path'); // a directory: the names of its files
+  assert.equal(code(q1, '- `src/facturas/cobro.ts` — lógica de facturación y cobro', PATHS), 'inferable-path');
 });
 test('a described path with a status word, a command, an effect verb or an instruction is kept', () => {
   nulls(q1, PATHS, [
@@ -93,7 +98,7 @@ test('a described path with a status word, a command, an effect verb or an instr
   ]);
 });
 test('a pointer that says when to read a file, or that it is the source of truth, is kept', () => {
-  const files = { ...PATHS, 'docs/refunds.md': '', 'prisma/schema.prisma': '' };
+  const files = { ...PATHS, 'docs/refunds.md': '# Refunds\n\nRefund rules and examples, and the canonical data model.\n', 'prisma/schema.prisma': 'model Invoice { id Int }\n' };
   nulls(q1, files, [
     '- `docs/refunds.md` — for changing refund logic', '- `docs/refunds.md` — for refund logic', '- `docs/refunds.md` — editing guide for refunds',
     '- `prisma/schema.prisma` — single source of truth for the data model', '- `prisma/schema.prisma` — canonical data model',
@@ -106,7 +111,8 @@ test('a bare file name that matches several files is kept: the rule says which o
   assert.equal(code(q1, '- **extension.ts** - Entry point', files), 'inferable-path');
 });
 test('a described path naming a tool the manifest lacks is kept: the description may be stale', () => {
-  const files = { ...PATHS, 'package.json': '{"name":"mcp","dependencies":{"@modelcontextprotocol/sdk":"^1","commander":"^12"}}', 'src/serve.ts': '', 'src/index.ts': '' };
+  const files = { ...PATHS, 'package.json': '{"name":"mcp","dependencies":{"@modelcontextprotocol/sdk":"^1","commander":"^12"}}',
+    'src/serve.ts': '// MCP server built with fastmcp\n', 'src/index.ts': '// CLI interface built on commander\nimport { Command } from "commander";\n' };
   assert.equal(ask(q1, '- `src/serve.ts`: MCP server using fastmcp', files), null);
   assert.equal(code(q1, '- `src/index.ts`: CLI interface using Commander', files), 'inferable-path');
 });
@@ -136,7 +142,7 @@ test('a list whose every segment is a dependency is inferable', () => {
   assert.ok(a !== null); assert.equal(a.verdict, 'cut'); assert.equal(a.code, 'inferable-stack'); assert.match(a.evidence, /jest/);
   assert.equal(code(q1, '**Stack**: Next.js 15 · React 19 · Tailwind CSS · TypeScript', NEXT), 'inferable-stack');
   assert.equal(code(q1, '- **Stack**: Next.js 15, React 19, `@xyflow/react` and TypeScript 5', NEXT), 'inferable-stack');
-  assert.equal(code(q1, '- **Testing**: Jest', EVENTS), 'inferable-stack');
+  assert.equal(code(q1, '- **Testing**: Jest, Husky', EVENTS), 'inferable-stack');
   assert.equal(code(q1, '- Pruebas: Jest y Prettier', EVENTS), 'inferable-stack');
 });
 test('a version that differs from the manifest is a conflict naming both', () => {
@@ -164,20 +170,18 @@ test('a stack line with an instruction, a non-dependency or prose is kept', () =
   nulls(q1, EVENTS, ['Use debug and colors sparingly', '- debug and colors', '- express, ms', 'Jest, ESLint and Prettier']);
 });
 test('a 0.x version is compared by minor, and abstains without one', () => {
-  const zero = { 'package.json': '{"dependencies":{"dagre":"^0.8.5","pino":"^9"}}' };
-  assert.equal(ask(q1, '- **Stack**: Dagre 0.7, Pino', zero)?.code, 'stale-version');
-  assert.equal(code(q1, '- **Stack**: Dagre 0.8, Pino', zero), 'inferable-stack');
-  assert.equal(ask(q1, '- **Stack**: Dagre 0, Pino', zero), null);
+  const zero = { 'package.json': '{"dependencies":{"dagre":"^0.8.5","next":"^15"}}' };
+  assert.equal(ask(q1, '- **Stack**: Dagre 0.7, Next.js', zero), null); // below 1.0 no conflict is claimed
+  assert.equal(code(q1, '- **Stack**: Dagre 0.8, Next.js', zero), 'inferable-stack');
+  assert.equal(ask(q1, '- **Stack**: Dagre 0, Next.js', zero), null);
 });
 test('a stack line naming one of two tools of a kind is kept: it says which one is used', () => {
   const both = { 'package.json': '{"devDependencies":{"jest":"^29","vitest":"^2","eslint":"^9"}}' };
-  nulls(q1, both, ['- **Testing**: Jest', '- Jest, ESLint', '- **jest**: Testing framework']);
-  assert.equal(code(q1, '- **Linting**: ESLint', both), 'inferable-stack');
+  nulls(q1, both, ['- **Testing**: Jest, ESLint', '- Jest, ESLint', '- **jest**: Testing framework']);
+  assert.equal(code(q1, '- **Linting**: ESLint, Vitest, Jest', both), 'inferable-stack');
 });
-test('"**dependency**: description" is inferable with the abstentions of a described path', () => {
-  assert.equal(code(q1, '- **tsconfig-paths**: TypeScript path mapping support', EVENTS), 'inferable-stack');
-  assert.equal(code(q1, '- **pino**: Fast logger', EVENTS), 'inferable-stack');
-  nulls(q1, EVENTS, ['- **pino**: logger shared by every service', '- **pino**: legacy logger', '- **pino**: logger, configured in `src/log.ts`', '- **pino**: logger for v2']);
+test('"**dependency**: description" is never cut: nothing in the repo checks the description', () => {
+  nulls(q1, EVENTS, ['- **tsconfig-paths**: TypeScript path mapping support', '- **pino**: Fast logger','- **pino**: logger shared by every service', '- **pino**: legacy logger', '- **pino**: logger, configured in `src/log.ts`', '- **pino**: logger for v2']);
 });
 test('without a package.json, or with a broken one, the stack, script and overview detectors return null', () => {
   for (const files of [{ 'README.md': '# x\n\nA tool.\n' }, { 'package.json': '{ broken', 'README.md': '# x\n\nA tool.\n' }]) {
@@ -264,9 +268,9 @@ test('200 varied rules over a repository of 2,000 files are judged in under 200 
   ];
   const markdown = Array.from({ length: 200 }, (_, i) => samples[i % samples.length] ?? '').join('\n\n');
   const runs: number[] = [];
-  const facts = readFacts(join(dir, 'CLAUDE.md'), { files }); // the git call costs the same with or without the detectors
   for (let i = 0; i < 3; i++) {
     const start = performance.now();
+    const facts = readFacts(join(dir, 'CLAUDE.md'), { files }); // the whole path: facts, then every rule
     const verdicts = judgeAll(parseRules(markdown), facts, contextFor(facts));
     runs.push(performance.now() - start);
     assert.equal(verdicts.length, 200);
@@ -287,4 +291,87 @@ test('runs of spaces, dots and separators keep every detector fast', () => {
       }
     }
   }
+});
+
+// Review round 1: open slots closed, and the described path checked against the file it names.
+test('the /init sentence takes only a known agent name and a domain in its parenthesis', () => {
+  const s = (agent: string, paren = ''): string => `This file provides guidance to ${agent}${paren === '' ? '' : ` (${paren})`} when working with code in this repository.`;
+  nulls(q3, PLAIN, [
+    s('Claude Code', 'production access'), s('Claude Code', 'read-only mode'), s('Claude Code', 'overrides ~/.claude'), s('the release bot'), s('new hires'),
+    s('the on-call engineer', 'pager rotation'),
+  ]);
+  for (const t of [s('Claude Code', 'claude.ai/code'), s('Gemini CLI'), s('GitHub Copilot'), s('AI agents'), s('coding agents'), s('Claude Code', 'https://claude.ai/code')]) {
+    assert.equal(code(q3, t, PLAIN), 'file-filler', t);
+  }
+});
+test('an overview with a one-word new fact in a short sentence is kept', () => {
+  for (const extra of ['The websocket server is separate.', 'Drag changes are throttled.', 'Columns are fixed.', 'Teams are tenants.', 'Cards are immutable.', 'Sync is best-effort.']) {
+    assert.equal(ask(q1, `${SUMMARY} ${extra}`, LEDGER), null, extra);
+  }
+  assert.equal(ask(q1, 'Ledger is a bookkeeping service for freelancers that tracks invoices, payments and expenses and produces fixed monthly PDF reports.', LEDGER), null);
+});
+test('a version is called stale only against a single plain range of major 1 or more', () => {
+  const peer = { 'package.json': '{"devDependencies":{"react":"^19.0.0","typescript":"^5"},"peerDependencies":{"react":"^18 || ^19"}}' };
+  assert.equal(ask(q1, '- **Stack**: React 18, TypeScript', peer), null);
+  assert.equal(ask(q1, '- **Stack**: React 19, TypeScript', peer), null);
+  const same = { 'package.json': '{"devDependencies":{"react":"^19.0.0","typescript":"^5"},"peerDependencies":{"react":"^19.0.0"}}' };
+  assert.equal(ask(q1, '- **Stack**: React 18, TypeScript', same)?.code, 'stale-version');
+  assert.equal(ask(q1, '- **Stack**: React 18, React 19, TypeScript', same), null); // two majors for one dependency
+});
+test('a capital at the start earns an ordinary-word dependency nothing', () => {
+  nulls(q1, EVENTS, ['- Debug and colors', '- Debug, Colors', '- **Stack**: Debug and colors']);
+  assert.equal(code(q1, '- `debug` and `colors`', EVENTS), 'inferable-stack');
+  assert.equal(code(q1, '- Jest, ESLint and debug', EVENTS), 'inferable-stack'); // every other segment is unambiguous
+});
+test('"**dependency**: description" and a one-segment stack line are kept', () => {
+  const files = { 'package.json': '{"dependencies":{"colors":"^1","lodash":"^4","zustand":"^5","axios":"^1","ky":"^1","@tanstack/react-query":"^5"}}' };
+  nulls(q1, files, [
+    '- **Colors**: brand palette in the Tailwind config', '- **lodash**: Utility helpers, being phased out',
+    '- **zustand**: Client state, the server state is in React Query', '- **axios**: HTTP client for the REST API', '- **HTTP**: Axios',
+  ]);
+});
+// Files whose text does not hold the words of these descriptions.
+const PLAINFILES = {
+  'package.json': '{"name":"shop"}', 'src/webhooks/stripe.ts': 'export function handle(e: unknown) { return e; }\n', 'src/money.ts': 'export const add = (a: number, b: number) => a + b;\n',
+  'src/card/form.ts': 'export function form() {}\n', 'src/api/invoices.ts': 'export function list() {}\n', 'db/schema.sql': 'create table t (id int);\n',
+  'src/middleware/auth.ts': 'export function auth() {}\n', 'src/format.ts': 'export function format(d: Date) { return d; }\n', 'src/handlers/order.ts': 'export function order() {}\n',
+  'src/lib/order.ts': 'export function placeOrder() {}\n', 'public/robots.txt': 'User-agent: *\nDisallow: /\n', 'src/billing/rules.ts': 'export const rules = [];\n',
+  'src/db/client.ts': 'import { PrismaClient } from "@prisma/client";\nexport const db = new PrismaClient();\n',
+};
+test('a description with words its path and file do not hold is kept', () => {
+  nulls(q1, PLAINFILES, [
+    '- `src/webhooks/stripe.ts` — Stripe webhook handler, idempotent by event ID', '- `src/money.ts` — money math in integer cents', '- `src/card/form.ts` — PCI scope',
+    '- `src/api/invoices.ts` — invoice endpoints, public API with external consumers', '- `db/schema.sql` — schema, kept in lockstep with the warehouse',
+    '- `src/middleware/auth.ts` — auth middleware, order matters', '- `src/format.ts` — formatting helpers in UTC',
+    '- `src/handlers/` — thin handlers, business logic lives in `src/lib/`', '- `src/format.ts` — formatting helpers duplicated in the mobile app',
+    '- `public/robots.txt` — blocks crawlers on purpose', '- `src/billing/rules.ts` — billing rules agreed with finance', '- `src/db/client.ts` — Prisma client singleton, one per process',
+  ]);
+  assert.equal(code(q1, '- `src/db/client.ts` — Prisma client', PLAINFILES), 'inferable-path');
+});
+test('a described path needs two words matched by the path or its content, and a readable file', () => {
+  assert.equal(ask(q1, '- `src/format.ts` — helpers', PLAINFILES), null); // only a role noun
+  const dir = repo({ 'package.json': '{"name":"x"}', 'src/a.ts': 'export const parseInvoice = 1;\n' });
+  const facts = readFacts(join(dir, 'CLAUDE.md'), { files: ['package.json', 'src/a.ts', 'src/gone.ts'] });
+  const gone = parseRules('- `src/gone.ts` — gone parser')[0];
+  assert.ok(gone !== undefined);
+  assert.equal(describedPath(gone, facts), null); // listed but not on disk
+  const ok = parseRules('- `src/a.ts` — parse invoice')[0];
+  assert.ok(ok !== undefined);
+  assert.equal(describedPath(ok, facts)?.code, 'inferable-path');
+  const binary = { 'package.json': '{"name":"x"}', 'assets/logo.json': '\u0000\u0001logo image data' };
+  assert.equal(ask(q1, '- `assets/logo.json` — logo image data', binary), null);
+});
+test('the bytes read for described paths stop at 2 MB per repository', () => {
+  const big = 'parse invoice data '.repeat(3500); // about 66 KB: each read takes the first 64 KB
+  const files: Record<string, string> = { 'package.json': '{"name":"x"}' };
+  for (let i = 0; i < 40; i++) files[`src/m${i}.ts`] = big;
+  const facts = factsOf(files);
+  const answers = Array.from({ length: 40 }, (_, i) => {
+    const rule = parseRules(`- \`src/m${i}.ts\` — parse invoice data`)[0];
+    assert.ok(rule !== undefined);
+    return describedPath(rule, facts)?.code ?? null;
+  });
+  assert.equal(answers[0], 'inferable-path');
+  assert.ok(answers.filter((a) => a !== null).length <= 32, `${answers.filter((a) => a !== null).length} read`);
+  assert.equal(answers[39], null);
 });

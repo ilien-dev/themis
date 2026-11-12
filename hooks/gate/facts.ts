@@ -14,7 +14,7 @@ export interface Facts {
     readonly name: string | null;
     readonly description: string | null;
     readonly deps: ReadonlySet<string>;
-    readonly versions: Readonly<Record<string, string>>; // the range of each dependency, the first group naming it winning
+    readonly versions: Readonly<Record<string, readonly string[]>>; // every range each dependency has, one per group naming it
     readonly scripts: Readonly<Record<string, string>>;
   } | null;
   readonly lockfiles: ReadonlySet<string>;
@@ -123,13 +123,13 @@ export function readFacts(ruleFile: string, override?: { files?: readonly string
   let pkg: Facts['pkg'] = null;
   if (pkgDir !== undefined && pj) {
     const deps = new Set<string>();
-    const versions: Record<string, string> = {};
+    const versions: Record<string, string[]> = {};
     for (const k of ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']) {
       const group = pj[k];
       if (!isRecord(group)) continue;
       for (const [name, range] of Object.entries(group)) {
         deps.add(name);
-        if (typeof range === 'string' && !Object.hasOwn(versions, name)) versions[name] = range;
+        if (typeof range === 'string') (versions[name] ??= []).push(range);
       }
     }
     if (isRecord(pj['scripts'])) for (const [k, v] of Object.entries(pj['scripts'])) if (typeof v === 'string') scripts[k] = v;

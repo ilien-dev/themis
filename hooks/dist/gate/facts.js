@@ -105,8 +105,8 @@ export function readFacts(ruleFile, override) {
                 continue;
             for (const [name, range] of Object.entries(group)) {
                 deps.add(name);
-                if (typeof range === 'string' && !Object.hasOwn(versions, name))
-                    versions[name] = range;
+                if (typeof range === 'string')
+                    (versions[name] ??= []).push(range);
             }
         }
         if (isRecord(pj['scripts']))

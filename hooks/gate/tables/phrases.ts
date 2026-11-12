@@ -24,8 +24,10 @@ const ADJ_LIST_ES = String.raw`(?:${ADJ_ES})(?:(?:,\s*(?:y\s+)?|\s+y\s+)(?:${ADJ
 // A closed list: an open word slot would cut conventions such as "use branded types".
 const LANG_WORD = String.raw`(?:typescript|javascript|ecmascript|es\d*|python|go|golang|rust|java|kotlin|swift|c#|c\+\+|ruby|php|scala|dart|elixir)`;
 
-// An agent's name: up to four words, each bounded.
-const AGENT = String.raw`[\p{L}\p{N}][\p{L}\p{N}.-]{0,30}(?:\s+[\p{L}\p{N}][\p{L}\p{N}.-]{0,30}){0,3}`;
+// An agent the /init sentence may name: a closed list. "the release bot" or "new hires" is information.
+const AGENT = String.raw`(?:the\s+)?(?:claude(?:\s+code)?|codex|(?:github\s+)?copilot|gemini(?:\s+cli)?|cursor|windsurf|aider|opencode|ai\s+(?:coding\s+)?(?:agents|assistants)|(?:coding\s+)?agents)`;
+// Its optional parenthesis: a domain or URL such as claude.ai/code, nothing else.
+const SITE = String.raw`\(\s*(?:https?:\/\/)?[a-z0-9-]{1,30}(?:\.[a-z0-9-]{1,30}){1,4}(?:\/[\w.-]{1,40}){0,4}\/?\s*\)`;
 
 const BP = 'https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices';
 const OPUS_55 = 'https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5';
@@ -65,10 +67,10 @@ export const PHRASES: readonly Phrase[] = [
   generic(String.raw`(?:siempre\s+)?(?:recuerda\s+)?mant\u00e9n\s+(?:alta\s+)?la\s+calidad\s+del\s+c\u00f3digo(?:\s+alta)?`),
   generic(String.raw`(?:siempre\s+)?(?:recuerda\s+)?comun\u00edcate\s+(?:claramente|bien)(?:\s+sobre\s+(?:tus|los)\s+cambios)?`),
 
-  // The sentence /init writes at the top of the file, for any agent name and an optional parenthesis. It
-  // comes before the shorter "this file provides guidance" below, which would leave its tail behind.
-  filler(String.raw`this\s+file\s+(?:provides|gives)\s+guidance\s+to\s+${AGENT}(?:\s*\([^()\n]{1,60}\))?\s+when\s+working\s+with\s+(?:the\s+)?code\s+in\s+this\s+repo(?:sitory)?`),
-  filler(String.raw`este\s+archivo\s+(?:proporciona|da|ofrece)\s+(?:orientación|orientacion|guía|guia|instrucciones)\s+(?:a|al|para)\s+${AGENT}(?:\s*\([^()\n]{1,60}\))?\s+(?:cuando\s+trabaja|al\s+trabajar)\s+con\s+(?:el\s+)?c(?:ó|o)digo\s+(?:en|de)\s+este\s+repositorio`),
+  // The sentence /init writes at the top of the file, for a known agent and an optional site. It comes
+  // before the shorter "this file provides guidance" below, which would leave its tail behind.
+  filler(String.raw`this\s+file\s+(?:provides|gives)\s+guidance\s+to\s+${AGENT}(?:\s*${SITE})?\s+when\s+working\s+with\s+(?:the\s+)?code\s+in\s+this\s+repo(?:sitory)?`),
+  filler(String.raw`este\s+archivo\s+(?:proporciona|da|ofrece)\s+(?:orientación|orientacion|guía|guia|instrucciones)\s+(?:a|al|para)\s+${AGENT}(?:\s*${SITE})?\s+(?:cuando\s+trabaja|al\s+trabajar)\s+con\s+(?:el\s+)?c(?:ó|o)digo\s+(?:en|de)\s+este\s+repositorio`),
 
   // File filler: sentences about the file itself. Each names the file; "keep it updated" alone could be
   // about anything, so "it" counts only in the sentence right after one that names this file.
