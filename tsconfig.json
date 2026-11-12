@@ -25,8 +25,8 @@
     "noEmit": true
   },
   "include": [
-    "hooks/*.ts",
-    "tests/*.ts",
+    "hooks/**/*.ts",
+    "tests/**/*.ts",
     "evals/*.ts",
     "evals/cases/*/grade.ts",
     "assets/source/*.ts",
