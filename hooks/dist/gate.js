@@ -10,7 +10,8 @@ import { pruneAccepted } from "./gate/accepted.js";
 import { CorpusRunner, matches, parseCorpus } from "./gate/corpus.js";
 import { parseRules } from "./gate/extract.js";
 import { readFacts } from "./gate/facts.js";
-import { coverage, formatAudit, formatMetrics, formatNotes, metrics, snippet } from "./gate/format.js";
+import { coverage, formatAudit, formatMetrics, formatNotes, formatStaleVendor, metrics, snippet, staleVendor } from "./gate/format.js";
+import { PHRASES } from "./gate/tables/phrases.js";
 import { ruleHash } from "./gate/text.js";
 import { contextFor, judgeAll } from "./gate/verdict.js";
 const USAGE = 'usage: gate check [--file <path>] [--json] | gate audit <file> [--json] [--prune] | gate report <corpus.jsonl> [--json]';
@@ -144,10 +145,12 @@ function report(argv) {
         const m = metrics(results.map((r) => ({ expect: r.c.expect, got: r.got, gap: r.c.gap !== undefined })));
         const wrong = results.filter((r) => !matches(r.c, r.got));
         const gaps = cases.filter((c) => c.gap !== undefined).length;
+        const stale = staleVendor(PHRASES, new Date()); // the one place the gate reads the clock
         if (args.flags.has('--json')) {
             out(JSON.stringify({
                 cases: cases.length, gaps, metrics: m,
                 mismatches: wrong.map((r) => ({ id: r.c.id, expect: r.c.expect, code: r.c.code ?? null, got: r.got.verdict, gotCode: r.got.code })),
+                staleVendor: stale,
             }, null, 2));
             return;
         }
@@ -160,6 +163,7 @@ function report(argv) {
         }
         else
             lines.push('Mismatches: 0');
+        lines.push(formatStaleVendor(stale));
         out(lines.join('\n'));
     }
     finally {

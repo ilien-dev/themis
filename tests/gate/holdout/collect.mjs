@@ -4,7 +4,8 @@
 // exact commit and written to <owner>__<repo>/ next to this script:
 //   rules.md     the rule file (not named CLAUDE.md or AGENTS.md: a plugin intercepts those names)
 //   files.txt    every file of the tree, one path per line
-//   the files the gate reads (package.json, lockfile names, linter, formatter and hook configs, README, docs)
+//   the files the gate reads (package.json, lockfile names, linter, formatter and hook configs, .gitignore,
+//   README, docs). The snapshots here were collected before .gitignore joined that list and do not have it.
 // Configs the gate cannot parse (JavaScript, TypeScript, YAML ESLint and commitlint configs) and the
 // lockfiles are stored as empty files: the gate only needs to know they exist.
 import { execFileSync } from 'node:child_process';
@@ -24,7 +25,7 @@ const CODE = /\.(?:[cm]?js|[cm]?ts)$/;
 const CONFIG = [
   /^\.prettierrc(?:\.[\w.]+)?$/, /^prettier\.config\.[\w.]+$/, /^\.eslintrc(?:\.[\w.]+)?$/, /^eslint\.config\.[\w.]+$/,
   /^biome\.jsonc?$/, /^\.editorconfig$/, /^tsconfig\.json$/, /^lefthook\.ya?ml$/, /^\.pre-commit-config\.yaml$/,
-  /^\.commitlintrc(?:\.[\w.]+)?$/, /^commitlint\.config\.[\w.]+$/, /^package\.json$/, /^README\.md$/,
+  /^\.commitlintrc(?:\.[\w.]+)?$/, /^commitlint\.config\.[\w.]+$/, /^package\.json$/, /^README\.md$/, /^\.gitignore$/,
 ];
 // Stored empty: lockfiles, code configs, and the YAML ESLint and commitlint configs the gate does not parse.
 const EMPTY = (name) => LOCKFILES.includes(name) || CODE.test(name) || /^\.(?:eslintrc|commitlintrc)\.ya?ml$/.test(name);

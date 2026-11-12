@@ -25,13 +25,9 @@ Cap: 2500 estimated tokens (characters ÷ 3.6), including files pulled in with `
 
 `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js` judges each rule with fixed checks, so results are repeatable. Its verdict is the criterion. In audit and init add no cuts of your own: what the gate keeps, stays.
 
-It reports six kinds of reason:
-- Inferable from the repo: title, folder tree, scripts, stack, overview.
-- Enforced by configuration: a setting, lint rule or deny rule already does it, or the rule contradicts one.
-- Generic advice, filler, or behavior current models already follow.
-- An absolute command a hook or permission would enforce better.
-- A duplicated passage or long procedure that belongs in a doc or skill.
-- A dead reference, or capitalised emphasis.
+`check` reads a temp file on stdin. Bash: `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target> < <temp>`. PowerShell, which rejects `<`: `Get-Content <temp> | node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target>`.
+
+Reasons: inferable from the repo (title, folder tree, scripts, stack, overview); enforced by a setting, lint rule or deny rule, or contradicting one; generic advice, filler, or behavior current models already follow; an absolute command a hook or permission enforces better; a duplicated passage or long procedure; a dead reference or capitalised emphasis.
 
 Verdicts: `keep`, `cut` (redundant, already enforced, or generic), `move` (belongs in a hook, `permissions.deny`, or a doc or skill plus a pointer), `fix` (a path or script that does not resolve), `rewrite` (drop the emphasis), `conflict` (contradicts the repo's configuration). Notes on a `keep` are information, not a reason to drop the rule.
 
@@ -39,17 +35,17 @@ Verdicts: `keep`, `cut` (redundant, already enforced, or generic), `move` (belon
 
 1. Read the manifest, scripts, CI and lint config, README and some source.
 2. Run the cheap test and build commands to confirm they work.
-3. Draft the lines the model would get wrong without: unguessable commands, non-default conventions, gotchas, repo etiquette, `path — when to read it` pointers. No project heading; `##` only for several lines of one kind. Pipe the draft to `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target>` before showing it, and apply the verdicts as in **edit**.
+3. Draft the lines the model would get wrong without: unguessable commands, non-default conventions, gotchas, repo etiquette, `path — when to read it` pointers. No project heading; `##` only for several lines of one kind. Check the draft with `check` (**The gate**) before showing it, and apply the verdicts as in **edit**.
 4. Show the draft with its token estimate, then write `CLAUDE.md`. Check `AGENTS.md` now exists with the same text.
 
 ## edit
 
 1. Read the target file and its `@imports`, and estimate the total. If `CLAUDE.md` and `AGENTS.md` differ, stop and run **sync** first.
-2. Write each new line in the shortest form that keeps its meaning. Write them to a temporary file and run `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target> < <temp file>` (works in both shells). Handle each verdict:
+2. Write each new line in the shortest form that keeps its meaning, and check them with `check` (**The gate**). Handle each verdict:
    - `keep`: write it.
-   - `cut`: do not write it. Tell the user in one line the verdict, reason and evidence. Write it as given only if the user insists; themis then asks them to confirm.
-   - `move`: do not write it here. Offer the destination the gate names and do that instead if the user agrees.
-   - `fix`: look for the path or script the rule meant. If it moved or was renamed, write the rule with the right one. If it may exist later or you cannot tell, write it as given and tell the user which reference did not resolve.
+   - `cut`: do not write it. Tell the user in one line the verdict, reason and evidence. Write it as given only if the user insists; with `gate: ask` themis then asks them to confirm.
+   - `move`: do not write it here; offer the destination the gate names and use it if the user agrees.
+   - `fix`: find the path or script the rule meant. If it moved or was renamed, use the right one; if it may exist later or you cannot tell, write it as given and tell the user which reference did not resolve.
    - `rewrite`: drop the capitalised emphasis, keep the meaning, then write it.
    - `conflict`: do not pick a side. Show the user both and ask which is right.
 3. If the result would exceed the cap, condense lines close to the change and say what you condensed. If that is not enough, stop and propose `/themis:themis audit`.

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { coverage, firstLine, formatAsk, formatAudit, formatNotes, metrics, snippet } from '../../hooks/gate/format.ts';
+import { coverage, firstLine, formatAsk, formatAudit, formatNotes, formatStaleVendor, metrics, snippet, staleVendor } from '../../hooks/gate/format.ts';
+import { PHRASES } from '../../hooks/gate/tables/phrases.ts';
 import type { Rule, Verdict } from '../../hooks/gate/types.ts';
 
 const rule = (text: string, kind: Rule['kind'] = 'item', line = 1): Rule => ({ text, kind, line, lines: text.split('\n').length });
@@ -103,4 +104,20 @@ test('formatAsk counts headings among the new rules only when one is interrupted
   assert.match(formatAsk([heading, CUT, keep('- Amounts are cents.')], 'CLAUDE.md', 'ask'), /^themis: 1 of 2 new rules in CLAUDE\.md/);
   const title: Verdict = { rule: rule('# Ledger', 'heading'), verdict: 'cut', code: 'inferable-title', question: 1, evidence: 'package.json: name', notes: [] };
   assert.match(formatAsk([title, heading, CUT], 'CLAUDE.md', 'ask'), /^themis: 2 of 2 new rules in CLAUDE\.md/);
+});
+
+test('vendor entries retrieved more than 60 days ago are listed for review', () => {
+  const vendor = PHRASES.filter((p) => p.group === 'vendor').length;
+  assert.deepEqual(staleVendor(PHRASES, new Date('2027-01-11T12:00:00Z')), []); // 60 days: not yet
+  const stale = staleVendor(PHRASES, new Date('2027-01-12T12:00:00Z'));
+  assert.equal(stale.length, vendor);
+  const first = stale[0];
+  assert.ok(first !== undefined);
+  assert.deepEqual(Object.keys(first).sort(), ['days', 'models', 'pattern', 'retrieved', 'url']);
+  assert.equal(first.days, 61);
+  assert.equal(first.retrieved, '2026-11-12');
+  assert.equal(formatStaleVendor([]), 'Vendor entries to review: none');
+  const text = formatStaleVendor(stale);
+  assert.ok(text.startsWith('Vendor entries to review: 4\n  "think\\s+step[- ]by[- ]step'), text);
+  assert.match(text, /retrieved 2026-11-12, 61 days ago, https:\/\/platform\.claude\.com\//);
 });

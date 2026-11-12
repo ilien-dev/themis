@@ -1,4 +1,5 @@
 import { interrupts } from './verdict.ts';
+import type { Phrase } from './tables/phrases.ts';
 import type { Note, Verdict, VerdictKind } from './types.ts';
 
 // What a user and a model read about the verdicts. Every function is pure and keeps the order it is given.
@@ -121,6 +122,30 @@ export function metrics(cases: readonly { expect: VerdictKind; got: Verdict; gap
     coverage: ratio(covered, total),
     byVerdict,
   };
+}
+
+export interface StaleVendor { pattern: string; url: string; models: readonly string[]; retrieved: string; days: number }
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const REVIEW_AFTER_DAYS = 60;
+
+// Vendor phrases whose source was retrieved more than 60 days before `today`: a guide may have changed.
+// Only `gate report` calls this with the clock; no verdict depends on the date.
+export function staleVendor(phrases: readonly Phrase[], today: Date): StaleVendor[] {
+  const out: StaleVendor[] = [];
+  for (const p of phrases) {
+    if (p.group !== 'vendor' || p.source === undefined) continue;
+    const days = Math.floor((today.getTime() - Date.parse(`${p.source.retrieved}T00:00:00Z`)) / DAY_MS);
+    if (days > REVIEW_AFTER_DAYS) out.push({ pattern: p.pattern.source, url: p.source.url, models: p.source.models, retrieved: p.source.retrieved, days });
+  }
+  return out;
+}
+
+export function formatStaleVendor(stale: readonly StaleVendor[]): string {
+  if (stale.length === 0) return 'Vendor entries to review: none';
+  const pattern = (s: string): string => clip(s.replace(/^\(\?<!\[[^\]]*\]\)\(\?:/, '').replace(/\)\(\?!\[[^\]]*\]\)$/, ''));
+  return [`Vendor entries to review: ${stale.length}`,
+    ...stale.map((s) => `  "${pattern(s.pattern)}": retrieved ${s.retrieved}, ${s.days} days ago, ${s.url}`)].join('\n');
 }
 
 export function formatMetrics(m: Metrics, cases: number): string {

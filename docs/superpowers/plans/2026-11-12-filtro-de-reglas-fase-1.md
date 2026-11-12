@@ -393,7 +393,7 @@ Una regla se corta solo si, tras quitar las frases que casan, quedan como mucho 
 Contenido inicial:
 - `generic` (en/es): al menos todas las líneas de «General guidelines» y «Notes» del fixture c14, más las listas de «What does not belong» de la skill actual.
 - `filler`: «this file (gives|provides) … (context|guidance)», «keep (it|this file) updated», y equivalentes en español.
-- `vendor`: solo frases que una guía vigente de Anthropic u OpenAI pide quitar y que ninguna guía de la otra familia recomienda. Tomarlas de `research_notes/Filtro determinista de reglas CLAUDE/modelos_recientes.md` con su URL exacta; como mínimo «think step by step» y «think carefully» y sus equivalentes en español. No incluir «delegate to subagents», «be concise» ni «always run tests».
+- `vendor`: solo frases que una guía vigente de Anthropic u OpenAI pide quitar y que ninguna guía de la otra familia recomienda. Tomarlas de las notas de investigación sobre modelos recientes (guardadas fuera del repositorio) con su URL exacta; como mínimo «think step by step» y «think carefully» y sus equivalentes en español. No incluir «delegate to subagents», «be concise» ni «always run tests».
 
 - [ ] **Step 1: Tests que fallan:**
 

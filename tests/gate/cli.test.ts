@@ -107,10 +107,12 @@ test('report prints precision, false-cut rate and coverage', () => {
   assert.match(r.stdout, /^False-cut rate: 50\.0%$/m);
   assert.match(r.stdout, /^Coverage: 75\.0%$/m);
   assert.match(r.stdout, /^ {2}d: expected keep, got rewrite emphasis$/m);
+  assert.match(r.stdout, /\nVendor entries to review: (?:none|\d+(?:\n {2}.+)+)\n?$/); // the last section; its content depends on the date
 
   const json = JSON.parse(gate(['report', join(dir, 'corpus.jsonl'), '--json']).stdout) as { metrics: { precision: number; falseCut: number; coverage: number }; mismatches: unknown[] };
   assert.equal(json.metrics.falseCut, 0.5);
   assert.equal(json.mismatches.length, 1);
+  assert.ok(Array.isArray((json as unknown as { staleVendor: unknown }).staleVendor));
 });
 
 test('unknown subcommand exits 2', () => {

@@ -6,6 +6,8 @@ Selection was fixed before looking at any rule: primary language TypeScript or J
 
 ## Taken (40 repositories, 1502 rules)
 
+Three of these rules (`jaccen__AIRoute-06`, `-10` and `-14`) were bare `---` lines. The parser no longer treats a thematic break as a rule, so they were removed from both corpus files, which now hold 1,499 rules; the counts below are as collected.
+
 | Repository | Commit | Licence | Rule file | Rules taken | Rules in file |
 |---|---|---|---|---|---|
 | [`chanzuckerberg/single-cell-data-portal`](https://github.com/chanzuckerberg/single-cell-data-portal) | [`b1f2fc837e02`](https://github.com/chanzuckerberg/single-cell-data-portal/tree/b1f2fc837e02347e1004e6666327880ff0ca54a7) | MIT | CLAUDE.md | 49 | 49 |

@@ -4,7 +4,7 @@ Fecha: 2026-11-12 · Estado: implementado (fase 1) · Versión objetivo: themis 
 
 Los veredictos y notas se nombran aquí en español. En el código y en los mensajes del plugin van en inglés (`keep`, `cut`, `move`, `rewrite`, `fix`, `conflict`); la tabla de equivalencias está en el plan de la fase 1.
 
-Investigación de respaldo: `reports/Filtro determinista de reglas CLAUDE.md` y las notas en `research_notes/Filtro determinista de reglas CLAUDE/`.
+Investigación de respaldo: un informe («Filtro determinista de reglas CLAUDE.md») y sus notas de investigación, que se guardan fuera del repositorio y no forman parte de él.
 
 ## Intención
 

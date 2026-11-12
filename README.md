@@ -126,7 +126,7 @@ The `gate` option sets what happens when a rule written to `CLAUDE.md` or `AGENT
 
 | `gate` | What happens |
 |---|---|
-| `report` (default) | The edit goes through. Claude is shown the verdicts and told to drop or fix those rules unless you asked for them as written. |
+| `report` (default) | The edit goes through. Claude is shown the verdicts and told to tell you which rules were flagged and why. It may repair a `fix` or `rewrite` itself, but removes or moves a rule only after telling you. |
 | `ask` | The edit stops and you are asked. The prompt lists each rule with its verdict, reason and evidence; approving writes the rule as given. |
 | `off` | The gate does nothing. |
 
@@ -136,7 +136,7 @@ The gate never denies an edit. In sessions where nobody can answer a prompt (per
 
 ### Accepted rules
 
-When you approve a rule that the gate had flagged, themis records it in `.claude/themis-accepted.json`, which belongs in version control: the hash of the normalized text, the original verdict and the date. From then on that rule is `keep` with an `accepted` note, in the hook and in `audit`. If its text changes, the hash changes and it is judged again. `gate audit --prune` removes entries that no longer match any rule. Nothing is recorded in `report` mode, because nobody approved anything.
+When you approve a rule that the gate had flagged, themis records it in `.claude/themis-accepted.json`, which belongs in version control: the hash of the normalized text, the original verdict and the date. From then on that rule is `keep` with an `accepted` note, in the hook and in `audit`. If its text changes, the hash changes and it is judged again. `gate audit --prune` removes entries that no longer match any rule. Nothing is recorded in `report` mode, because nobody approved anything, nor outside a git repository, where there is no project to record it in.
 
 ### Command line
 
@@ -155,7 +155,7 @@ The exit code is 0 for any valid input and 2 for wrong usage or an unreadable fi
 - **Node, JavaScript and TypeScript repositories only.** The checks read `package.json`; elsewhere they find no evidence and keep the rule.
 - **English and Spanish.** The phrase tables cover those two languages.
 - **The model-default question is not active.** "Do recent models already do this by default?" needs measured data per model; it is planned next, and until then the gate does not cut a rule for that reason.
-- **Monorepos.** A script or path that lives in a sub-package looks missing from the root, so `fix` can flag a reference that is fine. This is the main source of wrong interruptions in the measurement.
+- **Monorepos.** A script or path that lives in a sub-package can look missing from the root. The gate does not report a missing script when the repository has more than one `package.json`, and counts a path as present when a tracked path ends with it, so in a monorepo a reference that really is dead can go unreported.
 - **Node versions.** The compiled hooks run on Node.js 18. Contributors need Node.js 22.18 or later to run the tests, which execute the TypeScript sources.
 - **Measured on 1,502 rules from 40 public repositories**: of 150 interruptions, 62.0% were right, and 6.3% of the rules labelled keep were interrupted. It flags about one in six of the rules that should go. The labels are not yet reviewed, so those numbers are provisional.
 
@@ -192,7 +192,7 @@ Coming from 1.x? Version 2.0.0 removes five skills and the resident rule; see th
 | `PostToolUse` | `Edit`, `Write`, `MultiEdit`; shell commands that mention `CLAUDE` or `AGENTS` | Copies the edited file to its twin and records the rules you approved. After a shell command, reports pairs that differ. |
 | `SessionStart` | every start, resume, `/clear` and compaction | Reports pairs that differ or are linked instead of copied. Silent otherwise. |
 
-The only file a hook ever writes is the `CLAUDE.md` or `AGENTS.md` next to the one Claude just edited. They make no network calls and fail silent on unexpected input. See [SECURITY.md](SECURITY.md).
+The hooks write three things: the `CLAUDE.md` or `AGENTS.md` next to the one Claude just edited; `.claude/themis-accepted.json` in the repository, when you approve a rule the gate asked about; and a pending-approval file under the OS temp directory in `themis-gate/`, removed once used or after 24 hours. Besides the rule files, the gate reads `package.json`, tool configs, `.claude/settings*.json`, `.gitignore`, the README, `docs/`, husky and workflow files, and the output of `git ls-files`. The hooks make no network calls and fail silent on unexpected input. See [SECURITY.md](SECURITY.md).
 
 ## Development
 

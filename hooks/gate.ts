@@ -10,7 +10,8 @@ import { pruneAccepted } from './gate/accepted.ts';
 import { CorpusRunner, matches, parseCorpus, type Case } from './gate/corpus.ts';
 import { parseRules } from './gate/extract.ts';
 import { readFacts, type Facts } from './gate/facts.ts';
-import { coverage, formatAudit, formatMetrics, formatNotes, metrics, snippet } from './gate/format.ts';
+import { coverage, formatAudit, formatMetrics, formatNotes, formatStaleVendor, metrics, snippet, staleVendor } from './gate/format.ts';
+import { PHRASES } from './gate/tables/phrases.ts';
 import { ruleHash } from './gate/text.ts';
 import { contextFor, judgeAll } from './gate/verdict.ts';
 import type { Verdict } from './gate/types.ts';
@@ -132,10 +133,12 @@ function report(argv: readonly string[]): void {
     const m = metrics(results.map((r) => ({ expect: r.c.expect, got: r.got, gap: r.c.gap !== undefined })));
     const wrong = results.filter((r) => !matches(r.c, r.got));
     const gaps = cases.filter((c) => c.gap !== undefined).length;
+    const stale = staleVendor(PHRASES, new Date()); // the one place the gate reads the clock
     if (args.flags.has('--json')) {
       out(JSON.stringify({
         cases: cases.length, gaps, metrics: m,
         mismatches: wrong.map((r) => ({ id: r.c.id, expect: r.c.expect, code: r.c.code ?? null, got: r.got.verdict, gotCode: r.got.code })),
+        staleVendor: stale,
       }, null, 2));
       return;
     }
@@ -145,6 +148,7 @@ function report(argv: readonly string[]): void {
       const label = (verdict: string, code: string | null | undefined): string => (code === undefined || code === null ? verdict : `${verdict} ${code}`);
       for (const r of wrong) lines.push(`  ${r.c.id}: expected ${label(r.c.expect, r.c.code)}, got ${label(r.got.verdict, r.got.code)}`);
     } else lines.push('Mismatches: 0');
+    lines.push(formatStaleVendor(stale));
     out(lines.join('\n'));
   } finally {
     runner.dispose();
