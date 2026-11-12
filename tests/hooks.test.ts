@@ -507,7 +507,7 @@ test('gate: outside a git repository an approval is not remembered', () => {
 
 test('manifest, hooks and skill are consistent', () => {
   const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')) as Manifest;
-  assert.equal(manifest.version, '2.2.0');
+  assert.equal(manifest.version, '2.3.0');
   assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity', 'gate', 'gate_paths']);
   assert.equal((manifest.userConfig['gate_paths'] as { default?: boolean }).default, false);
   assert.equal((manifest.userConfig['gate'] as { default?: string }).default, 'report');

@@ -67,6 +67,19 @@ export function coverageLine(verdicts) {
     const { covered, total } = coverage(verdicts);
     return `Coverage: ${covered} of ${total} rules (${percent(ratio(covered, total))}) matched a table or the repository.`;
 }
+// '' when every rule was answered. A rule nothing matched is kept by default, which a reader takes for approval.
+export function unjudgedLine(verdicts) {
+    const { covered, total } = coverage(verdicts);
+    const n = total - covered;
+    if (n === 0)
+        return '';
+    return `Not judged: ${n} ${n === 1 ? 'rule' : 'rules'} matched nothing (note no-evidence). ` +
+        `${n === 1 ? 'It is' : 'They are'} kept because no check applies, not because a check approved ${n === 1 ? 'it' : 'them'}.`;
+}
+// The estimate the cap is checked against, in the hook's own arithmetic.
+export function tokenLine(name, t) {
+    return `Tokens: ${name} is ~${t.total} (${t.own} own + ${t.imported} imported), estimated as characters ÷ 3.6.`;
+}
 const cell = (s) => s.replace(/\r?\n/g, ' ').replaceAll('|', '\\|');
 export function formatAudit(verdicts) {
     const rows = verdicts.map((v) => `| ${[

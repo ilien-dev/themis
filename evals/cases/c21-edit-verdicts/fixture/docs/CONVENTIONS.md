@@ -1,0 +1,3 @@
+- All money values are integer cents; never floats.
+- src/generated/ is produced by `npm run gen` from schema.json. Do not edit it by hand.
+- Tests need a migrated database: run `npm run db:migrate` first or they fail with "no such table".

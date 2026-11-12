@@ -41,7 +41,7 @@ Versions before v2.1.277 never read `AGENTS.md` on their own.
 | Mode | What it does |
 |---|---|
 | `init` | Reads the manifest, scripts, CI config and a few source files, runs the test and build commands it finds, and writes a file with only the lines that pass one test: *would the model make a mistake in this repo without it?* |
-| `audit` | Checks every line and command of the existing files against the repo and marks each keep, cut, move, rewrite or conflict, with a note on references that do not resolve. Shows the table, then applies what you approve. |
+| `audit` | Checks every line and command of the existing files against the repo and marks each keep, cut, move, rewrite or conflict, with a note on references that do not resolve. Shows the table, how many rules no check judged and the token estimate, then applies what you approve. |
 | edit | The default when Claude is about to change a rule file in the middle of other work. Adds what was asked in the shortest form, and condenses nearby lines when the result would pass the cap. It does not audit the rest. |
 | `sync` | Brings a pair back to identical: creates the missing file, or shows how two files differ and asks you which text is right. |
 
@@ -60,7 +60,7 @@ An `Edit`, `Write` or `MultiEdit` that would take `CLAUDE.md`, `AGENTS.md` or `C
 
 Shell commands that write to those files (`>`, `>>`, `tee`, `sed -i`, `perl -i`, `Set-Content`, `Add-Content`, `Out-File`) are denied, so the cap can't be bypassed from the shell.
 
-2,500 tokens is the size Boris Cherny reports for his own CLAUDE.md; the official guidance is "under 200 lines". The estimate is characters ÷ 3.6. Configure it with `claude_md_cap` (0 disables it).
+2,500 tokens is the size Boris Cherny reports for his own CLAUDE.md; the official guidance is "under 200 lines". The estimate is characters ÷ 3.6, and `gate audit` and `gate check` print it with the same arithmetic the hook uses, so the skill does not estimate by hand. Configure it with `claude_md_cap` (0 disables it).
 
 ## Parity
 
@@ -148,11 +148,11 @@ The skill calls these; you can too.
 
 ```
 node hooks/dist/gate.js check  [--rules <file>] [--file CLAUDE.md] [--json] [--paths]   # Markdown from --rules (read as UTF-8) or stdin; --file says which repository
-node hooks/dist/gate.js audit  <file> [--json] [--prune] [--paths]     # a verdict for every rule, and the coverage
+node hooks/dist/gate.js audit  <file> [--json] [--prune] [--paths]     # a verdict for every rule, the coverage, the rules not judged and the token estimate
 node hooks/dist/gate.js report <corpus.jsonl> [--json] [--paths]       # precision, false-cut rate and coverage of a labelled corpus
 ```
 
-Prefer `--rules` to a pipe: Windows PowerShell 5.1 re-encodes piped text, so accented letters arrive changed and can change a verdict. `--paths` turns on the described-path check, as `gate_paths` does for the hook. The exit code is 0 for any valid input and 2 for wrong usage or an unreadable file.
+Prefer `--rules` to a pipe: Windows PowerShell 5.1 re-encodes piped text, so accented letters arrive changed and can change a verdict. `--paths` turns on the described-path check, as `gate_paths` does for the hook. `check` ends with the tokens the target file holds now and the size of the text checked. Under its table `audit` prints a `Not judged:` line when rules matched nothing, since a rule kept for lack of a check is not a rule approved, and says so when the repository has no `package.json`. The exit code is 0 for any valid input and 2 for wrong usage or an unreadable file.
 
 ### Limits
 

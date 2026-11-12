@@ -1,4 +1,5 @@
 import { interrupts } from './verdict.ts';
+import type { TokenCount } from '../lib.ts';
 import type { Phrase } from './tables/phrases.ts';
 import type { Note, Verdict, VerdictKind } from './types.ts';
 
@@ -79,6 +80,20 @@ const ratio = (a: number, b: number): number => (b === 0 ? 0 : a / b);
 export function coverageLine(verdicts: readonly Verdict[]): string {
   const { covered, total } = coverage(verdicts);
   return `Coverage: ${covered} of ${total} rules (${percent(ratio(covered, total))}) matched a table or the repository.`;
+}
+
+// '' when every rule was answered. A rule nothing matched is kept by default, which a reader takes for approval.
+export function unjudgedLine(verdicts: readonly Verdict[]): string {
+  const { covered, total } = coverage(verdicts);
+  const n = total - covered;
+  if (n === 0) return '';
+  return `Not judged: ${n} ${n === 1 ? 'rule' : 'rules'} matched nothing (note no-evidence). ` +
+    `${n === 1 ? 'It is' : 'They are'} kept because no check applies, not because a check approved ${n === 1 ? 'it' : 'them'}.`;
+}
+
+// The estimate the cap is checked against, in the hook's own arithmetic.
+export function tokenLine(name: string, t: TokenCount): string {
+  return `Tokens: ${name} is ~${t.total} (${t.own} own + ${t.imported} imported), estimated as characters ÷ 3.6.`;
 }
 
 const cell = (s: string): string => s.replace(/\r?\n/g, ' ').replaceAll('|', '\\|');
