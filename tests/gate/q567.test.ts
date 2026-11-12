@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseRules } from '../../hooks/gate/extract.ts';
 import { readFacts, type Facts } from '../../hooks/gate/facts.ts';
@@ -58,7 +60,7 @@ test('q5 moves an absolute prohibition about a command', () => {
   assert.equal(a.target, 'permissions.deny or a hook');
   assert.equal(a.evidence, 'absolute "Never" with `npm publish`');
   assert.equal(ask(q5, 'Nunca ejecutes `git push --force`.')?.verdict, 'move');
-  assert.equal(ask(q5, '- Always avoid `npm run clean`.')?.verdict, 'move');
+  assert.equal(ask(q5, '- Always avoid `docker system prune`.')?.verdict, 'move');
   assert.equal(ask(q5, 'Never edit `src/generated/a.ts` by hand.')?.verdict, 'move');
 });
 
@@ -188,4 +190,59 @@ test('rules that carry information are not flagged by any of the three', () => {
   ]) {
     for (const c of [q5, q6, q7]) assert.equal(ask(c, t), null, t);
   }
+});
+
+// Round 1 review fixes.
+
+test('q7 finds a bare file name anywhere in the repo, not only at the root', () => {
+  const r = repo({ 'package.json': '{}', '.claude/settings.json': '', 'packages/x/tsconfig.json': '', 'skills/a/SKILL.md': '' });
+  const f = readFacts(join(r, 'CLAUDE.md'));
+  for (const s of ['settings.json', 'tsconfig.json', 'SKILL.md']) assert.equal(ask(q7, `See \`${s}\`.`, f), null, s);
+  assert.equal(ask(q7, 'See `missing.json`.', f)?.code, 'dead-reference');
+});
+
+test('q7 does not judge paths outside a git repo', () => {
+  const plain = readFacts(join(mkdtempSync(join(tmpdir(), 'themis-plain-')), 'CLAUDE.md'));
+  assert.equal(plain.inRepo, false);
+  assert.equal(ask(q7, 'See `src/missing.js`.', plain), null);
+  assert.equal(ask(q7, 'See `missing.md`.', plain), null);
+});
+
+test('q7 ignores a line or column suffix on a path', () => {
+  for (const s of ['src/money.js:42', 'src/money.js:42:7', 'src/money.js#L10', 'src/money.js#L10-L20', 'src/money.js#L10-20']) {
+    assert.equal(ask(q7, `See \`${s}\`.`), null, s);
+  }
+  const a = ask(q7, 'See `src/missing.js:42`.');
+  assert.equal(a?.evidence, '`src/missing.js` not found');
+});
+
+test('q7 abstains on build output and ignored paths, which a fresh clone lacks', () => {
+  const r = repo({ 'package.json': '{}', 'src/a.ts': '', '.gitignore': '/cache-data/\nsecrets.json\n*.log\n# comment\n' });
+  const f = readFacts(join(r, 'CLAUDE.md'));
+  for (const s of ['dist/x.js', 'build/out.js', 'node_modules/foo/x.js', 'coverage/lcov.info', '.next/server.js', 'cache-data/x.bin', 'a/b/secrets.json', 'cache-data/']) {
+    assert.equal(ask(q7, `See \`${s}\`.`, f), null, s);
+  }
+  assert.equal(ask(q7, 'See `src/missing.ts`.', f)?.code, 'dead-reference');
+});
+
+test('q5 does not treat a code fragment as a command', () => {
+  assert.equal(ask(q5, 'Never use `as any` casts.'), null);
+  assert.equal(ask(q5, 'Always write `if (x) return` guards.'), null);
+  assert.equal(ask(q5, 'Never run `docker compose down -v` here.')?.verdict, 'move');
+  assert.equal(ask(q5, 'Never run `rm -rf dist`.')?.verdict, 'move');
+});
+
+test('q5 targets a deny rule for never-type markers and a hook for always-type markers', () => {
+  assert.equal(ask(q5, 'Never run `npm publish` locally.')?.target, 'permissions.deny or a hook');
+  assert.equal(ask(q5, 'Nunca ejecutes `git push --force`.')?.target, 'permissions.deny or a hook');
+  assert.equal(ask(q5, 'Always run `npm run lint` before committing.')?.target, 'a hook');
+  assert.equal(ask(q5, 'Siempre ejecuta `npm run lint`.')?.target, 'a hook');
+});
+
+test('q5 leaves a rule with a dead reference to q7, which reports a fix', () => {
+  const text = 'Never edit `src/missing.js` by hand.';
+  assert.equal(ask(q5, text), null);
+  const v = judge(first(text), facts, ctx);
+  assert.equal(v.verdict, 'fix');
+  assert.equal(v.question, 7);
 });

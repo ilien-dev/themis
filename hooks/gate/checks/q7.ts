@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { read } from '../../lib.ts';
 import { citedPaths, citedScripts, spans } from '../text.ts';
 import type { Facts } from '../facts.ts';
 import type { Answer, Rule } from '../types.ts';
@@ -20,46 +21,83 @@ const EMPHASIS = /(?<![\p{L}\p{N}_])(IMPORTANT|CRITICAL|MUST|NEVER|ALWAYS|IMPORT
 // A bare name such as `Node.js` or `socket.io` is a library, not a file; only these extensions mark a file.
 const BARE_FILE_EXT = /\.(?:md|json|ya?ml|toml|tsx?|[cm]js|txt|sh|py|go|rs|css|html)$/i;
 const EXT = /\.[A-Za-z0-9]{1,5}$/;
+const LOCATION = /(?::\d+(?::\d+)?|#L\d+(?:-L?\d+)?)$/; // src/a.ts:42, src/a.ts:42:7, src/a.ts#L10-L20
 const LIST_MARKER = /^\s*(?:[-*+]|\d+[.)])\s+/;
+// Directories a fresh clone does not have.
+const GENERATED = new Set(['dist', 'build', 'out', 'target', 'coverage', 'node_modules', '.next', '.nuxt', '.turbo', '.cache', 'tmp', 'vendor']);
 
 const posix = (p: string): string => p.replaceAll('\\', '/');
 const fix = (evidence: string): Answer => ({ verdict: 'fix', code: 'dead-reference', question: 7, evidence });
 
+const TOP_DIRS = new WeakMap<Facts, Set<string>>();
+
+// The first segment of every tracked file that sits in a directory; computed on first use.
 function topDirs(facts: Facts): Set<string> {
+  const cached = TOP_DIRS.get(facts);
+  if (cached !== undefined) return cached;
   const out = new Set<string>();
   for (const f of facts.files) {
     const i = f.indexOf('/');
     if (i > 0) out.add(f.slice(0, i));
   }
+  TOP_DIRS.set(facts, out);
   return out;
 }
 
+// Entries of the root .gitignore that need no glob engine: plain names, optionally anchored or marked as directories.
+function ignoredNames(facts: Facts): { anchored: string[]; anywhere: string[] } {
+  const out = { anchored: [] as string[], anywhere: [] as string[] };
+  for (const raw of (read(join(facts.root, '.gitignore')) ?? '').split(/\r?\n/)) {
+    const line = raw.trim();
+    if (line === '' || line.startsWith('#') || line.startsWith('!') || /[*?[\\]/.test(line)) continue;
+    const name = line.replace(/\/+$/, '');
+    if (name.startsWith('/')) out.anchored.push(name.slice(1));
+    else if (name.includes('/')) out.anchored.push(name);
+    else out.anywhere.push(name);
+  }
+  return out;
+}
+
+function generated(p: string, facts: Facts): boolean {
+  const segments = p.split('/');
+  if (segments.some((s) => GENERATED.has(s))) return true;
+  const { anchored, anywhere } = ignoredNames(facts);
+  return anchored.some((a) => p === a || p.startsWith(`${a}/`)) || anywhere.some((n) => segments.includes(n));
+}
+
 // A file or a directory that exists, tracked or on disk, from the repo root or from the rule file's directory.
+// A bare file name counts when any tracked file has that name.
 function alive(p: string, facts: Facts): boolean {
   const starts = [p, posix(relative(facts.root, join(facts.dir, p)))];
-  for (const f of facts.files) if (starts.some((s) => f === s || f.startsWith(`${s}/`))) return true;
+  const bare = p.includes('/') ? null : p;
+  for (const f of facts.files) {
+    if (starts.some((s) => f === s || f.startsWith(`${s}/`))) return true;
+    if (bare !== null && f.endsWith(`/${bare}`)) return true;
+  }
   return existsSync(join(facts.root, p)) || existsSync(join(facts.dir, p));
 }
 
-function deadPath(raw: string, facts: Facts, dirs: ReadonlySet<string>): boolean {
-  let p = posix(raw);
+// The path as written, without a location suffix, a leading ./ or a trailing slash.
+function clean(raw: string): string {
+  let p = posix(raw).replace(LOCATION, '');
   while (p.startsWith('./')) p = p.slice(2);
-  p = p.replace(/\/+$/, '');
+  return p.replace(/\/+$/, '');
+}
+
+function deadPath(p: string, facts: Facts): boolean {
   if (p === '' || p.startsWith('/') || p.startsWith('~') || p.startsWith('..') || /^[A-Za-z]:/.test(p)) return false;
-  if (alive(p, facts)) return false;
+  if (alive(p, facts) || generated(p, facts)) return false;
   if (!p.includes('/')) return BARE_FILE_EXT.test(p);
   const first = p.split('/')[0] ?? '';
   if (existsSync(join(facts.root, first)) || existsSync(join(facts.dir, first))) return true;
   // The first segment is unknown: a URL path, a package subpath or a branch name unless it looks like this repo's.
-  return EXT.test(p) || dirs.has(first);
+  return EXT.test(p) || topDirs(facts).has(first);
 }
 
-export const q7: Check = (rule: Rule, facts: Facts) => {
-  if (rule.kind === 'heading' || rule.kind === 'code') return null;
-
-  if (facts.filesKnown) {
-    const dirs = topDirs(facts);
-    const dead = citedPaths(rule.text).find((p) => deadPath(p, facts, dirs));
+// The dead-reference answer for a rule, or null. Question 5 uses it to leave such a rule to question 7.
+export function deadReference(rule: Rule, facts: Facts): Answer | null {
+  if (facts.inRepo && facts.filesKnown) {
+    const dead = citedPaths(rule.text).map(clean).find((p) => deadPath(p, facts));
     if (dead !== undefined) return fix(`\`${dead}\` not found`);
   }
 
@@ -69,6 +107,14 @@ export const q7: Check = (rule: Rule, facts: Facts) => {
       !s.script.startsWith('-') && !BUILTIN_SCRIPTS.has(s.script) && !PM_COMMANDS.has(s.script) && !Object.hasOwn(known, s.script));
     if (missing !== undefined) return fix(`scripts.${missing.script} not in package.json`);
   }
+  return null;
+}
+
+export const q7: Check = (rule: Rule, facts: Facts) => {
+  if (rule.kind === 'heading' || rule.kind === 'code') return null;
+
+  const dead = deadReference(rule, facts);
+  if (dead !== null) return dead;
 
   const outside = rule.text.replace(LIST_MARKER, '').replace(/`[^`\n]*`/g, ' ');
   const word = EMPHASIS.exec(outside)?.[1];
