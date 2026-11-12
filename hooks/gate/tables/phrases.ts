@@ -22,7 +22,8 @@ const ADJ_ES = 'limpio|legible|mantenible|simple|bueno|de (?:alta )?calidad|eleg
 // "clean, readable and maintainable": each repetition starts with its own separator.
 const ADJ_LIST = String.raw`(?:${ADJ})(?:(?:,\s*(?:and\s+)?|\s+and\s+)(?:${ADJ})){0,4}`;
 const ADJ_LIST_ES = String.raw`(?:${ADJ_ES})(?:(?:,\s*(?:y\s+)?|\s+y\s+)(?:${ADJ_ES})){0,4}`;
-const LANG_WORD = String.raw`[\p{L}\p{N}.+#]{1,24}`;
+// A closed list: an open word slot would cut conventions such as "use branded types".
+const LANG_WORD = String.raw`(?:typescript|javascript|ecmascript|es\d*|python|go|golang|rust|java|kotlin|swift|c#|c\+\+|ruby|php|scala|dart|elixir)`;
 
 const BP = 'https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices';
 const OPUS_55 = 'https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5';
@@ -69,8 +70,8 @@ export const PHRASES: readonly Phrase[] = [
   generic(String.raw`(?:siempre\s+)?(?:recuerda\s+)?comun\u00edcate\s+(?:claramente|bien)(?:\s+sobre\s+(?:tus|los)\s+cambios)?`),
 
   // File filler: sentences about the file itself.
-  filler(String.raw`this\s+file\s+(?:gives|provides)\s+(?:[^\s.,;:!?]+\s+){0,3}?(?:context|guidance)(?:\s+(?:about|on|for)\s+(?:the\s+)?[^\s.,;:!?]{1,40}(?:\s+project)?)?(?:\s+so\s+(?:that\s+)?(?:it|claude|you)\s+can\s+(?:help|work|assist)(?:\s+(?:effectively|better|well))?)?`),
+  filler(String.raw`this\s+file\s+(?:gives|provides)\s+(?:(?:claude|you|some|the|project|agents?|models?)\s+){0,3}(?:context|guidance)(?:\s+(?:about|on|for)\s+(?:the\s+)?[^\s.,;:!?]{1,40}\s+project)?(?:\s+so\s+(?:that\s+)?(?:it|claude|you)\s+can\s+(?:help|work|assist)(?:\s+(?:effectively|better|well))?)?`),
   filler(String.raw`keep\s+(?:it|this\s+file)\s+(?:up[- ]to[- ]date|updated|current)(?:\s+as\s+(?:the\s+)?project\s+(?:evolves|changes|grows))?`),
-  filler(String.raw`este\s+archivo\s+(?:da|proporciona|ofrece|contiene)\s+(?:[^\s.,;:!?]+\s+){0,3}?(?:contexto|orientaci\u00f3n|gu\u00eda)(?:\s+(?:sobre|acerca\s+de)\s+(?:el\s+|la\s+)?(?:proyecto\s+)?[^\s.,;:!?]{1,40}(?:\s+proyecto)?)?(?:\s+para\s+que\s+(?:pueda|puedas)\s+ayudar(?:\s+(?:bien|mejor|eficazmente))?)?`),
+  filler(String.raw`este\s+archivo\s+(?:da|proporciona|ofrece|contiene)\s+(?:(?:a|al|claude|te|le|agente|el|un|algo|de)\s+){0,3}(?:contexto|orientaci\u00f3n|gu\u00eda)(?:\s+(?:sobre|acerca\s+de)\s+(?:el\s+|la\s+)?proyecto\s+[^\s.,;:!?]{1,40})?(?:\s+para\s+que\s+(?:pueda|puedas)\s+ayudar(?:\s+(?:bien|mejor|eficazmente))?)?`),
   filler(String.raw`mant(?:\u00e9n|en)(?:lo|\s+este\s+archivo)\s+actualizado(?:\s+a\s+medida\s+que\s+(?:el\s+)?proyecto\s+(?:evoluciona|cambia|crece))?`),
 ];

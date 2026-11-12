@@ -10,7 +10,7 @@ const CONNECTIVES = new Set([
 ]);
 const CODES = { vendor: 'vendor-declared', filler: 'file-filler', generic: 'generic-advice' };
 const ORDER = ['vendor', 'filler', 'generic']; // the most specific reason first
-const GLOBAL = new Map(PHRASES.map((p) => [p, new RegExp(p.pattern.source, 'giu')]));
+const GLOBAL = PHRASES.map((p) => new RegExp(p.pattern.source, 'giu')); // same order as PHRASES
 export const q3 = (rule) => {
     if (rule.kind === 'heading' || rule.kind === 'code')
         return null;
@@ -19,13 +19,13 @@ export const q3 = (rule) => {
         return null;
     let rest = text;
     const matched = [];
-    for (const phrase of PHRASES) {
-        const found = rest.match(GLOBAL.get(phrase) ?? phrase.pattern);
-        const first = found?.[0];
-        if (first === undefined)
+    for (const [i, phrase] of PHRASES.entries()) {
+        const re = GLOBAL[i];
+        const first = re === undefined ? undefined : rest.match(re)?.[0];
+        if (re === undefined || first === undefined)
             continue;
         matched.push({ phrase, text: first });
-        rest = rest.replace(GLOBAL.get(phrase) ?? phrase.pattern, ' ');
+        rest = rest.replace(re, ' ');
     }
     const best = ORDER.map((g) => matched.find((m) => m.phrase.group === g)).find((m) => m !== undefined);
     if (best === undefined)

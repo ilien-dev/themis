@@ -110,6 +110,13 @@ test('a rule with a negation, an absolute, a condition, a number or an unknown w
     'Be thorough with Stripe webhooks.',
     'Use modern ES features only in src/.',
     'Siempre maneja los errores de pago con reintentos.',
+    'Use branded types.',
+    'Use opaque types.',
+    'Use strict types.',
+    'Follow best practices for security.',
+    'Use latest Node features.',
+    'This file gives context about security.',
+    'Este archivo proporciona contexto sobre seguridad.',
   ]) {
     assert.equal(ask(t), null, t);
   }
