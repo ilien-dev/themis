@@ -6,7 +6,7 @@ import { readFacts, type Facts } from '../../hooks/gate/facts.ts';
 import { describedPath, describedScript, projectOverview, q1, stackList } from '../../hooks/gate/checks/q1.ts';
 import { q3 } from '../../hooks/gate/checks/q3.ts';
 import { q7 } from '../../hooks/gate/checks/q7.ts';
-import { contextFor, judgeAll, type Check } from '../../hooks/gate/verdict.ts';
+import { contextFor, judgeAll, type Check, type CheckOptions } from '../../hooks/gate/verdict.ts';
 import type { Answer } from '../../hooks/gate/types.ts';
 import { repo } from './helpers.ts';
 
@@ -20,12 +20,14 @@ function factsOf(files: Record<string, string>): Facts {
   return f;
 }
 
+// Described paths are opt-in (gate_paths); these tests turn them on unless they say otherwise.
+const ON: CheckOptions = { paths: true, pathsOverLimit: false };
 // The answer of `check` to the only rule of `text` in a repository holding `files`.
-function ask(check: Check, text: string, files: Record<string, string>): Answer | null {
+function ask(check: Check, text: string, files: Record<string, string>, options: CheckOptions = ON): Answer | null {
   const rules = parseRules(text);
   const rule = rules[0];
   if (rules.length !== 1 || rule === undefined) throw new Error(`${rules.length} rules parsed from ${text}`);
-  return check(rule, factsOf(files));
+  return check(rule, factsOf(files), options);
 }
 const code = (check: Check, text: string, files: Record<string, string>): string | null => ask(check, text, files)?.code ?? null;
 const nulls = (check: Check, files: Record<string, string>, texts: readonly string[]): void => {
@@ -138,22 +140,25 @@ test('a described path spread over several lines is kept', () => {
 const EVENTS = { 'package.json': '{"name":"events","devDependencies":{"jest":"^29","eslint":"^9","prettier":"^3","husky":"^9"},"dependencies":{"zod":"^3","tsconfig-paths":"^4","debug":"^4","colors":"^1","express":"^4","ms":"^2","pino":"^9"}}' };
 const NEXT = { 'package.json': '{"name":"board","dependencies":{"next":"^15.1.0","react":"^19.0.0","tailwindcss":"^4","typescript":"~5.7.2","@xyflow/react":"^12","@types/node":"^24"}}' };
 test('a list whose every segment is a dependency is inferable', () => {
-  const a = ask(q1, '- Jest (unit + integration), ESLint + Prettier, Husky pre-commit', EVENTS);
+  const a = ask(q1, '- Jest (unit + integration), ESLint + Prettier, Husky', EVENTS);
   assert.ok(a !== null); assert.equal(a.verdict, 'cut'); assert.equal(a.code, 'inferable-stack'); assert.match(a.evidence, /jest/);
-  assert.equal(code(q1, '**Stack**: Next.js 15 · React 19 · Tailwind CSS · TypeScript', NEXT), 'inferable-stack');
-  assert.equal(code(q1, '- **Stack**: Next.js 15, React 19, `@xyflow/react` and TypeScript 5', NEXT), 'inferable-stack');
+  assert.equal(ask(q1, '- Jest (unit + integration), ESLint + Prettier, Husky pre-commit', EVENTS), null); // a trailing word
+  assert.equal(code(q1, '**Stack**: Tailwind CSS 4 · TypeScript', NEXT), 'inferable-stack');
+  assert.equal(code(q1, '- **Stack**: Tailwind CSS, `@xyflow/react` and TypeScript 5', NEXT), 'inferable-stack');
+  assert.equal(ask(q1, '**Stack**: Next.js 15 · React 19 · TypeScript', NEXT), null); // two frameworks: the same TECH category
+  assert.equal(ask(q1, '**Stack**: Next.js 15 · TypeScript', NEXT), null); // react is there too, unnamed
   assert.equal(code(q1, '- **Testing**: Jest, Husky', EVENTS), 'inferable-stack');
   assert.equal(code(q1, '- Pruebas: Jest y Prettier', EVENTS), 'inferable-stack');
 });
 test('a version that differs from the manifest is a conflict naming both', () => {
-  const a = ask(q1, '**Stack**: Next.js 15 · React 18 · Tailwind CSS · TypeScript', NEXT);
+  const a = ask(q1, '**Stack**: Tailwind CSS · TypeScript 4', NEXT);
   assert.ok(a !== null); assert.equal(a.verdict, 'conflict'); assert.equal(a.code, 'stale-version'); assert.equal(a.question, 1);
-  assert.match(a.evidence, /18/); assert.match(a.evidence, /\^19\.0\.0/);
+  assert.match(a.evidence, /TypeScript 4/); assert.match(a.evidence, /~5\.7\.2/);
 });
 test('a version the manifest cannot confirm stops the stack list', () => {
-  const loose = { 'package.json': '{"dependencies":{"react":">=18 <20","next":"latest"}}' };
-  nulls(q1, loose, ['- **Stack**: React 18, Next.js']);
-  assert.equal(code(q1, '- **Stack**: React, Next.js', loose), 'inferable-stack');
+  const loose = { 'package.json': '{"dependencies":{"react":">=18 <20","tailwindcss":"latest"}}' };
+  nulls(q1, loose, ['- **Stack**: React 18, Tailwind CSS']);
+  assert.equal(code(q1, '- **Stack**: React, Tailwind CSS', loose), 'inferable-stack');
   assert.equal(ask(q1, '- **Runtime**: Node.js 20, TypeScript', NEXT), null); // @types/node says nothing of the runtime
 });
 test('a stack line with an instruction, a non-dependency or prose is kept', () => {
@@ -170,7 +175,7 @@ test('a stack line with an instruction, a non-dependency or prose is kept', () =
   nulls(q1, EVENTS, ['Use debug and colors sparingly', '- debug and colors', '- express, ms', 'Jest, ESLint and Prettier']);
 });
 test('a 0.x version is compared by minor, and abstains without one', () => {
-  const zero = { 'package.json': '{"dependencies":{"dagre":"^0.8.5","next":"^15"}}' };
+  const zero = { 'package.json': '{"dependencies":{"dagre":"^0.8.5","next":"^15"}}' }; // Next.js makes the list unambiguous
   assert.equal(ask(q1, '- **Stack**: Dagre 0.7, Next.js', zero), null); // below 1.0 no conflict is claimed
   assert.equal(code(q1, '- **Stack**: Dagre 0.8, Next.js', zero), 'inferable-stack');
   assert.equal(ask(q1, '- **Stack**: Dagre 0, Next.js', zero), null);
@@ -178,7 +183,7 @@ test('a 0.x version is compared by minor, and abstains without one', () => {
 test('a stack line naming one of two tools of a kind is kept: it says which one is used', () => {
   const both = { 'package.json': '{"devDependencies":{"jest":"^29","vitest":"^2","eslint":"^9"}}' };
   nulls(q1, both, ['- **Testing**: Jest, ESLint', '- Jest, ESLint', '- **jest**: Testing framework']);
-  assert.equal(code(q1, '- **Linting**: ESLint, Vitest, Jest', both), 'inferable-stack');
+  assert.equal(ask(q1, '- **Linting**: ESLint, Vitest, Jest', both), null); // two test runners: the same category
 });
 test('"**dependency**: description" is never cut: nothing in the repo checks the description', () => {
   nulls(q1, EVENTS, ['- **tsconfig-paths**: TypeScript path mapping support', '- **pino**: Fast logger','- **pino**: logger shared by every service', '- **pino**: legacy logger', '- **pino**: logger, configured in `src/log.ts`', '- **pino**: logger for v2']);
@@ -253,29 +258,44 @@ test('an overview with few content words, a span, a rule or a number is kept', (
 });
 
 // Every detector on a large repository.
-test('200 varied rules over a repository of 2,000 files are judged in under 200 ms', () => {
+// The whole path, facts read inside the timed loop, with paths off and on. With paths on the cited files are
+// real files of 20-30 KB on disk, so their reads are timed too.
+test('200 varied rules over a repository of 2,000 files are judged in under 200 ms, paths off and on', () => {
   const files: string[] = ['package.json', 'README.md'];
   for (let i = 0; files.length < 2000; i++) files.push(`packages/p${i % 40}/src/module${i}.ts`);
-  const dir = repo({
+  const disk: Record<string, string> = {
     'package.json': JSON.stringify({ name: 'big', description: 'A big monorepo of packages for testing', scripts: { build: 'tsc -b', 'db:backup': 'node db/backup.mjs' },
       dependencies: { react: '^19', next: '^15', zod: '^3', pino: '^9' } }),
     'README.md': README,
-  });
+  };
+  // 300 of the listed files on disk, 20-30 KB each.
+  for (let i = 0; i < 300; i++) disk[files[i + 2] ?? ''] = `// Parses the input of module ${i}\n${'export const value = parseInput(raw);\n'.repeat(500 + (i % 10) * 25)}`;
+  const dir = repo(disk);
+  const cited = Array.from({ length: 40 }, (_, i) => `- \`${files[i + 2] ?? ''}\` — Parses the input`);
   const samples = [
-    '- `packages/p1/src/module1.ts` — Parses the input', '- **Stack**: Next.js 15 · React 19 · Zod', '- `npm run db:backup` - Create database backup',
-    SUMMARY, '# CLAUDE.md', 'This file provides guidance to Claude Code when working with code in this repository.', '- `packages/p3/` — legacy code',
-    '- **pino**: Fast logger', '- Never commit secrets.', '- `src/missing/file.ts` — gone',
+    '- **Stack**: Next.js 15 · Zod', '- `npm run db:backup` - Create database backup', SUMMARY, '# CLAUDE.md',
+    'This file provides guidance to Claude Code when working with code in this repository.', '- Keep the legacy code as it is', '- **pino**: Fast logger',
+    '- Never commit secrets.', '- Money is stored in integer cents', '- Jest, ESLint and Prettier',
   ];
-  const markdown = Array.from({ length: 200 }, (_, i) => samples[i % samples.length] ?? '').join('\n\n');
-  const runs: number[] = [];
-  for (let i = 0; i < 3; i++) {
-    const start = performance.now();
-    const facts = readFacts(join(dir, 'CLAUDE.md'), { files }); // the whole path: facts, then every rule
-    const verdicts = judgeAll(parseRules(markdown), facts, contextFor(facts));
-    runs.push(performance.now() - start);
-    assert.equal(verdicts.length, 200);
+  const rules = Array.from({ length: 200 }, (_, i) => (i % 5 === 0 ? cited[(i / 5) % 40] : samples[i % samples.length]) ?? '');
+  const markdown = rules.join('\n\n');
+  const measured: string[] = [];
+  for (const paths of [false, true]) {
+    const runs: number[] = [];
+    let cut = 0;
+    for (let i = 0; i < 3; i++) {
+      const start = performance.now();
+      const facts = readFacts(join(dir, 'CLAUDE.md'), { files });
+      const verdicts = judgeAll(parseRules(markdown), facts, contextFor(facts, { paths }));
+      runs.push(performance.now() - start);
+      assert.equal(verdicts.length, 200);
+      cut = verdicts.filter((v) => v.code === 'inferable-path').length;
+    }
+    assert.equal(cut, paths ? 40 : 0);
+    measured.push(`paths ${paths ? 'on' : 'off'}: ${runs.map((r) => r.toFixed(0)).join(', ')} ms`);
+    assert.ok(Math.min(...runs) < 200, measured.join('; '));
   }
-  assert.ok(Math.min(...runs) < 200, runs.map((r) => r.toFixed(0)).join(', '));
+  console.log(`# timing ${measured.join('; ')}`);
 });
 test('runs of spaces, dots and separators keep every detector fast', () => {
   const facts = factsOf({ ...EVENTS, 'README.md': README, 'lib/a.js': '' });
@@ -316,7 +336,7 @@ test('a version is called stale only against a single plain range of major 1 or 
   assert.equal(ask(q1, '- **Stack**: React 19, TypeScript', peer), null);
   const same = { 'package.json': '{"devDependencies":{"react":"^19.0.0","typescript":"^5"},"peerDependencies":{"react":"^19.0.0"}}' };
   assert.equal(ask(q1, '- **Stack**: React 18, TypeScript', same)?.code, 'stale-version');
-  assert.equal(ask(q1, '- **Stack**: React 18, React 19, TypeScript', same), null); // two majors for one dependency
+  assert.equal(ask(q1, '- **Stack**: React 18, TypeScript 5, React 19', same), null); // two majors for one dependency
 });
 test('a capital at the start earns an ordinary-word dependency nothing', () => {
   nulls(q1, EVENTS, ['- Debug and colors', '- Debug, Colors', '- **Stack**: Debug and colors']);
@@ -361,17 +381,72 @@ test('a described path needs two words matched by the path or its content, and a
   const binary = { 'package.json': '{"name":"x"}', 'assets/logo.json': '\u0000\u0001logo image data' };
   assert.equal(ask(q1, '- `assets/logo.json` — logo image data', binary), null);
 });
-test('the bytes read for described paths stop at 2 MB per repository', () => {
-  const big = 'parse invoice data '.repeat(3500); // about 66 KB: each read takes the first 64 KB
-  const files: Record<string, string> = { 'package.json': '{"name":"x"}' };
-  for (let i = 0; i < 40; i++) files[`src/m${i}.ts`] = big;
-  const facts = factsOf(files);
-  const answers = Array.from({ length: 40 }, (_, i) => {
-    const rule = parseRules(`- \`src/m${i}.ts\` — parse invoice data`)[0];
-    assert.ok(rule !== undefined);
-    return describedPath(rule, facts)?.code ?? null;
-  });
-  assert.equal(answers[0], 'inferable-path');
-  assert.ok(answers.filter((a) => a !== null).length <= 32, `${answers.filter((a) => a !== null).length} read`);
-  assert.equal(answers[39], null);
+
+// Review round 2: described paths opt-in, resolved in one place, and lists that assign roles kept.
+const NV = { 'package.json': '{"name":"gpu"}', 'lib/nvidia.js': '// Executes nvidia-smi and parses the CSV output.\n' };
+test('described paths are judged only with gate_paths on', () => {
+  const rule = parseRules('- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output')[0];
+  assert.ok(rule !== undefined);
+  const facts = factsOf(NV);
+  assert.equal(q1(rule, facts), null); // no options: off
+  assert.equal(q1(rule, facts, { paths: false, pathsOverLimit: false }), null);
+  assert.equal(q1(rule, facts, ON)?.code, 'inferable-path');
+  assert.equal(judgeAll([rule], facts, contextFor(facts))[0]?.verdict, 'keep');
+  assert.equal(judgeAll([rule], facts, contextFor(facts, { paths: true }))[0]?.code, 'inferable-path');
+});
+test('a directory is resolved from the rule file, then the root, and never pooled from several places', () => {
+  const files = {
+    'package.json': '{"name":"mono"}', 'src/api/index.ts': 'export {};\n', 'packages/admin/src/api/billing-audit-users.ts': 'export {};\n',
+    'packages/a/src/x/parse.ts': '// parse invoice\n', 'packages/b/src/x/parse.ts': '// parse invoice\n',
+    'src/util.ts': '// date helpers\n', 'packages/admin/src/util.ts': '// currency format helpers\n',
+  };
+  nulls(q1, files, ['- `src/api/` — billing audit users', '- `src/x/parse.ts` — parse invoice', '- `src/util.ts` — currency format helpers']);
+  const dir = repo(files);
+  const admin = readFacts(join(dir, 'packages/admin/CLAUDE.md'));
+  const judge1 = (text: string): string | null => { const r = parseRules(text)[0]; assert.ok(r !== undefined); return q1(r, admin, ON)?.code ?? null; };
+  assert.equal(judge1('- `src/api/` — billing audit users'), 'inferable-path');
+  assert.equal(judge1('- `src/util.ts` — currency format helpers'), 'inferable-path');
+  assert.equal(judge1('- `src/util.ts` — date helpers'), null);
+});
+test('scope words and past participles are information, not roles', () => {
+  const files = {
+    'package.json': '{"name":"x"}', 'src/server/db.ts': 'export const db = connect();\n', 'src/client/api.ts': 'export const api = {};\n',
+    'src/app/page.tsx': 'export default function Page() { return null; }\n',
+    'src/refunds.ts': 'export function disableRefunds() {}\nexport function lockAccounts() {}\nexport function pauseSubscriptions() {}\n',
+  };
+  nulls(q1, files, [
+    '- `src/server/db.ts` — db client for tests', '- `src/client/api.ts` — api client for the server', '- `src/app/page.tsx` — app page, client component',
+    '- `src/refunds.ts` — refunds, disabled', '- `src/refunds.ts` — refunds with locked accounts', '- `src/refunds.ts` — refunds for paused subscriptions',
+  ]);
+});
+test('the two matched words are distinct words of the description, not of the name', () => {
+  const files = { 'package.json': '{"name":"x"}', 'src/cache.ts': '// cache layer\n' };
+  nulls(q1, files, ['- `src/cache.ts` — cache cache', '- **Cache Layer** (`src/cache.ts`): cache']);
+  assert.equal(code(q1, '- `src/cache.ts` — cache layer', files), 'inferable-path');
+});
+test('only the first 32 KB of a cited file are read', () => {
+  const files = { 'package.json': '{"name":"x"}', 'src/late.ts': `${'x'.repeat(33 * 1024)}\n// parse invoice\n`, 'src/early.ts': '// parse invoice\n' };
+  assert.equal(ask(q1, '- `src/late.ts` — parse invoice', files), null);
+  assert.equal(code(q1, '- `src/early.ts` — parse invoice', files), 'inferable-path');
+});
+test('more than 40 distinct cited paths turn the detector off for the whole file, in any order', () => {
+  const disk: Record<string, string> = { 'package.json': '{"name":"x"}' };
+  for (let i = 0; i < 41; i++) disk[`src/m${i}.ts`] = '// parse invoice\n';
+  const facts = factsOf(disk);
+  const rules = (n: number): ReturnType<typeof parseRules> => parseRules(Array.from({ length: n }, (_, i) => `- \`src/m${i}.ts\` — parse invoice`).join('\n'));
+  const ctx = contextFor(facts, { paths: true });
+  assert.ok(judgeAll(rules(40), facts, ctx).every((v) => v.code === 'inferable-path'));
+  assert.ok(judgeAll(rules(41), facts, ctx).every((v) => v.verdict === 'keep'));
+  assert.ok(judgeAll([...rules(41)].reverse(), facts, ctx).every((v) => v.verdict === 'keep'));
+});
+test('a stack line that splits roles between tools is kept', () => {
+  const both = { 'package.json': '{"devDependencies":{"jest":"^29","vitest":"^2","eslint":"^9","@biomejs/biome":"^1","webpack":"^5","vite":"^6"}}' };
+  nulls(q1, both, ['- Jest for unit tests, Vitest for integration tests', '- ESLint for linting, Biome for formatting', '- Webpack for server, Vite for client', '- **Testing**: Jest / Vitest']);
+  assert.equal(code(q1, '- Jest, ESLint, Prettier, Husky', EVENTS), 'inferable-stack');
+});
+test('the /init parenthesis is one of the agents\' own sites', () => {
+  const s = (paren: string): string => `This file provides guidance to Claude Code (${paren}) when working with code in this repository.`;
+  assert.equal(ask(q3, s('staging.example.com'), PLAIN), null);
+  for (const site of ['claude.ai/code', 'https://claude.ai/code', 'claude.com/claude-code']) assert.equal(code(q3, s(site), PLAIN), 'file-filler', site);
+  assert.equal(code(q3, 'This file provides guidance to Codex (openai.com/codex) when working with code in this repository.', PLAIN), 'file-filler');
 });

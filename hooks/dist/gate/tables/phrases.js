@@ -17,8 +17,8 @@ const ADJ_LIST_ES = String.raw `(?:${ADJ_ES})(?:(?:,\s*(?:y\s+)?|\s+y\s+)(?:${AD
 const LANG_WORD = String.raw `(?:typescript|javascript|ecmascript|es\d*|python|go|golang|rust|java|kotlin|swift|c#|c\+\+|ruby|php|scala|dart|elixir)`;
 // An agent the /init sentence may name: a closed list. "the release bot" or "new hires" is information.
 const AGENT = String.raw `(?:the\s+)?(?:claude(?:\s+code)?|codex|(?:github\s+)?copilot|gemini(?:\s+cli)?|cursor|windsurf|aider|opencode|ai\s+(?:coding\s+)?(?:agents|assistants)|(?:coding\s+)?agents)`;
-// Its optional parenthesis: a domain or URL such as claude.ai/code, nothing else.
-const SITE = String.raw `\(\s*(?:https?:\/\/)?[a-z0-9-]{1,30}(?:\.[a-z0-9-]{1,30}){1,4}(?:\/[\w.-]{1,40}){0,4}\/?\s*\)`;
+// Its optional parenthesis: one of the agents' own sites, nothing else ("staging.example.com" is information).
+const SITE = String.raw `\(\s*(?:https?:\/\/)?(?:www\.)?(?:claude\.ai\/code|claude\.ai|claude\.com\/claude-code|code\.claude\.com|docs\.anthropic\.com\/en\/docs\/claude-code|openai\.com\/codex|chatgpt\.com\/codex|github\.com\/openai\/codex|github\.com\/features\/copilot|cursor\.com|cursor\.sh|windsurf\.com|aider\.chat|opencode\.ai|github\.com\/google-gemini\/gemini-cli)\/?\s*\)`;
 const BP = 'https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices';
 const OPUS_55 = 'https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5';
 export const PHRASES = [

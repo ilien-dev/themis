@@ -4,7 +4,7 @@
 // SessionStart, and PostToolUse on a shell command that names a rule file: report pairs that differ.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
-import { run, emit, read, RULE_FILE, SHELL_RULE_FILE, twinOf, pairState, parityProblems, parityNotice } from "./lib.js";
+import { run, emit, gatePaths, read, RULE_FILE, SHELL_RULE_FILE, twinOf, pairState, parityProblems, parityNotice } from "./lib.js";
 import { pendingKey, recordAccepted, takePending } from "./gate/accepted.js";
 import { parseRules } from "./gate/extract.js";
 import { readFacts } from "./gate/facts.js";
@@ -20,7 +20,7 @@ function recordApproved(input, file) {
     const facts = readFacts(file);
     if (!facts.inRepo)
         return;
-    const verdicts = judgeAll(parseRules(read(file) ?? ''), facts, contextFor(facts)).filter((v) => hashes.includes(ruleHash(v.rule.text)));
+    const verdicts = judgeAll(parseRules(read(file) ?? ''), facts, contextFor(facts, { paths: gatePaths() })).filter((v) => hashes.includes(ruleHash(v.rule.text)));
     recordAccepted(facts.root, verdicts, new Date().toISOString().slice(0, 10));
 }
 await run((input) => {

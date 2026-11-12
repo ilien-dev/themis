@@ -1,7 +1,8 @@
 // The rule gate from the command line, for the skill and for measurement:
-//   gate check  [--rules <path>] [--file <path>] [--json]   markdown from --rules (UTF-8) or stdin; --file sets the repository (default ./CLAUDE.md)
-//   gate audit  <file> [--json] [--prune]  every rule of a file and the coverage; --prune drops stale accepted rules
-//   gate report <corpus.jsonl> [--json]    precision, false-cut rate and coverage of a labelled corpus
+//   gate check  [--rules <path>] [--file <path>] [--json] [--paths]   markdown from --rules (UTF-8) or stdin; --file sets the repository (default ./CLAUDE.md)
+//   gate audit  <file> [--json] [--prune] [--paths]  every rule of a file and the coverage; --prune drops stale accepted rules
+//   gate report <corpus.jsonl> [--json] [--paths]    precision, false-cut rate and coverage of a labelled corpus
+// --paths turns on the described-path detector (the gate_paths option of the hook), off by default.
 // Exit code 0 whenever the input is valid, 2 on wrong usage or unreadable input.
 import { existsSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -16,7 +17,7 @@ import { ruleHash } from './gate/text.ts';
 import { contextFor, judgeAll } from './gate/verdict.ts';
 import type { Verdict } from './gate/types.ts';
 
-const USAGE = 'usage: gate check [--rules <path>] [--file <path>] [--json] | gate audit <file> [--json] [--prune] | gate report <corpus.jsonl> [--json]';
+const USAGE = 'usage: gate check [--rules <path>] [--file <path>] [--json] [--paths] | gate audit <file> [--json] [--prune] [--paths] | gate report <corpus.jsonl> [--json] [--paths]';
 
 class UsageError extends Error {}
 
@@ -49,8 +50,8 @@ const toJson = (v: Verdict): Record<string, unknown> => ({
 
 const out = (s: string): void => { process.stdout.write(s.endsWith('\n') ? s : `${s}\n`); };
 
-function judgeText(markdown: string, facts: Facts): Verdict[] {
-  return judgeAll(parseRules(markdown), facts, contextFor(facts));
+function judgeText(markdown: string, facts: Facts, paths: boolean): Verdict[] {
+  return judgeAll(parseRules(markdown), facts, contextFor(facts, { paths }));
 }
 
 async function stdin(): Promise<string> {
@@ -66,14 +67,14 @@ function checkLine(v: Verdict): string {
 }
 
 async function check(argv: readonly string[]): Promise<void> {
-  const args = parseArgs(argv, ['--json'], ['--file', '--rules']);
+  const args = parseArgs(argv, ['--json', '--paths'], ['--file', '--rules']);
   if (args.positional.length > 0) throw new UsageError(`unexpected argument ${args.positional[0] ?? ''}`);
   // A file read as UTF-8 reaches the gate unchanged; a pipe from Windows PowerShell 5.1 re-encodes non-ASCII text.
   const rulesPath = args.values.get('--rules');
   const fromFile = rulesPath === undefined ? null : read(resolve(rulesPath));
   if (rulesPath !== undefined && fromFile === null) throw new UsageError(`cannot read ${rulesPath}`);
   const markdown = fromFile === null ? await stdin() : fromFile.replace(/^\uFEFF/, '');
-  const verdicts = judgeText(markdown, readFacts(resolve(args.values.get('--file') ?? 'CLAUDE.md')));
+  const verdicts = judgeText(markdown, readFacts(resolve(args.values.get('--file') ?? 'CLAUDE.md')), args.flags.has('--paths'));
   if (args.flags.has('--json')) { out(JSON.stringify(verdicts.map(toJson), null, 2)); return; }
   const notes = formatNotes(verdicts);
   out([...verdicts.map(checkLine), ...(notes === '' ? [] : ['', notes])].join('\n'));
@@ -90,7 +91,7 @@ function liveHashes(file: string, facts: Facts): Set<string> {
 }
 
 function audit(argv: readonly string[]): void {
-  const args = parseArgs(argv, ['--json', '--prune']);
+  const args = parseArgs(argv, ['--json', '--prune', '--paths']);
   const [target, extra] = args.positional;
   if (target === undefined || extra !== undefined) throw new UsageError('audit takes one file');
   const file = resolve(target);
@@ -102,7 +103,7 @@ function audit(argv: readonly string[]): void {
   const prune = args.flags.has('--prune');
   const canPrune = facts.inRepo && facts.filesKnown;
   const pruned = prune && canPrune ? pruneAccepted(facts.root, liveHashes(file, facts)) : null;
-  const verdicts = judgeText(text, facts);
+  const verdicts = judgeText(text, facts, args.flags.has('--paths'));
   if (args.flags.has('--json')) {
     out(JSON.stringify({ verdicts: verdicts.map(toJson), coverage: coverage(verdicts), ...(prune ? { pruned } : {}) }, null, 2));
     return;
@@ -122,7 +123,7 @@ function corpusBase(corpus: string): string {
 }
 
 function report(argv: readonly string[]): void {
-  const args = parseArgs(argv, ['--json']);
+  const args = parseArgs(argv, ['--json', '--paths']);
   const [target, extra] = args.positional;
   if (target === undefined || extra !== undefined) throw new UsageError('report takes one corpus file');
   const corpus = resolve(target);
@@ -134,7 +135,7 @@ function report(argv: readonly string[]): void {
   const missing = [...new Set(cases.map((c) => c.repo))].find((r) => !existsSync(join(base, r)));
   if (missing !== undefined) throw new UsageError(`repo ${missing} not found under ${base}`);
 
-  const runner = new CorpusRunner(base);
+  const runner = new CorpusRunner(base, { paths: args.flags.has('--paths') });
   try {
     const results = cases.map((c) => ({ c, got: runner.run(c) }));
     const m = metrics(results.map((r) => ({ expect: r.c.expect, got: r.got, gap: r.c.gap !== undefined })));

@@ -692,26 +692,26 @@
 {"id":"cov-011","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"This file provides guidance to Claude Code when working with code in this repository, which has no tests.","expect":"keep"}
 {"id":"cov-012","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"# Reglas de pagos","expect":"keep"}
 {"id":"cov-013","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"Este archivo proporciona orientación a Claude Code cuando trabaja con código en este repositorio de facturas.","expect":"keep"}
-{"id":"cov-014","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output","expect":"cut","code":"inferable-path"}
-{"id":"cov-015","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **TrackingCache** (lib/tracking-cache.js:5): In-memory LRU cache","expect":"cut","code":"inferable-path"}
-{"id":"cov-016","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/reporter.js` - Creates the StatsD client and sends gauges","expect":"cut","code":"inferable-path"}
-{"id":"cov-017","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **`/apps/web/`** - Web dashboard","expect":"cut","code":"inferable-path"}
-{"id":"cov-018","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `docs/architecture.md`: Architecture overview","expect":"cut","code":"inferable-path"}
-{"id":"cov-019","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **extension.ts** - Main entry point, handles activation","expect":"cut","code":"inferable-path"}
-{"id":"cov-020","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- `src/api/` — controladores HTTP de la API","expect":"cut","code":"inferable-path"}
-{"id":"cov-021","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/generated/` — auto-generated types","expect":"keep"}
-{"id":"cov-022","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/db/` — schema, applied by the migrator at boot","expect":"keep"}
-{"id":"cov-023","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/legacy/` — legacy billing code","expect":"keep"}
-{"id":"cov-024","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/api/` — do not import from here","expect":"keep"}
-{"id":"cov-025","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/metrics.js` — metric definitions. Adding a metric is a one-line change.","expect":"keep"}
-{"id":"cov-026","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/api/` — handlers shared by the worker and the web app","expect":"keep"}
-{"id":"cov-027","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- `src/legado/` — código heredado, no lo toques","expect":"keep"}
-{"id":"cov-028","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest (unit + integration), ESLint + Prettier, Husky pre-commit","expect":"cut","code":"inferable-stack"}
-{"id":"cov-029","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"**Stack**: Next.js 15 · React 19 · Tailwind CSS · TypeScript","expect":"cut","code":"inferable-stack"}
+{"id":"cov-014","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output","expect":"keep","gap":"the description uses only words of the path and of the file; described paths are flagged only with gate_paths on, since such words are not proof the file says it"}
+{"id":"cov-015","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **TrackingCache** (lib/tracking-cache.js:5): In-memory LRU cache","expect":"keep","gap":"the description uses only words of the path and of the file; described paths are flagged only with gate_paths on, since such words are not proof the file says it"}
+{"id":"cov-016","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/reporter.js` - Creates the StatsD client and sends gauges","expect":"keep","gap":"the description uses only words of the path and of the file; described paths are flagged only with gate_paths on, since such words are not proof the file says it"}
+{"id":"cov-017","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **`/apps/web/`** - Web dashboard","expect":"keep","gap":"the description uses only words of the path and of the file; described paths are flagged only with gate_paths on, since such words are not proof the file says it"}
+{"id":"cov-018","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `docs/architecture.md`: Architecture overview","expect":"keep","gap":"the description uses only words of the path and of the file; described paths are flagged only with gate_paths on, since such words are not proof the file says it"}
+{"id":"cov-019","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **extension.ts** - Main entry point, handles activation","expect":"keep","gap":"the description uses only words of the path and of the file; described paths are flagged only with gate_paths on, since such words are not proof the file says it"}
+{"id":"cov-020","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- `src/api/` — controladores HTTP de la API","expect":"keep","gap":"the description uses only words of the path and of the file; described paths are flagged only with gate_paths on, since such words are not proof the file says it"}
+{"id":"cov-021","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/generated/` — auto-generated types","expect":"keep","paths":true}
+{"id":"cov-022","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/db/` — schema, applied by the migrator at boot","expect":"keep","paths":true}
+{"id":"cov-023","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/legacy/` — legacy billing code","expect":"keep","paths":true}
+{"id":"cov-024","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/api/` — do not import from here","expect":"keep","paths":true}
+{"id":"cov-025","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/metrics.js` — metric definitions. Adding a metric is a one-line change.","expect":"keep","paths":true}
+{"id":"cov-026","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/api/` — handlers shared by the worker and the web app","expect":"keep","paths":true}
+{"id":"cov-027","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- `src/legado/` — código heredado, no lo toques","expect":"keep","paths":true}
+{"id":"cov-028","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest (unit + integration), ESLint + Prettier, Husky pre-commit","expect":"keep","gap":"jest, eslint, prettier and husky are all devDependencies; \"pre-commit\" after Husky is a trailing word, and a segment may now hold only a name, a version and a closed parenthesis"}
+{"id":"cov-029","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"**Stack**: Next.js 15 · React 19 · Tailwind CSS · TypeScript","expect":"keep","gap":"next ^15, react ^19, tailwindcss and typescript are all in the manifest; Next.js and React share a TECH category, and two tools of one kind may split roles, so the list is no longer judged"}
 {"id":"cov-030","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **tsconfig-paths**: TypeScript path mapping support","expect":"keep","gap":"tsconfig-paths is in devDependencies and the description only names what the package is; form A (\"**dependency**: description\") is no longer judged because nothing in the repository checks a description"}
 {"id":"cov-031","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **pino**: Fast logger","expect":"keep","gap":"pino is in dependencies and \"fast logger\" is what the package is; form A is no longer judged because nothing in the repository checks a description"}
 {"id":"cov-032","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Testing**: Jest","expect":"keep","gap":"jest is the only test runner in devDependencies; a one-segment stack line is a choice, not a list, so it is no longer judged"}
-{"id":"cov-033","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Stack**: Next.js, React, `@xyflow/react` and Dagre","expect":"cut","code":"inferable-stack"}
+{"id":"cov-033","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Stack**: Next.js, React, `@xyflow/react` and Dagre","expect":"keep","gap":"next, react, @xyflow/react and dagre are all dependencies; Next.js and React share a TECH category, so the list is no longer judged"}
 {"id":"cov-034","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- Pruebas: Jest y Prettier","expect":"cut","code":"inferable-stack"}
 {"id":"cov-035","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- **zod**: validación de esquemas","expect":"keep","gap":"zod is in dependencies and \"schema validation\" is what the package is; form A is no longer judged because nothing in the repository checks a description"}
 {"id":"cov-036","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Zod for all request validation","expect":"keep"}
@@ -721,8 +721,8 @@
 {"id":"cov-040","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- debug and colors","expect":"keep"}
 {"id":"cov-041","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest, not Vitest","expect":"keep"}
 {"id":"cov-042","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- **pino**: logger compartido por todos los servicios","expect":"keep"}
-{"id":"cov-043","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"**Stack**: Next.js 15 · React 18 · Tailwind CSS · TypeScript","expect":"conflict","code":"stale-version"}
-{"id":"cov-044","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Stack**: Next.js 14, React 19","expect":"conflict","code":"stale-version"}
+{"id":"cov-043","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"**Stack**: Next.js 15 · React 18 · Tailwind CSS · TypeScript","expect":"keep","gap":"react is ^19.0.0, so \"React 18\" is stale; Next.js and React share a TECH category, so the list is no longer judged and the conflict goes unflagged"}
+{"id":"cov-044","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Stack**: Next.js 14, React 19","expect":"keep","gap":"next is ^15.1.0, so \"Next.js 14\" is stale; Next.js and React share a TECH category, so the list is no longer judged and the conflict goes unflagged"}
 {"id":"cov-045","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest 28, ESLint 9","expect":"conflict","code":"stale-version"}
 {"id":"cov-046","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Testing**: Jest 28","expect":"keep","gap":"the manifest has jest ^29.7.0, so \"Jest 28\" is stale; a one-segment stack line is no longer judged, so the conflict goes unflagged"}
 {"id":"cov-047","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Language**: TypeScript 4","expect":"keep","gap":"the manifest has typescript ~5.7.2, so \"TypeScript 4\" is stale; a one-segment stack line is no longer judged, so the conflict goes unflagged"}
@@ -760,16 +760,16 @@
 {"id":"cov-079","repo":"tests/gate/repos/q1-two-runners","file":"CLAUDE.md","rule":"- **Testing**: Jest","expect":"keep"}
 {"id":"cov-080","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Stack**: TypeScript 4, Tailwind CSS","expect":"conflict","code":"stale-version"}
 {"id":"cov-081","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest 28 + Prettier 3","expect":"conflict","code":"stale-version"}
-{"id":"cov-082","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/webhooks/stripe.ts` — Stripe webhook handler, idempotent by event ID","expect":"keep"}
-{"id":"cov-083","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/money.ts` — money math in integer cents","expect":"keep"}
-{"id":"cov-084","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/card/form.ts` — PCI scope","expect":"keep"}
-{"id":"cov-085","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/api/invoices.ts` — invoice endpoints, public API with external consumers","expect":"keep"}
-{"id":"cov-086","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `db/schema.sql` — schema, kept in lockstep with the warehouse","expect":"keep"}
-{"id":"cov-087","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/middleware/auth.ts` — auth middleware, order matters","expect":"keep"}
-{"id":"cov-088","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/format.ts` — formatting helpers in UTC","expect":"keep"}
-{"id":"cov-089","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `public/robots.txt` — blocks crawlers on purpose","expect":"keep"}
-{"id":"cov-090","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/billing/rules.ts` — billing rules agreed with finance","expect":"keep"}
-{"id":"cov-091","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/db/client.ts` — Prisma client singleton, one per process","expect":"keep"}
+{"id":"cov-082","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/webhooks/stripe.ts` — Stripe webhook handler, idempotent by event ID","expect":"keep","paths":true}
+{"id":"cov-083","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/money.ts` — money math in integer cents","expect":"keep","paths":true}
+{"id":"cov-084","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/card/form.ts` — PCI scope","expect":"keep","paths":true}
+{"id":"cov-085","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/api/invoices.ts` — invoice endpoints, public API with external consumers","expect":"keep","paths":true}
+{"id":"cov-086","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `db/schema.sql` — schema, kept in lockstep with the warehouse","expect":"keep","paths":true}
+{"id":"cov-087","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/middleware/auth.ts` — auth middleware, order matters","expect":"keep","paths":true}
+{"id":"cov-088","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/format.ts` — formatting helpers in UTC","expect":"keep","paths":true}
+{"id":"cov-089","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `public/robots.txt` — blocks crawlers on purpose","expect":"keep","paths":true}
+{"id":"cov-090","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/billing/rules.ts` — billing rules agreed with finance","expect":"keep","paths":true}
+{"id":"cov-091","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/db/client.ts` — Prisma client singleton, one per process","expect":"keep","paths":true}
 {"id":"cov-092","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Colors**: brand palette in the Tailwind config","expect":"keep"}
 {"id":"cov-093","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **lodash**: Utility helpers, being phased out","expect":"keep"}
 {"id":"cov-094","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **zustand**: Client state, the server state is in React Query","expect":"keep"}
@@ -779,3 +779,16 @@
 {"id":"cov-098","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest, ESLint and Prettier","expect":"cut","code":"inferable-stack"}
 {"id":"cov-099","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Tooling**: TypeScript, ESLint, Husky","expect":"cut","code":"inferable-stack"}
 {"id":"cov-100","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- Herramientas: Jest, Prettier y `zod`","expect":"cut","code":"inferable-stack"}
+{"id":"cov-101","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output","expect":"cut","code":"inferable-path","paths":true}
+{"id":"cov-102","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **TrackingCache** (lib/tracking-cache.js:5): In-memory LRU cache","expect":"cut","code":"inferable-path","paths":true}
+{"id":"cov-103","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/reporter.js` - Creates the StatsD client and sends gauges","expect":"cut","code":"inferable-path","paths":true}
+{"id":"cov-104","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **`/apps/web/`** - Web dashboard","expect":"cut","code":"inferable-path","paths":true}
+{"id":"cov-105","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `docs/architecture.md`: Architecture overview","expect":"cut","code":"inferable-path","paths":true}
+{"id":"cov-106","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **extension.ts** - Main entry point, handles activation","expect":"cut","code":"inferable-path","paths":true}
+{"id":"cov-107","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- `src/api/` — controladores HTTP de la API","expect":"cut","code":"inferable-path","paths":true}
+{"id":"cov-108","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest (unit + integration), ESLint + Prettier, Husky","expect":"cut","code":"inferable-stack"}
+{"id":"cov-109","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"**Stack**: Tailwind CSS 4 · TypeScript 5","expect":"cut","code":"inferable-stack"}
+{"id":"cov-110","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Stack**: Tailwind CSS 3, TypeScript","expect":"conflict","code":"stale-version"}
+{"id":"cov-111","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Prettier 2 + ESLint 9","expect":"conflict","code":"stale-version"}
+{"id":"cov-112","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest for unit tests, ESLint for linting","expect":"keep"}
+{"id":"cov-113","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Testing**: Jest / Husky","expect":"keep"}

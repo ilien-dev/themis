@@ -18,6 +18,7 @@ export interface Case {
   readonly code?: string; // required unless `expect` is keep
   readonly line?: number; // the rule's line in its file; 1 when absent
   readonly gap?: string; // a redundant rule the gate keeps: why it is really redundant
+  readonly paths?: boolean; // judge with the described-path detector on (gate_paths)
 }
 
 const KINDS = new Set<string>(['keep', 'cut', 'move', 'rewrite', 'fix', 'conflict']);
@@ -34,13 +35,14 @@ export function parseCorpus(text: string): Case[] {
     let v: unknown;
     try { v = JSON.parse(raw); } catch { fail('not JSON'); }
     if (!isObject(v)) return fail('not an object');
-    const { id, repo, file, rule, expect, code, line, gap } = v;
+    const { id, repo, file, rule, expect, code, line, gap, paths } = v;
     if (!str(id) || !str(repo) || !str(file) || !str(rule)) fail('id, repo, file and rule must be strings');
     if (typeof expect !== 'string' || !KINDS.has(expect)) fail('expect is not a verdict');
     if (code !== undefined && !str(code)) fail('code must be a string');
     if (expect !== 'keep' && code === undefined) fail('code is required unless expect is keep');
     if (line !== undefined && (typeof line !== 'number' || !Number.isInteger(line) || line < 1)) fail('line must be a positive integer');
     if (gap !== undefined && (!str(gap) || expect !== 'keep')) fail('gap is a reason, only on keep');
+    if (paths !== undefined && typeof paths !== 'boolean') fail('paths must be a boolean');
     const count = parseRules(rule as string).length;
     if (count !== 1) fail(`rule parses to ${count} rules, not one`);
     if (ids.has(id as string)) fail(`duplicate id ${String(id)}`);
@@ -72,8 +74,10 @@ export class CorpusRunner {
   private readonly copies = new Map<string, string>();
   private readonly facts = new Map<string, { facts: Facts; ctx: Context }>();
   private readonly base: string;
+  private readonly paths: boolean;
 
-  constructor(base: string) { this.base = base; }
+  // `paths` judges every case with the described-path detector on; a case can also ask for it with "paths": true.
+  constructor(base: string, options: { readonly paths?: boolean } = {}) { this.base = base; this.paths = options.paths === true; }
 
   // The copy of `repo` as a fresh git repository with nothing committed.
   dirFor(repo: string): string {
@@ -104,7 +108,8 @@ export class CorpusRunner {
 
   run(c: Case): Verdict {
     const { facts, ctx } = this.factsFor(c);
-    const [v] = judgeAll([caseRule(c)], facts, ctx);
+    const paths = this.paths || c.paths === true;
+    const [v] = judgeAll([caseRule(c)], facts, paths ? { ...ctx, options: { ...ctx.options, paths } } : ctx);
     if (v === undefined) throw new Error(`case ${c.id}: no verdict`);
     return v;
   }

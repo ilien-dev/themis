@@ -56,6 +56,8 @@ export function option(key, fallback) {
     const v = process.env[`CLAUDE_PLUGIN_OPTION_${key.toUpperCase()}`];
     return v === undefined || v === '' ? fallback : v;
 }
+// gate_paths: flag described paths. Off unless set to a true value.
+export const gatePaths = () => /^(true|1|yes|on)$/i.test(option('gate_paths', 'false'));
 // Token estimate for English-heavy markdown; no tokenizer is available offline.
 export function estimateTokens(text) {
     return Math.ceil(text.length / 3.6);

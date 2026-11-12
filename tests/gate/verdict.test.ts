@@ -15,7 +15,7 @@ function rule(text: string): Rule {
 }
 const dir = repo({ 'package.json': '{"scripts":{"lint":"eslint ."}}', 'src/money.js': '' });
 const facts = readFacts(join(dir, 'CLAUDE.md'));
-const ctx: Context = { accepted: new Map(), techNames: ['Express'] };
+const ctx: Context = { accepted: new Map(), techNames: ['Express'], options: { paths: false, pathsOverLimit: false } };
 const answer = (question: Answer['question'], code = 'x'): Answer => ({ verdict: 'cut', code, question, evidence: 'e' });
 
 test('similarity ignores repetition and case', () => {

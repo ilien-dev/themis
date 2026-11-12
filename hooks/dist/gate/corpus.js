@@ -26,7 +26,7 @@ export function parseCorpus(text) {
         }
         if (!isObject(v))
             return fail('not an object');
-        const { id, repo, file, rule, expect, code, line, gap } = v;
+        const { id, repo, file, rule, expect, code, line, gap, paths } = v;
         if (!str(id) || !str(repo) || !str(file) || !str(rule))
             fail('id, repo, file and rule must be strings');
         if (typeof expect !== 'string' || !KINDS.has(expect))
@@ -39,6 +39,8 @@ export function parseCorpus(text) {
             fail('line must be a positive integer');
         if (gap !== undefined && (!str(gap) || expect !== 'keep'))
             fail('gap is a reason, only on keep');
+        if (paths !== undefined && typeof paths !== 'boolean')
+            fail('paths must be a boolean');
         const count = parseRules(rule).length;
         if (count !== 1)
             fail(`rule parses to ${count} rules, not one`);
@@ -72,7 +74,9 @@ export class CorpusRunner {
     copies = new Map();
     facts = new Map();
     base;
-    constructor(base) { this.base = base; }
+    paths;
+    // `paths` judges every case with the described-path detector on; a case can also ask for it with "paths": true.
+    constructor(base, options = {}) { this.base = base; this.paths = options.paths === true; }
     // The copy of `repo` as a fresh git repository with nothing committed.
     dirFor(repo) {
         let dir = this.copies.get(repo);
@@ -101,7 +105,8 @@ export class CorpusRunner {
     }
     run(c) {
         const { facts, ctx } = this.factsFor(c);
-        const [v] = judgeAll([caseRule(c)], facts, ctx);
+        const paths = this.paths || c.paths === true;
+        const [v] = judgeAll([caseRule(c)], facts, paths ? { ...ctx, options: { ...ctx.options, paths } } : ctx);
         if (v === undefined)
             throw new Error(`case ${c.id}: no verdict`);
         return v;

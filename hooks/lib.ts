@@ -86,6 +86,9 @@ export function option(key: string, fallback: string): string {
   return v === undefined || v === '' ? fallback : v;
 }
 
+// gate_paths: flag described paths. Off unless set to a true value.
+export const gatePaths = (): boolean => /^(true|1|yes|on)$/i.test(option('gate_paths', 'false'));
+
 // Token estimate for English-heavy markdown; no tokenizer is available offline.
 export function estimateTokens(text: string): number {
   return Math.ceil(text.length / 3.6);

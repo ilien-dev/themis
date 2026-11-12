@@ -354,6 +354,16 @@ test('gate defaults to report: tells Claude without interrupting', () => {
   assert.doesNotMatch(context(out), /Approve|Deny|Drop or fix/);
 });
 
+test('gate_paths turns on the described-path check; it is off by default', () => {
+  const files = { 'package.json': '{"name":"gpu"}', 'lib/nvidia.js': '// Executes nvidia-smi and parses the CSV output.\n' };
+  const rule = '- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output\n';
+  const off = write(repoProject(files), rule, 'CLAUDE.md', REPORT);
+  assert.doesNotMatch(off === null ? '' : context(off), /inferable-path/);
+  const on = write(repoProject(files), rule, 'CLAUDE.md', { ...REPORT, CLAUDE_PLUGIN_OPTION_GATE_PATHS: 'true' });
+  assert.ok(on !== null);
+  assert.match(context(on), /inferable-path/);
+});
+
 test('gate=off is silent; ask falls back to report when no prompt can be answered', () => {
   assert.equal(write(project(), GENERIC, 'CLAUDE.md', { CLAUDE_PLUGIN_OPTION_GATE: 'off' }), null);
   for (const extra of [{ permission_mode: 'dontAsk' }, { permission_mode: 'bypassPermissions' }, { agent_id: 'agent-1' }]) {
@@ -491,7 +501,8 @@ test('gate: a cold pre-tool process stays fast on a real CLAUDE.md', () => {
 test('manifest, hooks and skill are consistent', () => {
   const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')) as Manifest;
   assert.equal(manifest.version, '2.2.0');
-  assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity', 'gate']);
+  assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity', 'gate', 'gate_paths']);
+  assert.equal((manifest.userConfig['gate_paths'] as { default?: boolean }).default, false);
   assert.equal((manifest.userConfig['gate'] as { default?: string }).default, 'report');
   const hooksJson = readFileSync(join(root, 'hooks', 'hooks.json'), 'utf8');
   const handlers = (JSON.parse(hooksJson) as HooksJson).hooks;

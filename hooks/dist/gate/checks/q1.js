@@ -237,6 +237,12 @@ const STATE = new Set([
     'workaround', 'critical', 'important', 'careful', 'caution', 'warning', 'danger', 'dangerous', 'risky', 'slow', 'fork', 'forked',
     'truth', 'canonical', 'authoritative', 'canónico', 'canónica', 'verdad', // "single source of truth": edit here and nowhere else
     'patched', 'upstream', 'mirror', 'duplicate', 'production', 'prod', 'staging', 'live',
+    // Past participles that name a state: "refunds, disabled" is not the function disableRefunds().
+    'disabled', 'enabled', 'locked', 'paused', 'archived', 'blocked', 'rejected', 'expired', 'removed', 'ignored', 'cached', 'signed',
+    'validated', 'encrypted', 'closed', 'pinned',
+    'desactivado', 'desactivada', 'activado', 'activada', 'bloqueado', 'bloqueada', 'pausado', 'pausada', 'archivado', 'archivada',
+    'rechazado', 'rechazada', 'caducado', 'caducada', 'eliminado', 'eliminada', 'ignorado', 'ignorada', 'cacheado', 'firmado', 'firmada',
+    'validado', 'validada', 'cifrado', 'cifrada', 'cerrado', 'cerrada', 'fijado', 'fijada',
     'generado', 'generada', 'autogenerado', 'autogenerada', 'heredado', 'heredada', 'obsoleto', 'obsoleta', 'congelado', 'congelada',
     'experimentales', 'interno', 'interna', 'privado', 'privada', 'temporal', 'provisional', 'borrador', 'roto', 'rota', 'antiguo', 'viejo',
     'manualmente', 'crítico', 'importante', 'cuidado', 'peligroso', 'lento', 'producción',
@@ -318,10 +324,11 @@ function pathToken(raw) {
 }
 const exists = (p, facts) => facts.inRepo && facts.filesKnown && alive(p, facts);
 // ---- What a described path may say: the words of the path, of the file it names, or of the files under it ----
-// Lowercase, one light suffix off (-ing, -ed, -es, -s) and a final e, so "parses", "parse" and "parsing" meet.
+// Lowercase, one light suffix off (-ing, -es, -s) and a final e, so "parses", "parse" and "parsing" meet.
+// No -ed: a past participle is a state ("refunds, disabled"), not the function `disableRefunds()`.
 function norm(w) {
     let x = w;
-    for (const s of ['ing', 'ed', 'es', 's'])
+    for (const s of ['ing', 'es', 's'])
         if (x.endsWith(s) && x.length - s.length >= 3) {
             x = x.slice(0, -s.length);
             break;
@@ -334,40 +341,55 @@ const PATH_NEUTRAL = new Set([
     'a', 'an', 'the', 'and', 'or', 'for', 'of', 'with', 'via', 'used', 'using', 'that', 'which', 'to', 'in', 'on', 'by', 'from', 'into', 'as', 'at',
     'el', 'la', 'los', 'las', 'un', 'una', 'y', 'o', 'de', 'del', 'con', 'en', 'para', 'por', 'que', 'al', 'mediante',
 ].map(norm));
-// Role nouns: what kind of thing a file or folder is, which says nothing the listing does not.
+// Role nouns: what kind of thing a file or folder is, which says nothing the listing does not. Not here: scope
+// words that turn into warnings ("db client for tests", "client component"): test, server, client, main,
+// entry, point, state, store, api.
 const ROLE_NOUNS = new Set([
-    'helpers', 'helper', 'utilities', 'utility', 'utils', 'components', 'component', 'tests', 'test', 'config', 'configuration', 'types', 'type',
+    'helpers', 'helper', 'utilities', 'utility', 'utils', 'components', 'component', 'config', 'configuration', 'types', 'type',
     'constants', 'hooks', 'routes', 'route', 'handlers', 'handler', 'models', 'model', 'services', 'service', 'scripts', 'script', 'styles',
-    'assets', 'docs', 'documentation', 'entry', 'point', 'main', 'module', 'modules', 'wrapper', 'client', 'server', 'api', 'logic', 'code',
-    'functions', 'function', 'definitions', 'schema', 'pages', 'page', 'views', 'layout', 'store', 'state', 'middleware',
-    'utilidades', 'ayudantes', 'componentes', 'pruebas', 'configuración', 'tipos', 'constantes', 'rutas', 'manejadores', 'modelos',
-    'servicios', 'estilos', 'recursos', 'documentación', 'entrada', 'punto', 'principal', 'módulo', 'módulos', 'cliente', 'servidor',
-    'lógica', 'código', 'funciones', 'función', 'definiciones', 'esquema', 'páginas', 'página', 'vistas', 'estado',
+    'assets', 'docs', 'documentation', 'module', 'modules', 'wrapper', 'logic', 'code',
+    'functions', 'function', 'definitions', 'schema', 'pages', 'page', 'views', 'layout', 'middleware',
+    'utilidades', 'ayudantes', 'componentes', 'configuración', 'tipos', 'constantes', 'rutas', 'manejadores', 'modelos',
+    'servicios', 'estilos', 'recursos', 'documentación', 'módulo', 'módulos',
+    'lógica', 'código', 'funciones', 'función', 'definiciones', 'esquema', 'páginas', 'página', 'vistas',
 ].map(norm));
 const posix = (p) => p.replaceAll('\\', '/');
 const MAX_DIR_ENTRIES = 500;
-// The one tracked file a path names, or the files under the directory it names; null when it is ambiguous
-// (two files end with it) or not in the listing.
+// The files under `dir` (relative to it), up to MAX_DIR_ENTRIES; empty when `dir` is not a tracked directory.
+function filesUnder(dir, facts) {
+    const out = [];
+    for (const f of facts.files)
+        if (f.startsWith(`${dir}/`) && out.length < MAX_DIR_ENTRIES)
+            out.push(f.slice(dir.length + 1));
+    return out;
+}
+// The one place a path names. First under the rule file's directory, then from the repository root; only then
+// by suffix, and only when a single file or directory ends with it. Never pooled from several places.
 function targetOf(p, facts) {
     const fromDir = posix(relative(facts.root, join(facts.dir, p)));
-    let file = null;
-    let many = false;
-    const under = [];
-    for (const f of facts.files) {
-        if (f === p || f === fromDir || f.endsWith(`/${p}`)) {
-            if (file !== null && file !== f)
-                many = true;
-            file = f;
+    for (const c of fromDir === p ? [p] : [fromDir, p]) {
+        if (c.startsWith('..'))
             continue;
-        }
-        const inner = f.indexOf(`/${p}/`);
-        const i = f.startsWith(`${p}/`) ? p.length + 1 : inner < 0 ? -1 : inner + p.length + 2;
-        if (i >= 0 && under.length < MAX_DIR_ENTRIES)
-            under.push(f.slice(i));
+        if (facts.files.has(c))
+            return { kind: 'file', file: c };
+        const under = filesUnder(c, facts);
+        if (under.length > 0)
+            return { kind: 'dir', files: under };
     }
-    if (file !== null)
-        return many ? null : { kind: 'file', file };
-    return under.length === 0 ? null : { kind: 'dir', files: under };
+    const places = new Set();
+    for (const f of facts.files) {
+        if (f.endsWith(`/${p}`))
+            places.add(f);
+        const inner = f.indexOf(`/${p}/`);
+        if (inner >= 0)
+            places.add(`${f.slice(0, inner + p.length + 1)}/`);
+        if (places.size > 1)
+            return null; // the same name in several places: the rule may mean any of them
+    }
+    const only = [...places][0];
+    if (only === undefined)
+        return null;
+    return only.endsWith('/') ? { kind: 'dir', files: filesUnder(only.slice(0, -1), facts) } : { kind: 'file', file: only };
 }
 function dirWords(files) {
     const out = new Set();
@@ -376,30 +398,25 @@ function dirWords(files) {
             out.add(w);
     return out;
 }
-// The words and identifiers of a file's first 64 KB, read once per Facts, within 2 MB per Facts. Null when
-// the file is missing on disk, unreadable or binary, or the budget is spent.
-const HEAD_BYTES = 64 * 1024;
-const READ_BUDGET = 2 * 1024 * 1024;
+// The words and identifiers of a file's first 32 KB, read once per Facts. Null when the file is missing on
+// disk, unreadable or binary. How many files one judgement reads is bounded by MAX_CITED_PATHS (verdict.ts).
+const HEAD_BYTES = 32 * 1024;
 const READS = new WeakMap();
 function fileWords(file, facts) {
-    let state = READS.get(facts);
-    if (state === undefined) {
-        state = { used: 0, files: new Map() };
-        READS.set(facts, state);
+    let cache = READS.get(facts);
+    if (cache === undefined) {
+        cache = new Map();
+        READS.set(facts, cache);
     }
-    const known = state.files.get(file);
+    const known = cache.get(file);
     if (known !== undefined)
         return known;
-    if (state.used >= READ_BUDGET)
-        return null; // not cached: the budget belongs to this run, not to the file
     let result = null;
     let fd = null;
     try {
         fd = openSync(join(facts.root, file), 'r');
-        const buf = Buffer.alloc(Math.min(HEAD_BYTES, READ_BUDGET - state.used));
-        const n = readSync(fd, buf, 0, buf.length, 0);
-        state.used += n;
-        const head = buf.subarray(0, n);
+        const buf = Buffer.alloc(HEAD_BYTES);
+        const head = buf.subarray(0, readSync(fd, buf, 0, buf.length, 0));
         if (!head.includes(0)) {
             const text = head.toString('utf8');
             result = { words: new Set(identWords(text)), identifiers: new Set(text.match(/[A-Za-z_$][\w$]*/g) ?? []) };
@@ -412,13 +429,14 @@ function fileWords(file, facts) {
         if (fd !== null)
             closeSync(fd);
     }
-    state.files.set(file, result);
+    cache.set(file, result);
     return result;
 }
 // "- `lib/nvidia.js` — Executes nvidia-smi", "- **Cache** (lib/cache.js:5): In-memory LRU cache".
 const PATH_FIRST = /^(?:\*\*`([^`\n]{1,200})`\*\*|`([^`\n]{1,200})`|\*\*([^*`\n]{1,200}?):?\*\*|([^\s`*():]{1,200}))/;
 const NAME_THEN_PATH = /^(\*\*[^*\n]{1,60}\*\*|`[^`\n]{1,60}`|[\p{L}][\p{L}\p{N} _-]{0,40}?)\s*\(\s*`?([^()`\s]{1,200})`?\s*\)/u;
-export const describedPath = (rule, facts) => {
+// The path, name and description of a described-path rule, from the text alone; null for any other rule.
+function parsePathRule(rule) {
     if (rule.kind !== 'item' || rule.lines !== 1 || rule.text.length > SHORT)
         return null;
     const body = rule.text.replace(LIST_MARKER, '').trim();
@@ -441,7 +459,18 @@ export const describedPath = (rule, facts) => {
     const sep = SEPARATOR.exec(rest);
     if (path === null || sep === null)
         return null;
-    const description = rest.slice(sep[0].length);
+    return { path, name, description: rest.slice(sep[0].length) };
+}
+// The path a rule would make the described-path detector read, or null. judgeAll counts them beforehand.
+export const describedPathCited = (rule) => parsePathRule(rule)?.path ?? null;
+// Opt-in (gate_paths): a description made of words of a file is not proof that the file says it.
+export const describedPath = (rule, facts, options) => {
+    if (options?.pathsOverLimit === true)
+        return null;
+    const parsed = parsePathRule(rule);
+    if (parsed === null)
+        return null;
+    const { path, name, description } = parsed;
     // The blacklists stay as a guard; the whitelist below decides.
     if (name !== '' && !plainDescription(name, () => false))
         return null;
@@ -454,19 +483,23 @@ export const describedPath = (rule, facts) => {
         return null;
     const known = target.kind === 'file' ? fileWords(target.file, facts) : { words: dirWords(target.files), identifiers: new Set() };
     if (known === null)
-        return null; // missing on disk, unreadable, binary, or past the read budget
+        return null; // missing on disk, unreadable or binary
     // A span counts only as a plain identifier the file itself holds; any other span is more than a description.
     if (!spans(description).every((s) => /^[A-Za-z_$][\w$]*$/.test(s) && known.identifiers.has(s)))
         return null;
     const own = new Set(identWords(path));
-    let matched = 0;
-    for (const w of identWords(`${name} ${description.replace(/`[^`\n]*`/g, ' ')}`)) {
+    const allowed = (w) => own.has(w) || known.words.has(w) || PATH_NEUTRAL.has(w) || ROLE_NOUNS.has(w);
+    if (!identWords(name).every(allowed))
+        return null;
+    // Two distinct words of the description itself, not of the name, must come from the path or the content.
+    const matched = new Set();
+    for (const w of identWords(description.replace(/`[^`\n]*`/g, ' '))) {
         if (own.has(w) || known.words.has(w))
-            matched++;
-        else if (!PATH_NEUTRAL.has(w) && !ROLE_NOUNS.has(w))
+            matched.add(w);
+        else if (!allowed(w))
             return null; // a word the repository does not hold is information
     }
-    return matched >= 2 ? answer('inferable-path', `path: ${path}`) : null;
+    return matched.size >= 2 ? answer('inferable-path', `path: ${path}`) : null;
 };
 const DEP_INDEX = new WeakMap();
 const depKey = (s) => s.toLowerCase().replace(/(?:\.?js)$/, (m) => (s.length - m.length >= 2 ? '' : m)).replace(/[\s._/@-]+/g, '');
@@ -567,19 +600,9 @@ function segment(raw, held, restore, facts) {
     s = s.replace(/\s*\uE001\d+\uE001\s*/g, ' ').trim();
     const backticked = /^`.*`$/.test(s.replace(/^\*\*|\*\*$/g, ''));
     s = s.replace(/^\*\*|\*\*$/g, '').replace(/^`|`$/g, '').trim();
-    const stripRoles = (x) => {
-        let out = x;
-        for (let w = /\s+([\p{L}-]+)$/u.exec(out); w !== null && words(w[1] ?? '').every((y) => STACK_NEUTRAL.has(y)); w = /\s+([\p{L}-]+)$/u.exec(out)) {
-            if (resolveDep(out, facts) !== null)
-                break;
-            out = out.slice(0, w.index);
-        }
-        return out;
-    };
-    s = stripRoles(s);
     const v = VERSION.exec(s);
     if (v !== null)
-        s = stripRoles(s.slice(0, v.index));
+        s = s.slice(0, v.index).trim(); // nothing but the name may remain: "Jest for unit tests" assigns a role
     const dep = s === '' ? null : resolveDep(s, facts); // a digit left in the name must belong to a dependency's name
     if (dep === null)
         return null;
@@ -625,7 +648,9 @@ export const stackList = (rule, facts) => {
     if (/[()]/.test(list))
         return null;
     list = list.replace(/(\d)\+/g, '$1\uE003');
-    const raw = list.split(/\s*(?:,|·|\||\+|\/|&|(?<![\p{L}])(?:and|y)(?![\p{L}]))\s*/u).filter((x) => x.trim() !== '');
+    if (list.includes('/'))
+        return null; // "Jest / Vitest" is a choice or a split of roles, not a list
+    const raw = list.split(/\s*(?:,|·|\||\+|&|(?<![\p{L}])(?:and|y)(?![\p{L}]))\s*/u).filter((x) => x.trim() !== '');
     if (raw.length < 2 || raw.length > 15)
         return null; // one segment is a choice ("HTTP: Axios"), not a list
     const restore = (x) => x.replace(/\uE002(\d+)\uE002/g, (_, i) => held[Number(i)] ?? '');
@@ -638,6 +663,10 @@ export const stackList = (rule, facts) => {
     }
     const named = new Set(segs.map((x) => x.dep));
     if (segs.some((x) => rivalPresent(x.dep, facts, named)))
+        return null;
+    // Two tools of one kind ("Jest, Vitest"; "Next.js · React") may split roles the line does not spell out.
+    const kinds = segs.map((x) => TECH.find((t) => t.packages?.includes(x.dep) === true)?.category).filter((k) => k !== undefined);
+    if (new Set(kinds).size !== kinds.length)
         return null;
     // A dependency named by an ordinary word ("debug", "colors") counts only in backticks, or when every
     // other segment is unambiguous: a capital at the start of a line or segment earns it nothing.
@@ -779,5 +808,5 @@ export const projectOverview = (rule, facts) => {
         return null;
     return answer('inferable-overview', sources);
 };
-export const q1 = (rule, facts) => inferableTitle(rule, facts) ?? inferableTree(rule, facts) ?? inferableScript(rule, facts) ?? inferableTech(rule, facts) ?? inferableOverview(rule, facts) ??
-    describedPath(rule, facts) ?? stackList(rule, facts) ?? describedScript(rule, facts) ?? projectOverview(rule, facts);
+export const q1 = (rule, facts, options) => inferableTitle(rule, facts) ?? inferableTree(rule, facts) ?? inferableScript(rule, facts) ?? inferableTech(rule, facts) ?? inferableOverview(rule, facts) ??
+    (options?.paths === true ? describedPath(rule, facts, options) : null) ?? stackList(rule, facts) ?? describedScript(rule, facts) ?? projectOverview(rule, facts);

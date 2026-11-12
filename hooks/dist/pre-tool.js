@@ -2,7 +2,7 @@
 // and refuse an edit that would hide a difference between CLAUDE.md and AGENTS.md.
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
-import { run, emit, option, estimateTokens, read, imports, RULE_FILE, writesRuleFile, twinOf, pairState } from "./lib.js";
+import { run, emit, option, gatePaths, estimateTokens, read, imports, RULE_FILE, writesRuleFile, twinOf, pairState } from "./lib.js";
 import { newRules } from "./gate/extract.js";
 import { readFacts } from "./gate/facts.js";
 import { formatAsk, formatNotes } from "./gate/format.js";
@@ -91,7 +91,7 @@ function checkGate(input, file) {
     if (added.length === 0)
         return;
     const facts = readFacts(file);
-    const verdicts = judgeAll(added, facts, contextFor(facts));
+    const verdicts = judgeAll(added, facts, contextFor(facts, { paths: gatePaths() }));
     const name = basename(file);
     const flagged = verdicts.filter(interrupts);
     if (flagged.length === 0) {

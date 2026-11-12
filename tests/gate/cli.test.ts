@@ -44,6 +44,17 @@ test('check --file defaults to CLAUDE.md in the working directory', () => {
   assert.match(r.stdout, /^1: cut · inferable-script/);
 });
 
+test('check --paths turns on the described-path check, off by default', () => {
+  const dir = repo({ 'package.json': '{"name":"gpu"}', 'lib/nvidia.js': '// Executes nvidia-smi and parses the CSV output.\n' });
+  const rule = '- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output\n';
+  const off = gate(['check', '--file', join(dir, 'CLAUDE.md')], rule);
+  assert.equal(off.status, 0, off.stderr);
+  assert.match(off.stdout, /^1: keep/);
+  const on = gate(['check', '--paths', '--file', join(dir, 'CLAUDE.md')], rule);
+  assert.equal(on.status, 0, on.stderr);
+  assert.match(on.stdout, /^1: cut · inferable-path/);
+});
+
 test('check --json is parseable and has verdict, code, question, evidence, notes', () => {
   const dir = repo(LEDGER);
   const r = gate(['check', '--json', '--file', join(dir, 'CLAUDE.md')], MARKDOWN);

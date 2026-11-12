@@ -26,7 +26,7 @@ const dir = repo({
   'docs/CONVENTIONS.md': `# Conventions\n\n${CONVENTIONS}\n\nShort note.\n`,
 });
 const facts = readFacts(join(dir, 'CLAUDE.md'));
-const ctx: Context = { accepted: new Map(), techNames: [] };
+const ctx: Context = { accepted: new Map(), techNames: [], options: { paths: false, pathsOverLimit: false } };
 
 function first(text: string) {
   const rule = parseRules(text)[0];

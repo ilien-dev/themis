@@ -1,4 +1,4 @@
-import { q1 } from './checks/q1.ts';
+import { describedPathCited, q1 } from './checks/q1.ts';
 import { q2 } from './checks/q2.ts';
 import { q3 } from './checks/q3.ts';
 import { q5 } from './checks/q5.ts';
@@ -10,20 +10,33 @@ import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentionsAny, 
 import type { Facts } from './facts.ts';
 import type { Answer, Note, Rule, Verdict } from './types.ts';
 
+// What a check may be told besides the rule and the repository. `paths` turns on the described-path detector
+// (option gate_paths, CLI --paths); `pathsOverLimit` is set by judgeAll when the rules cite more distinct
+// paths than it reads, so the answer never depends on rule order.
+export interface CheckOptions {
+  readonly paths: boolean;
+  readonly pathsOverLimit: boolean;
+}
+
 export interface Context {
   readonly accepted: ReadonlyMap<string, Answer>;
   readonly techNames: readonly string[];
+  readonly options: CheckOptions;
 }
 
 // Every spelling of every technology the alias table knows; one array so compiled matchers are reused.
 const TECH_NAMES: readonly string[] = TECH.flatMap((t) => [t.name, ...t.aliases]);
 
 // The context of a judgement in the repository of `facts`: the rules its user accepted and the known names.
-export function contextFor(facts: Facts): Context {
-  return { accepted: loadAccepted(facts.root), techNames: TECH_NAMES };
+export function contextFor(facts: Facts, opts: { readonly paths?: boolean } = {}): Context {
+  return { accepted: loadAccepted(facts.root), techNames: TECH_NAMES, options: { paths: opts.paths === true, pathsOverLimit: false } };
 }
 
-export type Check = (rule: Rule, facts: Facts) => Answer | null;
+// A check is a pure function of its arguments: options come in, nothing is read from the environment.
+export type Check = (rule: Rule, facts: Facts, options?: CheckOptions) => Answer | null;
+
+// The most distinct paths the described-path detector reads for one set of rules.
+export const MAX_CITED_PATHS = 40;
 
 // A check and the question it answers; outside a repo only questions 3 and 7 apply.
 export interface RegisteredCheck {
@@ -59,7 +72,7 @@ export function judge(rule: Rule, facts: Facts, ctx: Context, checks: readonly R
   }
   for (const check of checks) {
     if (!facts.inRepo && !OUTSIDE_REPO.has(check.question)) continue;
-    const a = check.run(rule, facts);
+    const a = check.run(rule, facts, ctx.options);
     if (a !== null) {
       const v: Verdict = { rule, verdict: a.verdict, code: a.code, question: a.question, evidence: a.evidence, notes: [] };
       return a.target === undefined ? v : { ...v, target: a.target };
@@ -69,7 +82,14 @@ export function judge(rule: Rule, facts: Facts, ctx: Context, checks: readonly R
 }
 
 export function judgeAll(rules: readonly Rule[], facts: Facts, ctx: Context): Verdict[] {
-  return rules.map((r) => judge(r, facts, ctx));
+  let options = ctx.options;
+  if (options.paths) {
+    const cited = new Set<string>();
+    for (const r of rules) { const p = describedPathCited(r); if (p !== null) cited.add(p); }
+    if (cited.size > MAX_CITED_PATHS) options = { ...options, pathsOverLimit: true };
+  }
+  const c = options === ctx.options ? ctx : { ...ctx, options };
+  return rules.map((r) => judge(r, facts, c));
 }
 
 export const interrupts = (v: Verdict): boolean => v.verdict !== 'keep';

@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import type { HookInput } from './lib.ts';
-import { run, emit, read, RULE_FILE, SHELL_RULE_FILE, twinOf, pairState, parityProblems, parityNotice } from './lib.ts';
+import { run, emit, gatePaths, read, RULE_FILE, SHELL_RULE_FILE, twinOf, pairState, parityProblems, parityNotice } from './lib.ts';
 import { pendingKey, recordAccepted, takePending } from './gate/accepted.ts';
 import { parseRules } from './gate/extract.ts';
 import { readFacts } from './gate/facts.ts';
@@ -20,7 +20,7 @@ function recordApproved(input: HookInput, file: string): void {
   if (hashes === null) return;
   const facts = readFacts(file);
   if (!facts.inRepo) return;
-  const verdicts = judgeAll(parseRules(read(file) ?? ''), facts, contextFor(facts)).filter((v) => hashes.includes(ruleHash(v.rule.text)));
+  const verdicts = judgeAll(parseRules(read(file) ?? ''), facts, contextFor(facts, { paths: gatePaths() })).filter((v) => hashes.includes(ruleHash(v.rule.text)));
   recordAccepted(facts.root, verdicts, new Date().toISOString().slice(0, 10));
 }
 
