@@ -4,13 +4,23 @@ import { q3 } from './checks/q3.ts';
 import { q5 } from './checks/q5.ts';
 import { q6 } from './checks/q6.ts';
 import { q7 } from './checks/q7.ts';
-import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentions, ruleHash, spans } from './text.ts';
+import { loadAccepted } from './accepted.ts';
+import { TECH } from './tables/alias.ts';
+import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentionsAny, ruleHash, spans } from './text.ts';
 import type { Facts } from './facts.ts';
 import type { Answer, Note, Rule, Verdict } from './types.ts';
 
 export interface Context {
   readonly accepted: ReadonlyMap<string, Answer>;
   readonly techNames: readonly string[];
+}
+
+// Every spelling of every technology the alias table knows; one array so compiled matchers are reused.
+const TECH_NAMES: readonly string[] = TECH.flatMap((t) => [t.name, ...t.aliases]);
+
+// The context of a judgement in the repository of `facts`: the rules its user accepted and the known names.
+export function contextFor(facts: Facts): Context {
+  return { accepted: loadAccepted(facts.root), techNames: TECH_NAMES };
 }
 
 export type Check = (rule: Rule, facts: Facts) => Answer | null;
@@ -28,7 +38,7 @@ const OUTSIDE_REPO = new Set<number>([3, 7]);
 
 function mentionsKnownThing(rule: Rule, facts: Facts, ctx: Context): boolean {
   const text = rule.text;
-  if (ctx.techNames.some((t) => mentions(text, t))) return true;
+  if (mentionsAny(text, ctx.techNames)) return true;
   if (citedScripts(text).some((s) => facts.pkg !== null && Object.hasOwn(facts.pkg.scripts, s.script))) return true;
   return citedPaths(text).some((p) => facts.files.has(p));
 }

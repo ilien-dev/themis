@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import { parseRules } from '../../hooks/gate/extract.ts';
 import { readFacts } from '../../hooks/gate/facts.ts';
 import type { Answer, Rule } from '../../hooks/gate/types.ts';
-import { citedPaths, citedScripts, hasAnchor, hasReason, ruleHash, similarity, spans, words } from '../../hooks/gate/text.ts';
-import { interrupts, judge, judgeAll, type Context, type RegisteredCheck } from '../../hooks/gate/verdict.ts';
+import { citedPaths, citedScripts, hasAnchor, hasReason, mentions, mentionsAny, ruleHash, similarity, spans, words } from '../../hooks/gate/text.ts';
+import { contextFor, interrupts, judge, judgeAll, type Context, type RegisteredCheck } from '../../hooks/gate/verdict.ts';
 import { repo } from './helpers.ts';
 
 function rule(text: string): Rule {
@@ -90,4 +90,18 @@ test('outside a repo only questions 3 and 7 apply', () => {
 test('judgeAll judges every rule in order', () => {
   const rules = parseRules('- one\n- two\n');
   assert.deepEqual(judgeAll(rules, facts, ctx).map((v) => v.rule.text), ['- one', '- two']);
+});
+test('contextFor reads the accepted rules of the repository and knows every technology name', () => {
+  const root = repo({ '.claude/themis-accepted.json': JSON.stringify({ version: 1, rules: { [ruleHash('- Keep it.')]: { verdict: 'cut', code: 'x', question: 3, evidence: 'e', date: '2026-11-12' } } }) });
+  const c = contextFor(readFacts(join(root, 'CLAUDE.md')));
+  assert.deepEqual(c.accepted.get(ruleHash('- Keep it.')), { verdict: 'cut', code: 'x', question: 3, evidence: 'e' });
+  for (const name of ['React', 'Next.js', 'node.js', 'pnpm']) assert.ok(c.techNames.includes(name), name);
+  assert.equal(contextFor(facts).techNames, c.techNames); // one array, so compiled matchers are reused
+});
+test('mentionsAny matches like mentions over every term', () => {
+  const terms = ['Node.js', 'C++', 'React', ''];
+  for (const text of ['Use Node.js 20.', 'Use Node.jsx.', 'In C++ only.', 'Reactive streams.', 'use react', 'nothing']) {
+    assert.equal(mentionsAny(text, terms), terms.some((t) => mentions(text, t)), text);
+  }
+  assert.equal(mentionsAny('anything', []), false);
 });

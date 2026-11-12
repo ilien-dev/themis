@@ -4,13 +4,21 @@ import { q3 } from "./checks/q3.js";
 import { q5 } from "./checks/q5.js";
 import { q6 } from "./checks/q6.js";
 import { q7 } from "./checks/q7.js";
-import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentions, ruleHash, spans } from "./text.js";
+import { loadAccepted } from "./accepted.js";
+import { TECH } from "./tables/alias.js";
+import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentionsAny, ruleHash, spans } from "./text.js";
+// Every spelling of every technology the alias table knows; one array so compiled matchers are reused.
+const TECH_NAMES = TECH.flatMap((t) => [t.name, ...t.aliases]);
+// The context of a judgement in the repository of `facts`: the rules its user accepted and the known names.
+export function contextFor(facts) {
+    return { accepted: loadAccepted(facts.root), techNames: TECH_NAMES };
+}
 export const CHECKS = [{ question: 1, run: q1 }, { question: 2, run: q2 }, { question: 3, run: q3 },
     { question: 5, run: q5 }, { question: 6, run: q6 }, { question: 7, run: q7 }];
 const OUTSIDE_REPO = new Set([3, 7]);
 function mentionsKnownThing(rule, facts, ctx) {
     const text = rule.text;
-    if (ctx.techNames.some((t) => mentions(text, t)))
+    if (mentionsAny(text, ctx.techNames))
         return true;
     if (citedScripts(text).some((s) => facts.pkg !== null && Object.hasOwn(facts.pkg.scripts, s.script)))
         return true;

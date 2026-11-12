@@ -1,0 +1,370 @@
+{"id":"c14-01","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"# Ledger - Project Instructions for Claude","expect":"cut","code":"inferable-title","line":1}
+{"id":"c14-04","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"Ledger is a small bookkeeping service for freelancers. It tracks invoices, payments and expenses and produces monthly reports. Ledger is a small bookkeeping service for freelancers. It tracks invoices, payments and expenses and produces monthly reports. Ledger is a small bookkeeping service for freelancers. It tracks invoices, payments and expenses and produces monthly reports.","expect":"cut","code":"inferable-overview","line":4}
+{"id":"c14-06","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"The project is written in JavaScript using ES modules and runs on Node.js. It uses the built-in node:test runner.","expect":"keep","line":6,"gap":"package.json says \"type\": \"module\" and scripts.test is \"node --test\", and every source file is .js: the paragraph only restates them, but the check removes templates and names and \"ES modules\" and \"node:test runner\" remain"}
+{"id":"c14-09","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"```\nledger/\n├── src/\n│   ├── generated/\n│   │   └── schema.js\n│   └── money.js\n├── tests/\n│   └── money.test.js\n├── scripts/\n├── docs/\n└── package.json\n```","expect":"cut","code":"inferable-tree","line":9}
+{"id":"c14-23","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Write clean, readable and maintainable code.","expect":"cut","code":"generic-advice","line":23}
+{"id":"c14-24","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Always handle errors properly.","expect":"cut","code":"generic-advice","line":24}
+{"id":"c14-25","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Use meaningful variable names.","expect":"cut","code":"generic-advice","line":25}
+{"id":"c14-26","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Think step by step before making changes.","expect":"cut","code":"vendor-declared","line":26}
+{"id":"c14-27","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Double-check your work before finishing.","expect":"cut","code":"generic-advice","line":27}
+{"id":"c14-28","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Follow best practices for JavaScript.","expect":"cut","code":"generic-advice","line":28}
+{"id":"c14-29","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Keep functions small and focused.","expect":"cut","code":"generic-advice","line":29}
+{"id":"c14-30","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Write tests for your code.","expect":"cut","code":"generic-advice","line":30}
+{"id":"c14-31","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Be thorough and careful.","expect":"cut","code":"generic-advice","line":31}
+{"id":"c14-32","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Use modern ES features.","expect":"cut","code":"generic-advice","line":32}
+{"id":"c14-35","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Run unit tests: `npm run test:unit`","expect":"fix","code":"dead-reference","line":35}
+{"id":"c14-36","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Generate schema: `npm run gen`","expect":"keep","line":36}
+{"id":"c14-37","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Lint: `npm run lint`","expect":"cut","code":"inferable-script","line":37}
+{"id":"c14-40","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- All money values are integer cents; never floats.","expect":"keep","line":40}
+{"id":"c14-41","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- src/generated/ is produced by `npm run gen`. Do not edit it by hand.","expect":"keep","line":41}
+{"id":"c14-42","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Run `npm run db:migrate` before tests or they fail with \"no such table\".","expect":"keep","line":42}
+{"id":"c14-45","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- IMPORTANT: Use semicolons.","expect":"rewrite","code":"emphasis","line":45}
+{"id":"c14-46","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- IMPORTANT: Use single quotes.","expect":"rewrite","code":"emphasis","line":46}
+{"id":"c14-47","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- IMPORTANT: Use 2-space indentation.","expect":"rewrite","code":"emphasis","line":47}
+{"id":"c14-48","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- IMPORTANT: Prefer const over let.","expect":"rewrite","code":"emphasis","line":48}
+{"id":"c14-49","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- IMPORTANT: Use arrow functions where appropriate.","expect":"rewrite","code":"emphasis","line":49}
+{"id":"c14-50","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- IMPORTANT: Avoid var.","expect":"rewrite","code":"emphasis","line":50}
+{"id":"c14-53","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"This file gives Claude context about the Ledger project so it can help effectively. Keep it updated as the project evolves.","expect":"cut","code":"file-filler","line":53}
+{"id":"c14-56","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. Remember to keep the code quality high and to communicate clearly about changes. ","expect":"cut","code":"generic-advice","line":56}
+{"id":"c15-02","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 1: handlers in src/mod1/ register through registry.add('1') and must stay idempotent; see docs/mod1.md for the retry contract.","expect":"keep","line":2}
+{"id":"c15-03","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 2: handlers in src/mod2/ register through registry.add('2') and must stay idempotent; see docs/mod2.md for the retry contract.","expect":"keep","line":3}
+{"id":"c15-04","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 3: handlers in src/mod3/ register through registry.add('3') and must stay idempotent; see docs/mod3.md for the retry contract.","expect":"keep","line":4}
+{"id":"c15-05","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 4: handlers in src/mod4/ register through registry.add('4') and must stay idempotent; see docs/mod4.md for the retry contract.","expect":"keep","line":5}
+{"id":"c15-06","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 5: handlers in src/mod5/ register through registry.add('5') and must stay idempotent; see docs/mod5.md for the retry contract.","expect":"keep","line":6}
+{"id":"c15-07","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 6: handlers in src/mod6/ register through registry.add('6') and must stay idempotent; see docs/mod6.md for the retry contract.","expect":"keep","line":7}
+{"id":"c15-08","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 7: handlers in src/mod7/ register through registry.add('7') and must stay idempotent; see docs/mod7.md for the retry contract.","expect":"keep","line":8}
+{"id":"c15-09","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 8: handlers in src/mod8/ register through registry.add('8') and must stay idempotent; see docs/mod8.md for the retry contract.","expect":"keep","line":9}
+{"id":"c15-10","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 9: handlers in src/mod9/ register through registry.add('9') and must stay idempotent; see docs/mod9.md for the retry contract.","expect":"keep","line":10}
+{"id":"c15-11","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 10: handlers in src/mod10/ register through registry.add('10') and must stay idempotent; see docs/mod10.md for the retry contract.","expect":"keep","line":11}
+{"id":"c15-12","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 11: handlers in src/mod11/ register through registry.add('11') and must stay idempotent; see docs/mod11.md for the retry contract.","expect":"keep","line":12}
+{"id":"c15-13","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 12: handlers in src/mod12/ register through registry.add('12') and must stay idempotent; see docs/mod12.md for the retry contract.","expect":"keep","line":13}
+{"id":"c15-14","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 13: handlers in src/mod13/ register through registry.add('13') and must stay idempotent; see docs/mod13.md for the retry contract.","expect":"keep","line":14}
+{"id":"c15-15","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 14: handlers in src/mod14/ register through registry.add('14') and must stay idempotent; see docs/mod14.md for the retry contract.","expect":"keep","line":15}
+{"id":"c15-16","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 15: handlers in src/mod15/ register through registry.add('15') and must stay idempotent; see docs/mod15.md for the retry contract.","expect":"keep","line":16}
+{"id":"c15-17","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 16: handlers in src/mod16/ register through registry.add('16') and must stay idempotent; see docs/mod16.md for the retry contract.","expect":"keep","line":17}
+{"id":"c15-18","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 17: handlers in src/mod17/ register through registry.add('17') and must stay idempotent; see docs/mod17.md for the retry contract.","expect":"keep","line":18}
+{"id":"c15-19","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 18: handlers in src/mod18/ register through registry.add('18') and must stay idempotent; see docs/mod18.md for the retry contract.","expect":"keep","line":19}
+{"id":"c15-20","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 19: handlers in src/mod19/ register through registry.add('19') and must stay idempotent; see docs/mod19.md for the retry contract.","expect":"keep","line":20}
+{"id":"c15-21","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 20: handlers in src/mod20/ register through registry.add('20') and must stay idempotent; see docs/mod20.md for the retry contract.","expect":"keep","line":21}
+{"id":"c15-22","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 21: handlers in src/mod21/ register through registry.add('21') and must stay idempotent; see docs/mod21.md for the retry contract.","expect":"keep","line":22}
+{"id":"c15-23","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 22: handlers in src/mod22/ register through registry.add('22') and must stay idempotent; see docs/mod22.md for the retry contract.","expect":"keep","line":23}
+{"id":"c15-24","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 23: handlers in src/mod23/ register through registry.add('23') and must stay idempotent; see docs/mod23.md for the retry contract.","expect":"keep","line":24}
+{"id":"c15-25","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 24: handlers in src/mod24/ register through registry.add('24') and must stay idempotent; see docs/mod24.md for the retry contract.","expect":"keep","line":25}
+{"id":"c15-26","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 25: handlers in src/mod25/ register through registry.add('25') and must stay idempotent; see docs/mod25.md for the retry contract.","expect":"keep","line":26}
+{"id":"c15-27","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 26: handlers in src/mod26/ register through registry.add('26') and must stay idempotent; see docs/mod26.md for the retry contract.","expect":"keep","line":27}
+{"id":"c15-28","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 27: handlers in src/mod27/ register through registry.add('27') and must stay idempotent; see docs/mod27.md for the retry contract.","expect":"keep","line":28}
+{"id":"c15-29","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 28: handlers in src/mod28/ register through registry.add('28') and must stay idempotent; see docs/mod28.md for the retry contract.","expect":"keep","line":29}
+{"id":"c15-30","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 29: handlers in src/mod29/ register through registry.add('29') and must stay idempotent; see docs/mod29.md for the retry contract.","expect":"keep","line":30}
+{"id":"c15-31","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 30: handlers in src/mod30/ register through registry.add('30') and must stay idempotent; see docs/mod30.md for the retry contract.","expect":"keep","line":31}
+{"id":"c15-32","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 31: handlers in src/mod31/ register through registry.add('31') and must stay idempotent; see docs/mod31.md for the retry contract.","expect":"keep","line":32}
+{"id":"c15-33","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 32: handlers in src/mod32/ register through registry.add('32') and must stay idempotent; see docs/mod32.md for the retry contract.","expect":"keep","line":33}
+{"id":"c15-34","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 33: handlers in src/mod33/ register through registry.add('33') and must stay idempotent; see docs/mod33.md for the retry contract.","expect":"keep","line":34}
+{"id":"c15-35","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 34: handlers in src/mod34/ register through registry.add('34') and must stay idempotent; see docs/mod34.md for the retry contract.","expect":"keep","line":35}
+{"id":"c15-36","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 35: handlers in src/mod35/ register through registry.add('35') and must stay idempotent; see docs/mod35.md for the retry contract.","expect":"keep","line":36}
+{"id":"c15-37","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 36: handlers in src/mod36/ register through registry.add('36') and must stay idempotent; see docs/mod36.md for the retry contract.","expect":"keep","line":37}
+{"id":"c15-38","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 37: handlers in src/mod37/ register through registry.add('37') and must stay idempotent; see docs/mod37.md for the retry contract.","expect":"keep","line":38}
+{"id":"c15-39","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 38: handlers in src/mod38/ register through registry.add('38') and must stay idempotent; see docs/mod38.md for the retry contract.","expect":"keep","line":39}
+{"id":"c15-40","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 39: handlers in src/mod39/ register through registry.add('39') and must stay idempotent; see docs/mod39.md for the retry contract.","expect":"keep","line":40}
+{"id":"c15-41","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 40: handlers in src/mod40/ register through registry.add('40') and must stay idempotent; see docs/mod40.md for the retry contract.","expect":"keep","line":41}
+{"id":"c15-42","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 41: handlers in src/mod41/ register through registry.add('41') and must stay idempotent; see docs/mod41.md for the retry contract.","expect":"keep","line":42}
+{"id":"c15-43","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 42: handlers in src/mod42/ register through registry.add('42') and must stay idempotent; see docs/mod42.md for the retry contract.","expect":"keep","line":43}
+{"id":"c15-44","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 43: handlers in src/mod43/ register through registry.add('43') and must stay idempotent; see docs/mod43.md for the retry contract.","expect":"keep","line":44}
+{"id":"c15-45","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 44: handlers in src/mod44/ register through registry.add('44') and must stay idempotent; see docs/mod44.md for the retry contract.","expect":"keep","line":45}
+{"id":"c15-46","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 45: handlers in src/mod45/ register through registry.add('45') and must stay idempotent; see docs/mod45.md for the retry contract.","expect":"keep","line":46}
+{"id":"c15-47","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 46: handlers in src/mod46/ register through registry.add('46') and must stay idempotent; see docs/mod46.md for the retry contract.","expect":"keep","line":47}
+{"id":"c15-48","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 47: handlers in src/mod47/ register through registry.add('47') and must stay idempotent; see docs/mod47.md for the retry contract.","expect":"keep","line":48}
+{"id":"c15-49","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 48: handlers in src/mod48/ register through registry.add('48') and must stay idempotent; see docs/mod48.md for the retry contract.","expect":"keep","line":49}
+{"id":"c15-50","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 49: handlers in src/mod49/ register through registry.add('49') and must stay idempotent; see docs/mod49.md for the retry contract.","expect":"keep","line":50}
+{"id":"c15-51","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 50: handlers in src/mod50/ register through registry.add('50') and must stay idempotent; see docs/mod50.md for the retry contract.","expect":"keep","line":51}
+{"id":"c15-52","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 51: handlers in src/mod51/ register through registry.add('51') and must stay idempotent; see docs/mod51.md for the retry contract.","expect":"keep","line":52}
+{"id":"c15-53","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 52: handlers in src/mod52/ register through registry.add('52') and must stay idempotent; see docs/mod52.md for the retry contract.","expect":"keep","line":53}
+{"id":"c15-54","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 53: handlers in src/mod53/ register through registry.add('53') and must stay idempotent; see docs/mod53.md for the retry contract.","expect":"keep","line":54}
+{"id":"c15-55","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 54: handlers in src/mod54/ register through registry.add('54') and must stay idempotent; see docs/mod54.md for the retry contract.","expect":"keep","line":55}
+{"id":"c15-56","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 55: handlers in src/mod55/ register through registry.add('55') and must stay idempotent; see docs/mod55.md for the retry contract.","expect":"keep","line":56}
+{"id":"c15-57","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 56: handlers in src/mod56/ register through registry.add('56') and must stay idempotent; see docs/mod56.md for the retry contract.","expect":"keep","line":57}
+{"id":"c15-58","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 57: handlers in src/mod57/ register through registry.add('57') and must stay idempotent; see docs/mod57.md for the retry contract.","expect":"keep","line":58}
+{"id":"c15-59","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 58: handlers in src/mod58/ register through registry.add('58') and must stay idempotent; see docs/mod58.md for the retry contract.","expect":"keep","line":59}
+{"id":"c15-60","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 59: handlers in src/mod59/ register through registry.add('59') and must stay idempotent; see docs/mod59.md for the retry contract.","expect":"keep","line":60}
+{"id":"c15-61","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 60: handlers in src/mod60/ register through registry.add('60') and must stay idempotent; see docs/mod60.md for the retry contract.","expect":"keep","line":61}
+{"id":"c15-62","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 61: handlers in src/mod61/ register through registry.add('61') and must stay idempotent; see docs/mod61.md for the retry contract.","expect":"keep","line":62}
+{"id":"c15-63","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Module 62: handlers in src/mod62/ register through registry.add('62') and must stay idempotent; see docs/mod62.md for the retry contract.","expect":"keep","line":63}
+{"id":"c15-conv-01","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- API errors use RFC 9457 problem+json bodies.","expect":"keep"}
+{"id":"c15-conv-02","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Dates are stored as UTC ISO-8601 strings.","expect":"keep"}
+{"id":"c15-conv-03","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Feature flags live in config/flags.json and are read once at startup.","expect":"keep"}
+{"id":"c15-conv-04","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Every SQL query goes through src/db/query.js, never raw drivers.","expect":"keep"}
+{"id":"c15-conv-05","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Log lines are JSON with a request_id field.","expect":"keep"}
+{"id":"c15-conv-06","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Background jobs must be idempotent and retry at most 5 times.","expect":"keep"}
+{"id":"c15-conv-07","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Public functions in src/api/ need JSDoc.","expect":"keep"}
+{"id":"c15-conv-08","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Never commit .env files; use .env.example.","expect":"keep"}
+{"id":"c15-conv-09","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Cache keys are prefixed with the tenant id.","expect":"keep"}
+{"id":"c15-conv-10","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Currency conversion uses rates from src/fx/rates.js only.","expect":"keep"}
+{"id":"c15-conv-11","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Never commit `.env` files; use `.env.example`.","expect":"keep"}
+{"id":"shop-01","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"# Shop","expect":"cut","code":"inferable-title"}
+{"id":"shop-02","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"# Shop — instructions for Claude","expect":"cut","code":"inferable-title"}
+{"id":"shop-03","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop instructions for Claude","expect":"cut","code":"inferable-title"}
+{"id":"api-01","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"# Acme API","expect":"cut","code":"inferable-title"}
+{"id":"mono-01","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"# acme-mono: guía del proyecto","expect":"cut","code":"inferable-title"}
+{"id":"facturas-01","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"# Facturas para pymes","expect":"cut","code":"inferable-title"}
+{"id":"shop-04","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"# Shop never computes prices on the client","expect":"keep"}
+{"id":"shop-05","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"# Release checklist","expect":"keep"}
+{"id":"api-02","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"# Acme API: every route needs an owner in CODEOWNERS","expect":"keep"}
+{"id":"shop-06","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"```\nshop/\n├── src/\n│   ├── components/\n│   └── lib/\n├── tests/\n└── package.json\n```","expect":"cut","code":"inferable-tree"}
+{"id":"api-03","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"1. `src/routes/` - HTTP routes\n2. `src/db/` - the database pool\n3. `scripts/` - maintenance scripts","expect":"cut","code":"inferable-tree"}
+{"id":"mono-02","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"```\nacme-mono/\n├── packages/\n│   ├── web/\n│   └── core/\n└── pnpm-workspace.yaml\n```","expect":"cut","code":"inferable-tree"}
+{"id":"facturas-02","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"1. `src/facturas/` - el código del servicio\n2. `tests/` - las pruebas\n3. `docs/` - la documentación","expect":"cut","code":"inferable-tree"}
+{"id":"gocli-01","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"```\ntool/\n├── cmd/\n│   └── tool/\n└── internal/\n    └── parse/\n```","expect":"cut","code":"inferable-tree"}
+{"id":"api-04","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"1. `src/routes/` - HTTP routes\n2. `src/db/` - the database pool\n3. `migrations/` - generated, do not edit","expect":"keep"}
+{"id":"api-05","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"1. `src/routes/` - HTTP routes\n2. `src/db/` - never import it from a route\n3. `scripts/` - maintenance scripts","expect":"keep"}
+{"id":"shop-07","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"```\nshop/\n├── src/\n└── tests/ # never edit snapshots by hand\n```","expect":"keep"}
+{"id":"shop-08","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"```\nshop/\n├── planned/\n└── future.ts\n```","expect":"keep"}
+{"id":"shop-09","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- `src/components/` - shared UI components","expect":"keep","gap":"it describes one directory the file listing already shows; the tree check needs three entries in one rule, and a bullet list splits them into one rule each"}
+{"id":"shop-10","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Tests: `npm test`","expect":"cut","code":"inferable-script"}
+{"id":"shop-11","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Build: `npm run build`","expect":"cut","code":"inferable-script"}
+{"id":"shop-12","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Dev server: `npm run dev`","expect":"cut","code":"inferable-script"}
+{"id":"shop-13","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Format: `npm run format`","expect":"cut","code":"inferable-script"}
+{"id":"api-06","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Lint: `npm run lint`","expect":"cut","code":"inferable-script"}
+{"id":"mono-03","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Build: `pnpm build`","expect":"cut","code":"inferable-script"}
+{"id":"shop-14","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Run a single test file: `npm test -- tests/App.test.tsx`","expect":"keep"}
+{"id":"shop-15","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Run `npm test` before every commit.","expect":"keep"}
+{"id":"shop-16","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Lint, then test: `npm run lint` and `npm test`","expect":"keep"}
+{"id":"api-07","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Run the migrations: `npm run migrate`","expect":"keep"}
+{"id":"api-08","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Tests, when touching the users routes: `npm test`","expect":"keep"}
+{"id":"shop-17","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"We use React.","expect":"cut","code":"inferable-tech"}
+{"id":"shop-18","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Written in TypeScript.","expect":"cut","code":"inferable-tech"}
+{"id":"shop-19","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Este proyecto usa Vite.","expect":"cut","code":"inferable-tech"}
+{"id":"shop-20","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"We use Vitest.","expect":"cut","code":"inferable-tech"}
+{"id":"api-09","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Built with Express.","expect":"cut","code":"inferable-tech"}
+{"id":"api-10","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Usamos npm.","expect":"cut","code":"inferable-tech"}
+{"id":"mono-04","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"We use React.","expect":"cut","code":"inferable-tech"}
+{"id":"facturas-03","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"Escrito en Python.","expect":"cut","code":"inferable-tech"}
+{"id":"gocli-02","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"This project is written in Go.","expect":"cut","code":"inferable-tech"}
+{"id":"mono-05","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"Use pnpm.","expect":"keep"}
+{"id":"mono-06","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"Usa pnpm, no npm.","expect":"keep"}
+{"id":"shop-21","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use React Query for all server state, never useEffect fetches.","expect":"keep"}
+{"id":"shop-22","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use React without class components.","expect":"keep"}
+{"id":"shop-23","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Usa solo React en el cliente.","expect":"keep"}
+{"id":"shop-24","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Don't use Express for the dev server.","expect":"keep"}
+{"id":"shop-25","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use TypeScript strict mode in new files.","expect":"keep"}
+{"id":"shop-26","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use Vite and Zustand.","expect":"keep"}
+{"id":"api-11","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"No usamos React.","expect":"keep"}
+{"id":"shop-27","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"We use React for every screen of the whole product.","expect":"keep","gap":"every screen is React anyway; the words after the name are filler, but more than connectives remain so the tech check abstains"}
+{"id":"shop-28","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop is the storefront for the Acme bakery. Customers browse the catalogue, fill a basket and pay with a card.","expect":"cut","code":"inferable-overview"}
+{"id":"api-12","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"The HTTP API behind the Acme bakery apps. It serves the catalogue, the baskets and the orders.","expect":"cut","code":"inferable-overview"}
+{"id":"mono-07","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"El monorepo reúne la web y el núcleo de la panadería Acme. Cada paquete se publica por separado desde su carpeta.","expect":"cut","code":"inferable-overview"}
+{"id":"facturas-04","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"Facturas es un servicio que genera facturas electrónicas para pymes. Valida los datos fiscales y envía cada factura a la agencia tributaria.","expect":"cut","code":"inferable-overview"}
+{"id":"gocli-03","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"Tool converts bank statements into ledger entries. It reads CSV exports and writes one entry per line.","expect":"cut","code":"inferable-overview"}
+{"id":"shop-29","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop is the storefront for the Acme bakery.","expect":"keep","line":3,"gap":"the first sentence of the README; the overview check needs two sentences, so one copied sentence is kept"}
+{"id":"shop-30","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop is the storefront for the Acme bakery.","expect":"cut","code":"inferable-title"}
+{"id":"shop-31","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop is the storefront for the Acme bakery. Customers pay with a card through `src/lib/api.ts`.","expect":"keep"}
+{"id":"gocli-04","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"Tool converts bank statements into ledger entries. Amounts are parsed as integer cents, never as floats.","expect":"keep"}
+{"id":"shop-32","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Omit semicolons.","expect":"cut","code":"enforced-config"}
+{"id":"shop-33","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Sin punto y coma.","expect":"cut","code":"enforced-config"}
+{"id":"shop-34","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use single quotes.","expect":"cut","code":"enforced-config"}
+{"id":"shop-35","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Tab width 2.","expect":"cut","code":"enforced-config"}
+{"id":"shop-36","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use trailing commas.","expect":"cut","code":"enforced-config"}
+{"id":"shop-37","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Max line length 100.","expect":"cut","code":"enforced-config"}
+{"id":"shop-38","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Enable strict mode.","expect":"cut","code":"enforced-config"}
+{"id":"shop-39","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Avoid unused variables.","expect":"cut","code":"enforced-config"}
+{"id":"api-13","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Avoid var.","expect":"cut","code":"enforced-config"}
+{"id":"api-14","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Prefer const.","expect":"cut","code":"enforced-config"}
+{"id":"api-15","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Use === instead of ==.","expect":"cut","code":"enforced-config"}
+{"id":"api-16","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Usa comillas simples.","expect":"cut","code":"enforced-config"}
+{"id":"api-17","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Avoid console.log.","expect":"cut","code":"enforced-config"}
+{"id":"api-18","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Use conventional commits.","expect":"cut","code":"enforced-config"}
+{"id":"shop-40","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Omit semicolons, except in `for` headers.","expect":"keep"}
+{"id":"shop-41","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use single quotes unless the string has an apostrophe.","expect":"keep"}
+{"id":"shop-42","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Usa comillas simples excepto en JSX.","expect":"keep"}
+{"id":"shop-43","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Enable strict mode, but allow any in tests.","expect":"keep"}
+{"id":"api-19","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Never use var in generated code.","expect":"keep"}
+{"id":"api-20","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Use const for module-level constants and let for loop counters.","expect":"keep"}
+{"id":"api-21","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Use conventional commits for releases only.","expect":"keep"}
+{"id":"api-22","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Quotes inside strings must be escaped.","expect":"keep"}
+{"id":"api-23","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Indent with 2 spaces.","expect":"keep","gap":".editorconfig sets indent_size = 2 for every file; editorconfig is applied by editors, not run by a check, so the gate only reports a disagreement with it"}
+{"id":"shop-44","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use semicolons.","expect":"conflict","code":"config-conflict"}
+{"id":"shop-45","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Usa punto y coma.","expect":"conflict","code":"config-conflict"}
+{"id":"shop-46","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use double quotes.","expect":"conflict","code":"config-conflict"}
+{"id":"shop-47","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Tab width 4.","expect":"conflict","code":"config-conflict"}
+{"id":"shop-48","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"No trailing commas.","expect":"conflict","code":"config-conflict"}
+{"id":"shop-49","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Max line length 80.","expect":"conflict","code":"config-conflict"}
+{"id":"api-24","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Use double quotes.","expect":"conflict","code":"config-conflict"}
+{"id":"api-25","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Indent with 4 spaces.","expect":"conflict","code":"config-conflict"}
+{"id":"api-26","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Use tabs for indentation.","expect":"conflict","code":"config-conflict"}
+{"id":"api-27","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Use CRLF line endings.","expect":"conflict","code":"config-conflict"}
+{"id":"shop-50","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Use semicolons in the JSON fixtures.","expect":"keep"}
+{"id":"shop-51","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Semicolons are required by the legacy parser, see docs.","expect":"keep"}
+{"id":"shop-52","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `git push --force`.","expect":"cut","code":"enforced-deny"}
+{"id":"shop-53","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Do not run `npm publish`.","expect":"cut","code":"enforced-deny"}
+{"id":"shop-54","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Nunca ejecutes `rm -rf`.","expect":"cut","code":"enforced-deny"}
+{"id":"api-28","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never run `git push origin main`.","expect":"cut","code":"enforced-deny"}
+{"id":"api-29","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never `git push`.","expect":"cut","code":"enforced-deny"}
+{"id":"facturas-05","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Nunca ejecutes `uv publish`.","expect":"cut","code":"enforced-deny"}
+{"id":"facturas-06","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Never run `git push --force`.","expect":"cut","code":"enforced-deny"}
+{"id":"shop-55","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Run `git push --force` only after a backup.","expect":"keep"}
+{"id":"shop-56","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `git push --force` without asking me first.","expect":"keep"}
+{"id":"facturas-07","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Nunca ejecutes `git push` sin pasar las pruebas.","expect":"keep"}
+{"id":"api-30","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Do not run `npm run migrate` against production; use the staging copy.","expect":"keep"}
+{"id":"shop-57","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use descriptive names.","expect":"cut","code":"generic-advice"}
+{"id":"shop-58","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Reuse existing code.","expect":"cut","code":"generic-advice"}
+{"id":"shop-59","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Stay in scope.","expect":"cut","code":"generic-advice"}
+{"id":"api-31","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Read files before editing.","expect":"cut","code":"generic-advice"}
+{"id":"api-32","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never edit tests to make them pass.","expect":"cut","code":"generic-advice"}
+{"id":"facturas-08","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Escribe código limpio y legible.","expect":"cut","code":"generic-advice"}
+{"id":"facturas-09","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Siempre revisa tu trabajo antes de terminar.","expect":"cut","code":"generic-advice"}
+{"id":"facturas-10","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Maneja los errores correctamente.","expect":"cut","code":"generic-advice"}
+{"id":"facturas-11","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Sigue las mejores prácticas de Python.","expect":"cut","code":"generic-advice"}
+{"id":"mono-08","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Mantén las funciones pequeñas.","expect":"cut","code":"generic-advice"}
+{"id":"shop-60","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Write clean code: no component over 150 lines in `src/components/`.","expect":"keep"}
+{"id":"shop-61","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Handle errors with `ApiError` from src/lib/api.ts.","expect":"keep"}
+{"id":"api-33","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Handle errors properly when the payment provider times out.","expect":"keep"}
+{"id":"api-34","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Handle errors properly and retry 3 times.","expect":"keep"}
+{"id":"api-35","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Do not edit tests to make them pass unless the spec changed.","expect":"keep"}
+{"id":"shop-62","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use branded types for ids.","expect":"keep"}
+{"id":"shop-63","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Follow best practices for security.","expect":"keep"}
+{"id":"facturas-12","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Siempre maneja los errores de firma con reintentos.","expect":"keep"}
+{"id":"facturas-13","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Sé cuidadoso con los certificados de la empresa.","expect":"keep"}
+{"id":"shop-64","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Keep this file up to date.","expect":"cut","code":"file-filler"}
+{"id":"shop-65","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"This file gives you context about the Shop project.","expect":"cut","code":"file-filler"}
+{"id":"api-36","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Keep it updated as the project evolves.","expect":"cut","code":"file-filler"}
+{"id":"facturas-14","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"Este archivo proporciona contexto sobre el proyecto Facturas. Mantenlo actualizado.","expect":"cut","code":"file-filler"}
+{"id":"mono-09","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"Mantén este archivo actualizado.","expect":"cut","code":"file-filler"}
+{"id":"shop-66","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Keep it updated by running the sync job every Friday.","expect":"keep"}
+{"id":"api-37","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"This file gives context about security.","expect":"keep"}
+{"id":"shop-67","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"This file provides guidance to Claude Code when working with code in this repository.","expect":"keep","gap":"the sentence /init writes at the top of every file; the filler pattern ends at \"guidance\" and \"to Claude Code when working with code in this repository\" is not a connective"}
+{"id":"shop-68","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Think carefully before answering.","expect":"cut","code":"vendor-declared"}
+{"id":"shop-69","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Think step by step.","expect":"cut","code":"vendor-declared"}
+{"id":"api-38","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Think very carefully before making any changes.","expect":"cut","code":"vendor-declared"}
+{"id":"facturas-15","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Piensa paso a paso antes de responder.","expect":"cut","code":"vendor-declared"}
+{"id":"facturas-16","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Piensa con cuidado.","expect":"cut","code":"vendor-declared"}
+{"id":"api-39","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Think carefully before touching the migrations.","expect":"keep"}
+{"id":"shop-70","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Think step by step and run `npm run lint` after each change.","expect":"keep"}
+{"id":"c14-extra-01","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Never run `npm publish`.","expect":"move","code":"absolute-command"}
+{"id":"c14-extra-02","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Never edit `src/generated/schema.js` by hand.","expect":"move","code":"absolute-command"}
+{"id":"c14-extra-03","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Always run `npm run lint` before committing.","expect":"move","code":"absolute-command"}
+{"id":"c14-extra-04","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Siempre ejecuta `npm test` antes de hacer push.","expect":"move","code":"absolute-command"}
+{"id":"c14-extra-05","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Nunca ejecutes `git push --force`.","expect":"move","code":"absolute-command"}
+{"id":"api-40","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never run `docker compose down -v`.","expect":"move","code":"absolute-command"}
+{"id":"c14-extra-06","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Never use `any` in new code.","expect":"keep"}
+{"id":"c14-extra-07","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Never call `Math.round` on cents.","expect":"keep"}
+{"id":"c14-extra-08","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Do not run `npm publish` locally.","expect":"keep"}
+{"id":"c14-extra-09","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Never run `npm publish` from a laptop; the release job signs the package.","expect":"keep"}
+{"id":"c14-extra-10","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Always write tests before the code.","expect":"keep"}
+{"id":"c14-extra-11","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Never deploy on Fridays unless the on-call approves.","expect":"keep"}
+{"id":"shop-71","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"1. Bump the version in package.json.\n2. Run the changelog script and review the entries.\n3. Tag the commit and push the tag to origin.","expect":"move","code":"duplicated-passage"}
+{"id":"shop-72","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"The basket is stored in local storage under the key acme-basket.\nPrices come from the catalogue API and are never computed on the client.\nA failed payment keeps the basket and shows the message of the provider.","expect":"move","code":"duplicated-passage"}
+{"id":"api-41","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"1. Merge the release branch into main.\n2. Wait for the image build to finish on CI.\n3. Promote the image from staging to production in the console.","expect":"move","code":"duplicated-passage"}
+{"id":"facturas-17","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"Cada factura pasa por tres etapas: validación, firma y envío.\nLa firma usa el certificado de la empresa guardado en el almacén de secretos.\nSi el envío falla, la factura queda en la cola de reintentos.","expect":"move","code":"duplicated-passage"}
+{"id":"mono-10","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"Cada paquete lleva su propio número de versión.\nLos cambios de un paquete no obligan a publicar los demás.\nEl registro de cambios se genera a partir de los commits.","expect":"move","code":"duplicated-passage"}
+{"id":"c14-extra-12","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"All money values are integer cents; never floats.\nsrc/generated/ is produced by `npm run gen` from schema.json. Do not edit it by hand.\nTests need a migrated database: run `npm run db:migrate` first or they fail with \"no such table\".","expect":"move","code":"duplicated-passage"}
+{"id":"shop-73","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Prices come from the catalogue API and are never computed on the client.","expect":"keep"}
+{"id":"shop-74","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"The basket is stored in local storage under the key acme-basket.\nA failed payment keeps the basket.\nDiscount codes are checked by the server only.","expect":"keep"}
+{"id":"shop-75","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"1. Step 1 of the release\n2. Step 2 of the release\n3. Step 3 of the release\n4. Step 4 of the release\n5. Step 5 of the release\n6. Step 6 of the release","expect":"move","code":"long-procedure"}
+{"id":"api-42","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"1. Stage 1 of the release\n2. Stage 2 of the release\n3. Stage 3 of the release\n4. Stage 4 of the release\n5. Stage 5 of the release\n6. Stage 6 of the release\n7. Stage 7 of the release\n8. Stage 8 of the release","expect":"move","code":"long-procedure"}
+{"id":"facturas-18","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"1. Paso 1 del cierre mensual\n2. Paso 2 del cierre mensual\n3. Paso 3 del cierre mensual\n4. Paso 4 del cierre mensual\n5. Paso 5 del cierre mensual\n6. Paso 6 del cierre mensual\n7. Paso 7 del cierre mensual","expect":"move","code":"long-procedure"}
+{"id":"shop-76","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Line 1 of the long note about the checkout flow\nLine 2 of the long note about the checkout flow\nLine 3 of the long note about the checkout flow\nLine 4 of the long note about the checkout flow\nLine 5 of the long note about the checkout flow\nLine 6 of the long note about the checkout flow\nLine 7 of the long note about the checkout flow\nLine 8 of the long note about the checkout flow\nLine 9 of the long note about the checkout flow","expect":"move","code":"long-procedure"}
+{"id":"api-43","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Releasing:\n  - check 1 before the release goes out\n  - check 2 before the release goes out\n  - check 3 before the release goes out\n  - check 4 before the release goes out\n  - check 5 before the release goes out\n  - check 6 before the release goes out\n  - check 7 before the release goes out\n  - check 8 before the release goes out","expect":"move","code":"long-procedure"}
+{"id":"api-44","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"```js\napp.get('/route1', handler1);\napp.get('/route2', handler2);\napp.get('/route3', handler3);\napp.get('/route4', handler4);\napp.get('/route5', handler5);\napp.get('/route6', handler6);\napp.get('/route7', handler7);\napp.get('/route8', handler8);\napp.get('/route9', handler9);\napp.get('/route10', handler10);\n```","expect":"move","code":"long-procedure"}
+{"id":"shop-77","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"1. Step 1 of the release\n2. Step 2 of the release\n3. Step 3 of the release\n4. Step 4 of the release\n5. Step 5 of the release","expect":"keep"}
+{"id":"api-45","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Line 1 of a note on the users routes\nLine 2 of a note on the users routes\nLine 3 of a note on the users routes\nLine 4 of a note on the users routes\nLine 5 of a note on the users routes\nLine 6 of a note on the users routes\nLine 7 of a note on the users routes\nLine 8 of a note on the users routes","expect":"keep"}
+{"id":"c14-extra-13","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- See `docs/ARCHITECTURE.md` for the layers.","expect":"fix","code":"dead-reference"}
+{"id":"shop-78","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Components live in `src/ui/`.","expect":"fix","code":"dead-reference"}
+{"id":"api-46","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Seed the database with `npm run seed` first.","expect":"fix","code":"dead-reference"}
+{"id":"facturas-19","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- La configuración está en `src/facturas/config.py`.","expect":"fix","code":"dead-reference"}
+{"id":"mono-11","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Lint this package with `pnpm run lint`.","expect":"fix","code":"dead-reference"}
+{"id":"shop-79","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- IMPORTANT: see `src/missing.ts`.","expect":"fix","code":"dead-reference"}
+{"id":"mono-12","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Build this package with `pnpm build`.","expect":"cut","code":"inferable-script"}
+{"id":"mono-13","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Shared types are in `src/index.ts`.","expect":"keep"}
+{"id":"shop-80","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- The bundle is written to `dist/assets/`.","expect":"keep"}
+{"id":"shop-81","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- The design tokens follow https://example.com/tokens and `src/**/*.css`.","expect":"keep"}
+{"id":"shop-82","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Import the runtime from `react/jsx-runtime`.","expect":"keep"}
+{"id":"c14-extra-14","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Generated code lives in `src/generated/`.","expect":"keep"}
+{"id":"c14-extra-15","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- `src/money.js:12` holds the rounding rule.","expect":"keep"}
+{"id":"api-47","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Handlers MUST validate input.","expect":"rewrite","code":"emphasis"}
+{"id":"api-48","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- CRITICAL: close the pool in tests.","expect":"rewrite","code":"emphasis"}
+{"id":"facturas-20","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- SIEMPRE valida el NIF antes de firmar.","expect":"rewrite","code":"emphasis"}
+{"id":"facturas-21","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- NUNCA subas certificados al repositorio.","expect":"rewrite","code":"emphasis"}
+{"id":"mono-14","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Es CRÍTICO publicar cada paquete desde su carpeta.","expect":"rewrite","code":"emphasis"}
+{"id":"api-49","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Parse the HTTP and JSON payload with the shared schema.","expect":"keep"}
+{"id":"api-50","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Read MUST_HAVE from the config.","expect":"keep"}
+{"id":"api-51","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Set `NODE_ENV=IMPORTANT` only in the smoke tests.","expect":"keep"}
+{"id":"api-52","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Importantly, keep the pool small.","expect":"keep"}
+{"id":"accepted-01","repo":"tests/gate/repos/accepted","file":"CLAUDE.md","rule":"- Write clean code.","expect":"keep"}
+{"id":"accepted-02","repo":"tests/gate/repos/accepted","file":"CLAUDE.md","rule":"- Use semicolons.","expect":"keep"}
+{"id":"shop-83","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Prices are integer cents; format them only in `src/lib/api.ts`.","expect":"keep"}
+{"id":"shop-84","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- The basket survives a reload; never clear local storage on logout.","expect":"keep"}
+{"id":"shop-85","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Retry a failed payment at most 2 times.","expect":"keep"}
+{"id":"shop-86","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- When the catalogue API is down, show the cached catalogue.","expect":"keep"}
+{"id":"api-53","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Every route checks the session before it reads the body.","expect":"keep"}
+{"id":"api-54","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Orders are never deleted; mark them cancelled.","expect":"keep"}
+{"id":"api-55","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Before changing a migration, ask: migrations already run in production.","expect":"keep"}
+{"id":"api-56","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Las fechas se guardan en UTC.","expect":"keep"}
+{"id":"facturas-22","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Los importes van en céntimos, nunca en coma flotante.","expect":"keep"}
+{"id":"facturas-23","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Una factura firmada no se modifica: se emite una rectificativa.","expect":"keep"}
+{"id":"facturas-24","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Si la agencia tributaria responde 503, reintenta a los 10 minutos.","expect":"keep"}
+{"id":"gocli-05","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Amounts are parsed into `int64` cents.","expect":"keep"}
+{"id":"gocli-06","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Unknown CSV columns are ignored, not rejected.","expect":"keep"}
+{"id":"mono-15","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- `packages/core` must not import from `packages/web`.","expect":"keep"}
+{"id":"mono-16","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Cada paquete se publica por separado; no publiques desde la raíz.","expect":"keep"}
+{"id":"shop-87","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use React 18 APIs only; React 19 features are not available.","expect":"keep"}
+{"id":"shop-88","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- We use React with the compiler turned off.","expect":"keep"}
+{"id":"shop-89","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use single quotes for imports.","expect":"keep"}
+{"id":"shop-90","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use semicolons at the start of lines that begin with `(` or `[`.","expect":"keep"}
+{"id":"shop-91","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Always use `npm ci` in CI.","expect":"keep"}
+{"id":"shop-92","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `npm run build` while `npm run dev` is running.","expect":"keep"}
+{"id":"shop-93","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never import from `src/lib/api.ts` in tests; mock it.","expect":"keep"}
+{"id":"shop-94","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never modify `tsconfig.json`.","expect":"move","code":"absolute-command"}
+{"id":"shop-95","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never touch `package-lock.json` by hand.","expect":"move","code":"absolute-command"}
+{"id":"shop-96","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Always read `docs/checkout.md` before changing the basket.","expect":"keep"}
+{"id":"shop-97","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never use `localStorage` directly; use `src/lib/api.ts`.","expect":"keep"}
+{"id":"shop-98","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Keep functions small and focused: the reviewers reject anything over 40 lines.","expect":"keep"}
+{"id":"shop-99","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Write tests for your code in `tests/`.","expect":"keep"}
+{"id":"shop-100","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Be careful with the payment form.","expect":"keep"}
+{"id":"shop-101","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use TypeScript.","expect":"cut","code":"inferable-tech"}
+{"id":"shop-102","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- TypeScript strict is on; do not add `// @ts-ignore`.","expect":"keep"}
+{"id":"shop-103","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"IMPORTANT: prices are cents.","expect":"rewrite","code":"emphasis"}
+{"id":"shop-104","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Prices are cents — ALWAYS.","expect":"rewrite","code":"emphasis"}
+{"id":"shop-105","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Tests: `npm test` (needs the API on port 3000).","expect":"keep"}
+{"id":"shop-106","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Dev: `npm run dev -- --host`","expect":"keep"}
+{"id":"shop-107","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- `npm run build` fails on Windows; use WSL.","expect":"keep"}
+{"id":"shop-108","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Run `npm run lint` and fix every warning.","expect":"keep"}
+{"id":"api-57","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Use single quotes, even in JSON fixtures.","expect":"keep"}
+{"id":"api-58","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Avoid var in new files.","expect":"keep"}
+{"id":"api-59","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Prefer const over let.","expect":"cut","code":"enforced-config"}
+{"id":"api-60","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Use Express 4 routing; Express 5 is not supported by our middleware.","expect":"keep"}
+{"id":"api-61","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Use conventional commits with the scope set to the route name.","expect":"keep"}
+{"id":"api-62","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never run `git push` to main directly.","expect":"keep"}
+{"id":"api-63","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never run `npm run migrate` on production.","expect":"keep"}
+{"id":"api-64","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Always run `npm run migrate` after pulling.","expect":"keep"}
+{"id":"api-65","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Handle errors properly.","expect":"cut","code":"generic-advice"}
+{"id":"api-66","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- The project uses Express and pg.","expect":"keep","gap":"both are dependencies in package.json; pg is not in the alias table, so a word remains after the names are removed"}
+{"id":"api-67","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never log request bodies.","expect":"keep"}
+{"id":"api-68","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Always validate input.","expect":"keep","gap":"generic advice the model follows anyway, as empty as \"handle errors\"; the phrase table does not list it"}
+{"id":"api-69","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Use `pg` pool from `src/db/pool.js`, never `new Client()`.","expect":"keep"}
+{"id":"api-70","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- See the deploy guide in `docs/deploy.md`.","expect":"keep"}
+{"id":"api-71","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Express is the only framework allowed.","expect":"keep"}
+{"id":"api-72","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Indent with 2 spaces in SQL files too.","expect":"keep"}
+{"id":"mono-17","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Use pnpm workspaces; run `pnpm -F web dev`.","expect":"keep"}
+{"id":"mono-18","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Usamos React y TypeScript.","expect":"cut","code":"inferable-tech"}
+{"id":"mono-19","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Usa `pnpm` siempre.","expect":"keep"}
+{"id":"mono-20","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Nunca uses `npm install`.","expect":"move","code":"absolute-command"}
+{"id":"mono-21","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Nunca ejecutes `npm install`; rompe el lockfile de pnpm.","expect":"keep"}
+{"id":"facturas-25","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Usa uv para las dependencias.","expect":"keep"}
+{"id":"facturas-26","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Ejecuta las pruebas con `uv run pytest`.","expect":"keep"}
+{"id":"facturas-27","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Nunca edites `src/facturas/emitir.py` sin revisar la firma.","expect":"keep"}
+{"id":"facturas-28","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Nunca edites `uv.lock` a mano.","expect":"move","code":"absolute-command"}
+{"id":"facturas-29","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Escribe código limpio en el módulo de firma.","expect":"keep"}
+{"id":"facturas-30","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Piensa paso a paso cuando cambies la firma.","expect":"keep"}
+{"id":"facturas-31","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Sé minucioso.","expect":"cut","code":"generic-advice"}
+{"id":"facturas-32","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Usa nombres descriptivos en español.","expect":"keep"}
+{"id":"facturas-33","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Escrito en Python 3.12.","expect":"keep"}
+{"id":"facturas-34","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Este proyecto usa Python y uv.","expect":"keep","gap":"Python is the only language and uv.lock sits at the root; uv is not in the alias table, so a word remains"}
+{"id":"gocli-07","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Written in Go 1.23; do not use generics from 1.24.","expect":"keep"}
+{"id":"gocli-08","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Follow best practices for Go.","expect":"cut","code":"generic-advice"}
+{"id":"gocli-09","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Use Go.","expect":"cut","code":"inferable-tech"}
+{"id":"gocli-10","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Run `go test ./...` before committing.","expect":"keep"}
+{"id":"gocli-11","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Never run `go mod tidy` in CI.","expect":"keep"}
+{"id":"gocli-12","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Never edit `go.sum` by hand.","expect":"move","code":"absolute-command"}
+{"id":"gocli-13","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Keep `internal/parse` free of I/O.","expect":"keep"}
+{"id":"gocli-14","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- See `internal/parse/parse.go` for the CSV rules.","expect":"keep"}
+{"id":"gocli-15","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- See `cmd/tool/flags.go` for the flags.","expect":"fix","code":"dead-reference"}
+{"id":"shop-109","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `git push --force` on main; the history is shared.","expect":"keep"}
+{"id":"shop-110","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never call `Math.round` on prices.","expect":"keep"}

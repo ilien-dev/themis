@@ -75,13 +75,25 @@ const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 export function mentions(text, term) {
     return term !== '' && new RegExp(`${WB_BEFORE}${escape(term)}${WB_AFTER}`, 'iu').test(text);
 }
+// One alternation per list of terms, compiled once: compiling a regex per term and rule costs
+// more than judging the whole file. Same matches as `terms.some((t) => mentions(text, t))`.
+const ANY = new WeakMap();
+export function mentionsAny(text, terms) {
+    let re = ANY.get(terms);
+    if (re === undefined) {
+        const alts = terms.filter((t) => t !== '').map(escape);
+        re = alts.length === 0 ? null : new RegExp(`${WB_BEFORE}(?:${alts.join('|')})${WB_AFTER}`, 'iu');
+        ANY.set(terms, re);
+    }
+    return re?.test(text) === true;
+}
 // Something checkable in the rule: a span, a path, an identifier or a known technology.
 export function hasAnchor(text, techNames) {
     if (spans(text).length > 0 || citedPaths(text).length > 0)
         return true;
     if (/(?<![\w])[a-z]+[A-Z]\w*|(?<![\w])\w+_\w+|(?<![\w.])\w+\.\w+/.test(text))
         return true;
-    return techNames.some((t) => mentions(text, t));
+    return mentionsAny(text, techNames);
 }
 // sha256 of the normalized text without its leading list marker, first 16 hex digits.
 export function ruleHash(text) {

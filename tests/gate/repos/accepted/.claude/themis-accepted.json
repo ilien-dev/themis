@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "rules": {
+    "b606e56b13547cee": {
+      "verdict": "cut",
+      "code": "generic-advice",
+      "question": 3,
+      "evidence": "phrases: generic \"Write clean code\"",
+      "date": "2026-11-12"
+    },
+    "4f0537ca3e41a283": {
+      "verdict": "cut",
+      "code": "enforced-config",
+      "question": 2,
+      "evidence": ".prettierrc: semi = true; run by package.json scripts.format",
+      "date": "2026-11-12"
+    }
+  }
+}

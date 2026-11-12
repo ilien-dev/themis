@@ -19,7 +19,7 @@ const PM_COMMANDS = new Set([
 const OTHER_PACKAGE = /\s(?:-w|-F|-C|--workspaces?|--filter|--prefix|--cwd|--dir)(?![\w-])/;
 const EMPHASIS = /(?<![\p{L}\p{N}_])(IMPORTANT|CRITICAL|MUST|NEVER|ALWAYS|IMPORTANTE|CRÍTICO|NUNCA|SIEMPRE)(?![\p{L}\p{N}_])/u;
 // A bare name such as `Node.js` or `socket.io` is a library, not a file; only these extensions mark a file.
-const BARE_FILE_EXT = /\.(?:md|json|ya?ml|toml|tsx?|[cm]js|txt|sh|py|go|rs|css|html)$/i;
+export const BARE_FILE_EXT = /\.(?:md|json|ya?ml|toml|tsx?|[cm]js|txt|sh|py|go|rs|css|html)$/i;
 const EXT = /\.[A-Za-z0-9]{1,5}$/;
 const LOCATION = /(?::\d+(?::\d+)?|#L\d+(?:-L?\d+)?)$/; // src/a.ts:42, src/a.ts:42:7, src/a.ts#L10-L20
 const LIST_MARKER = /^\s*(?:[-*+]|\d+[.)])\s+/;

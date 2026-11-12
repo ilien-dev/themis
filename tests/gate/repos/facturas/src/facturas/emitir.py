@@ -1,0 +1,2 @@
+def emitir():
+    pass

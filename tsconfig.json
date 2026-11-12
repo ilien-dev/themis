@@ -32,5 +32,6 @@
     "assets/source/*.ts",
     "assets/motion/source/*.ts",
     "eslint.config.ts"
-  ]
+  ],
+  "exclude": ["tests/gate/repos/"]
 }

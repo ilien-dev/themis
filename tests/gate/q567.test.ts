@@ -246,3 +246,31 @@ test('q5 leaves a rule with a dead reference to q7, which reports a fix', () => 
   assert.equal(v.verdict, 'fix');
   assert.equal(v.question, 7);
 });
+
+// Task 9 corpus: an absolute with a condition, a scope, a reason or a second instruction is more than
+// an all-or-nothing deny entry or hook can hold.
+test('q5 keeps an absolute that carries a condition, a scope, a reason or a second instruction', () => {
+  for (const t of [
+    'Never commit `.env` files; use `.env.example`.',
+    'Never run `npm publish` from a laptop; the release job signs the package.',
+    'Never run `npm run build` while `npm run dev` is running.',
+    'Never run `npm run lint` on production.',
+    'Never run `git push` to main directly.',
+    'Never run `git push --force` without asking me first.',
+    'Nunca ejecutes `git push` sin pasar las pruebas.',
+    'Always use `npm ci` in CI.',
+    'Always run `npm run lint` after pulling.',
+    'Never run `docker compose down -v` unless the on-call approves.',
+  ]) assert.equal(ask(q5, t), null, t);
+});
+
+test('q5 moves a path only for a prohibition about a file operation on a real file name', () => {
+  assert.equal(ask(q5, 'Never modify `package.json`.')?.verdict, 'move');
+  assert.equal(ask(q5, 'Nunca edites `src/money.js` a mano.')?.verdict, 'move');
+  for (const t of [
+    'Never import from `src/money.js` in tests.', // a design rule, not a permission
+    'Always read `docs/CONVENTIONS.md` before changing money code.', // nothing can require a read
+    'Never call `Math.round` on cents.', // a function, not a file
+    '1. `src/` - code\n2. `src/generated/` - never import it from a route\n3. `docs/` - notes',
+  ]) assert.equal(ask(q5, t), null, t);
+});
