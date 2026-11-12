@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import type { SpawnSyncReturns } from 'node:child_process';
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, symlinkSync, readdirSync } from 'node:fs';
+import { cpSync, rmSync, mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, symlinkSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -22,7 +22,7 @@ interface HookOutput {
 function hook(name: string, input: string | Fields, env: Env = {}): HookOutput | null {
   const r = spawnSync(process.execPath, [join(hooks, name)], {
     input: typeof input === 'string' ? input : JSON.stringify(input),
-    env: { ...process.env, ...env },
+    env: { ...process.env, CLAUDE_PLUGIN_OPTION_GATE: 'off', ...env }, // the gate is off unless a test turns it on
     encoding: 'utf8',
   });
   assert.equal(r.status, 0, r.stderr);
@@ -318,10 +318,99 @@ test('parity: can be turned off', () => {
   assert.equal(decision(write(dir, 'x'.repeat(10000), 'AGENTS.md', env)), 'deny'); // the cap still applies
 });
 
+// The gate. "- Write clean code." is generic advice (question 3), which needs no repository facts.
+const GENERIC = '- Write clean code.\n';
+const GOTCHA = '- Run `make seed` before the first test run: the fixtures database is not created by the test command.\n';
+const ASK = { CLAUDE_PLUGIN_OPTION_GATE: 'ask' };
+const accepted = (dir: string): string => join(dir, '.claude', 'themis-accepted.json');
+
+test('gate=ask: a generic rule asks, a valid gotcha passes', () => {
+  const dir = project();
+  const out = write(dir, GENERIC, 'CLAUDE.md', ASK);
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /generic-advice/);
+  assert.equal(decision(write(project(), GOTCHA, 'CLAUDE.md', ASK)), null); // at most a note for Claude
+});
+
+test('gate defaults to report: tells Claude without interrupting', () => {
+  const out = write(project(), GENERIC, 'CLAUDE.md', { CLAUDE_PLUGIN_OPTION_GATE: '' }); // empty = the default
+  assert.equal(decision(out), null);
+  assert.match(context(out), /generic-advice/);
+  assert.match(context(out), /Not blocked/);
+});
+
+test('gate=off is silent; ask falls back to report when no prompt can be answered', () => {
+  assert.equal(write(project(), GENERIC, 'CLAUDE.md', { CLAUDE_PLUGIN_OPTION_GATE: 'off' }), null);
+  for (const extra of [{ permission_mode: 'dontAsk' }, { permission_mode: 'bypassPermissions' }, { agent_id: 'agent-1' }]) {
+    const out = hook('pre-tool.js', { tool_name: 'Write', tool_input: { file_path: 'CLAUDE.md', content: GENERIC }, cwd: project(), ...extra }, ASK);
+    assert.equal(decision(out), null);
+    assert.match(context(out), /generic-advice/);
+  }
+});
+
+test('gate: an Edit is judged on the rules it adds, not the ones already there', () => {
+  const dir = project({ 'CLAUDE.md': `${GENERIC}${GOTCHA}` });
+  const out = pre(dir, 'Edit', { file_path: 'CLAUDE.md', old_string: GOTCHA, new_string: `${GOTCHA}- Keep functions small.\n` }, ASK);
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /1 of 1/);
+  assert.doesNotMatch(reason(out), /Write clean code/);
+  assert.equal(pre(dir, 'Edit', { file_path: 'CLAUDE.md', old_string: GOTCHA, new_string: '' }, ASK), null); // removing adds nothing
+});
+
+test('gate: the cap decides before the gate speaks', () => {
+  const out = write(project(), `${GENERIC}${'x'.repeat(10000)}`, 'CLAUDE.md', ASK);
+  assert.equal(decision(out), 'deny');
+  assert.doesNotMatch(reason(out), /themis: \d+ of/);
+});
+
+test('gate: an approved ask is remembered by the PostToolUse that follows', () => {
+  const dir = project();
+  const session_id = `s-${Date.now()}-${Math.random()}`;
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(hook('pre-tool.js', { session_id, tool_name: 'Write', tool_input: input, cwd: dir }, ASK)), 'ask');
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC); // what the approved Write does
+  hook('parity.js', { session_id, hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: input, cwd: dir }, ASK);
+  assert.match(readFileSync(accepted(dir), 'utf8'), /"code": "generic-advice"/);
+  assert.equal(readFileSync(join(dir, 'AGENTS.md'), 'utf8'), GENERIC); // the copy to the twin still happens
+  assert.equal(decision(hook('pre-tool.js', { session_id, tool_name: 'Write', tool_input: { file_path: 'CLAUDE.md', content: `${GENERIC}\n` }, cwd: dir }, ASK)), null);
+});
+
+test('gate: nothing is recorded without a pending ask, nor in report mode', () => {
+  const dir = project();
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC);
+  post(dir, 'Write', { file_path: 'CLAUDE.md', content: GENERIC }, ASK);
+  assert.ok(!existsSync(accepted(dir)));
+  const session_id = `r-${Date.now()}-${Math.random()}`;
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  hook('pre-tool.js', { session_id, tool_name: 'Write', tool_input: input, cwd: dir }, { CLAUDE_PLUGIN_OPTION_GATE: 'report' });
+  hook('parity.js', { session_id, hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: input, cwd: dir }, { CLAUDE_PLUGIN_OPTION_GATE: 'report' });
+  assert.ok(!existsSync(accepted(dir)));
+});
+
+test('gate: a cold pre-tool process stays fast on a real CLAUDE.md', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'themis-cold-'));
+  cpSync(join(root, 'evals', 'cases', 'c14-themis-audit', 'fixture'), dir, { recursive: true });
+  const content = readFileSync(join(dir, 'CLAUDE.md'), 'utf8');
+  rmSync(join(dir, 'CLAUDE.md')); // so that every rule of it is new
+  git(dir, 'init', '-q');
+  git(dir, 'add', '-A');
+  const input = JSON.stringify({ tool_name: 'Write', tool_input: { file_path: 'CLAUDE.md', content }, cwd: dir });
+  const times: number[] = [];
+  for (let i = 0; i < 3; i++) {
+    const t = performance.now();
+    const r = spawnSync(process.execPath, [join(hooks, 'pre-tool.js')], { input, encoding: 'utf8', env: { ...process.env, CLAUDE_PLUGIN_OPTION_GATE: 'report' } });
+    times.push(performance.now() - t);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /themis:/, 'the gate ran');
+  }
+  assert.ok(Math.min(...times) < 1500, `best of three: ${Math.min(...times).toFixed(0)} ms`);
+});
+
 test('manifest, hooks and skill are consistent', () => {
   const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')) as Manifest;
   assert.equal(manifest.version, '2.1.1');
-  assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity']);
+  assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity', 'gate']);
+  assert.equal((manifest.userConfig['gate'] as { default?: string }).default, 'report');
   const hooksJson = readFileSync(join(root, 'hooks', 'hooks.json'), 'utf8');
   const handlers = (JSON.parse(hooksJson) as HooksJson).hooks;
   const scripts = hooksJson.match(/hooks\/dist\/[\w-]+\.js/g) ?? [];

@@ -3,6 +3,12 @@
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { run, emit, option, estimateTokens, read, imports, RULE_FILE, writesRuleFile, twinOf, pairState } from "./lib.js";
+import { newRules } from "./gate/extract.js";
+import { readFacts } from "./gate/facts.js";
+import { formatAsk, formatNotes } from "./gate/format.js";
+import { pendingKey, writePending } from "./gate/accepted.js";
+import { ruleHash } from "./gate/text.js";
+import { contextFor, interrupts, judgeAll } from "./gate/verdict.js";
 function decide(permissionDecision, reason) {
     emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision, permissionDecisionReason: reason } });
     return true;
@@ -66,6 +72,44 @@ function checkParity(file, tool, toolInput) {
     return deny(`${differ} Do not pick a version yourself: show the user how they differ and ask which text is right ` +
         '(load the themis:themis skill, sync section). Then Write the agreed full text to one of them; themis copies it to the other.');
 }
+// Hook input fields checked against https://code.claude.com/docs/en/hooks on 2026-11-12: `session_id` and
+// `permission_mode` are common to every event; `agent_id` is present when the hook fires inside a subagent.
+// Nothing marks a headless (-p) session; there Claude Code denies an `ask` nobody can answer and Claude reads
+// the reason, which is why the modes below that cannot prompt fall back to reporting.
+function effectiveMode(input) {
+    const mode = option('gate', 'report').toLowerCase();
+    if (mode === 'off')
+        return 'off';
+    const cannotPrompt = input.permission_mode === 'dontAsk' || input.permission_mode === 'bypassPermissions' || input.agent_id !== undefined;
+    return mode === 'ask' && !cannotPrompt ? 'ask' : 'report';
+}
+function checkGate(input, file) {
+    const mode = effectiveMode(input);
+    if (mode === 'off')
+        return;
+    const added = newRules(read(file), applyEdits(file, input.tool_input));
+    if (added.length === 0)
+        return;
+    const facts = readFacts(file);
+    const verdicts = judgeAll(added, facts, contextFor(facts));
+    const name = basename(file);
+    const flagged = verdicts.filter(interrupts);
+    if (flagged.length === 0) {
+        const notes = formatNotes(verdicts);
+        if (notes)
+            emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: notes } });
+        return;
+    }
+    const ask = formatAsk(verdicts, name);
+    if (mode === 'ask') {
+        writePending(pendingKey(input.session_id ?? '', file, input.raw_tool_input), flagged.map((v) => ruleHash(v.rule.text)));
+        decide('ask', ask);
+        return;
+    }
+    emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: `${ask}
+
+Not blocked. Drop or fix these rules unless the user asked for them as written.` } });
+}
 await run((input) => {
     const ti = input.tool_input;
     const cwd = input.cwd;
@@ -78,6 +122,13 @@ await run((input) => {
     if (!ti.file_path || !RULE_FILE.test(basename(ti.file_path)))
         return;
     const file = resolve(cwd, ti.file_path);
-    if (!checkCap(file, ti))
-        checkParity(file, input.tool_name, ti);
+    if (checkCap(file, ti) || checkParity(file, input.tool_name, ti))
+        return;
+    try {
+        checkGate(input, file);
+    }
+    catch (e) {
+        if (process.env['THEMIS_DEBUG'])
+            console.error(e);
+    } // the gate never gets in the way
 });

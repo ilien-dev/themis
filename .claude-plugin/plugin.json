@@ -29,6 +29,12 @@
       "title": "Keep CLAUDE.md and AGENTS.md identical",
       "description": "Copy every edit of CLAUDE.md or AGENTS.md to the other file in the same directory, and report pairs that differ. Turn off to manage only one of the two.",
       "default": true
+    },
+    "gate": {
+      "type": "string",
+      "title": "Rule gate",
+      "description": "What themis does when a new rule in CLAUDE.md or AGENTS.md is inferable from the repo, already enforced, generic or badly formed: ask (confirm with you), report (tell Claude, do not interrupt) or off.",
+      "default": "report"
     }
   }
 }

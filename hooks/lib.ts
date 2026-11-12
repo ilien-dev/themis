@@ -22,7 +22,11 @@ export interface HookInput {
   readonly hook_event_name: string | undefined;
   readonly tool_name: string | undefined;
   readonly cwd: string;
+  readonly session_id: string | undefined;
+  readonly permission_mode: string | undefined;
+  readonly agent_id: string | undefined; // set when the hook fires inside a subagent
   readonly tool_input: ToolInput;
+  readonly raw_tool_input: unknown; // as sent, for keys that must match between PreToolUse and PostToolUse
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -41,6 +45,10 @@ export function parseInput(raw: unknown): HookInput {
     hook_event_name: filled(input['hook_event_name']),
     tool_name: filled(input['tool_name']),
     cwd: filled(input['cwd']) ?? process.cwd(),
+    session_id: filled(input['session_id']),
+    permission_mode: filled(input['permission_mode']),
+    agent_id: filled(input['agent_id']),
+    raw_tool_input: input['tool_input'],
     tool_input: {
       ...editInput(ti),
       file_path: filled(ti['file_path']),

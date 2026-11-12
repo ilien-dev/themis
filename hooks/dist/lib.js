@@ -16,6 +16,10 @@ export function parseInput(raw) {
         hook_event_name: filled(input['hook_event_name']),
         tool_name: filled(input['tool_name']),
         cwd: filled(input['cwd']) ?? process.cwd(),
+        session_id: filled(input['session_id']),
+        permission_mode: filled(input['permission_mode']),
+        agent_id: filled(input['agent_id']),
+        raw_tool_input: input['tool_input'],
         tool_input: {
             ...editInput(ti),
             file_path: filled(ti['file_path']),
