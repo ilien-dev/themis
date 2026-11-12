@@ -1,5 +1,5 @@
 // The rule gate from the command line, for the skill and for measurement:
-//   gate check  [--file <path>] [--json]   markdown on stdin; --file sets the repository (default ./CLAUDE.md)
+//   gate check  [--rules <path>] [--file <path>] [--json]   markdown from --rules (UTF-8) or stdin; --file sets the repository (default ./CLAUDE.md)
 //   gate audit  <file> [--json] [--prune]  every rule of a file and the coverage; --prune drops stale accepted rules
 //   gate report <corpus.jsonl> [--json]    precision, false-cut rate and coverage of a labelled corpus
 // Exit code 0 whenever the input is valid, 2 on wrong usage or unreadable input.
@@ -16,27 +16,29 @@ import { ruleHash } from './gate/text.ts';
 import { contextFor, judgeAll } from './gate/verdict.ts';
 import type { Verdict } from './gate/types.ts';
 
-const USAGE = 'usage: gate check [--file <path>] [--json] | gate audit <file> [--json] [--prune] | gate report <corpus.jsonl> [--json]';
+const USAGE = 'usage: gate check [--rules <path>] [--file <path>] [--json] | gate audit <file> [--json] [--prune] | gate report <corpus.jsonl> [--json]';
 
 class UsageError extends Error {}
 
-interface Args { readonly positional: string[]; readonly flags: Set<string>; readonly file: string | undefined }
+interface Args { readonly positional: string[]; readonly flags: Set<string>; readonly values: ReadonlyMap<string, string> }
 
-function parseArgs(argv: readonly string[], allowed: readonly string[], withFile: boolean): Args {
+// `valued` are the options that take a path.
+function parseArgs(argv: readonly string[], allowed: readonly string[], valued: readonly string[] = []): Args {
   const positional: string[] = [];
   const flags = new Set<string>();
-  let file: string | undefined;
+  const values = new Map<string, string>();
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i] ?? '';
-    if (withFile && a === '--file') {
-      file = argv[++i];
-      if (file === undefined || file === '' || file.startsWith('--')) throw new UsageError('--file needs a path');
+    if (valued.includes(a)) {
+      const v = argv[++i];
+      if (v === undefined || v === '' || v.startsWith('--')) throw new UsageError(`${a} needs a path`);
+      values.set(a, v);
     } else if (a.startsWith('--')) {
       if (!allowed.includes(a)) throw new UsageError(`unknown option ${a}`);
       flags.add(a);
     } else positional.push(a);
   }
-  return { positional, flags, file };
+  return { positional, flags, values };
 }
 
 // The verdict as JSON: the rule's place and text, then the verdict fields.
@@ -64,9 +66,14 @@ function checkLine(v: Verdict): string {
 }
 
 async function check(argv: readonly string[]): Promise<void> {
-  const args = parseArgs(argv, ['--json'], true);
+  const args = parseArgs(argv, ['--json'], ['--file', '--rules']);
   if (args.positional.length > 0) throw new UsageError(`unexpected argument ${args.positional[0] ?? ''}`);
-  const verdicts = judgeText(await stdin(), readFacts(resolve(args.file ?? 'CLAUDE.md')));
+  // A file read as UTF-8 reaches the gate unchanged; a pipe from Windows PowerShell 5.1 re-encodes non-ASCII text.
+  const rulesPath = args.values.get('--rules');
+  const fromFile = rulesPath === undefined ? null : read(resolve(rulesPath));
+  if (rulesPath !== undefined && fromFile === null) throw new UsageError(`cannot read ${rulesPath}`);
+  const markdown = fromFile === null ? await stdin() : fromFile.replace(/^\uFEFF/, '');
+  const verdicts = judgeText(markdown, readFacts(resolve(args.values.get('--file') ?? 'CLAUDE.md')));
   if (args.flags.has('--json')) { out(JSON.stringify(verdicts.map(toJson), null, 2)); return; }
   const notes = formatNotes(verdicts);
   out([...verdicts.map(checkLine), ...(notes === '' ? [] : ['', notes])].join('\n'));
@@ -83,7 +90,7 @@ function liveHashes(file: string, facts: Facts): Set<string> {
 }
 
 function audit(argv: readonly string[]): void {
-  const args = parseArgs(argv, ['--json', '--prune'], false);
+  const args = parseArgs(argv, ['--json', '--prune']);
   const [target, extra] = args.positional;
   if (target === undefined || extra !== undefined) throw new UsageError('audit takes one file');
   const file = resolve(target);
@@ -115,7 +122,7 @@ function corpusBase(corpus: string): string {
 }
 
 function report(argv: readonly string[]): void {
-  const args = parseArgs(argv, ['--json'], false);
+  const args = parseArgs(argv, ['--json']);
   const [target, extra] = args.positional;
   if (target === undefined || extra !== undefined) throw new UsageError('report takes one corpus file');
   const corpus = resolve(target);

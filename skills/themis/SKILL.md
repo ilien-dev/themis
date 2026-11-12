@@ -25,7 +25,7 @@ Cap: 2500 estimated tokens (characters ÷ 3.6), including files pulled in with `
 
 `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js` judges each rule with fixed checks, so results are repeatable. Its verdict is the criterion. In audit and init add no cuts of your own: what the gate keeps, stays.
 
-`check` reads a temp file on stdin. Bash: `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target> < <temp>`. PowerShell, which rejects `<`: `Get-Content <temp> | node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target>`.
+To check new lines, write them to a temporary file and run `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --rules <temp file> --file <target>`.
 
 Reasons: inferable from the repo (title, folder tree, scripts, stack, overview); enforced by a setting, lint rule or deny rule, or contradicting one; generic advice, filler, or behavior current models already follow; an absolute command a hook or permission enforces better; a duplicated passage or long procedure; a dead reference or capitalised emphasis.
 

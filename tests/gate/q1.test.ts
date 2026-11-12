@@ -209,5 +209,24 @@ test('a tree block whose comments carry more than a short description is kept', 
     'app/\n\u251c\u2500\u2500 src/   # the money code for every invoice\n\u2514\u2500\u2500 tests/',
     'app/\n\u251c\u2500\u2500 src/   # v2 code\n\u2514\u2500\u2500 tests/',
   ]) assert.equal(ask(tree(body), files), null, body);
-  assert.equal(ask(tree('app/\n\u251c\u2500\u2500 src/   # source code\n\u2514\u2500\u2500 tests/  # the tests'), files)?.code, 'inferable-tree');
+  assert.equal(ask(tree('app/\n\u251c\u2500\u2500 src/\n\u2514\u2500\u2500 tests/'), files)?.code, 'inferable-tree');
+});
+
+// Re-review: only the cited script's own job words, and no comment at all in a tree.
+test('a script rule is kept when the rest names another job or anything beyond the script', () => {
+  const files = { 'package.json': '{"name":"acme","scripts":{"test":"node --test","lint":"eslint .","build":"tsc","dev":"vite","format":"prettier -w ."}}' };
+  for (const text of [
+    '- `npm test` with the dev server', '- `npm test` with the server', '- `npm run build` to check types', '- `npm run lint` to format code',
+    '- `npm run build` to typecheck', '- `npm run lint` to format', '- `npm test` to lint',
+  ]) assert.equal(ask(text, files), null, text);
+  for (const text of ['- Dev server: `npm run dev`', '- Unit tests: `npm test`', '- Format: `npm run format`', '- Compila con `npm run build`']) {
+    assert.equal(ask(text, files)?.code, 'inferable-script', text);
+  }
+});
+test('a tree block with any comment on an entry is kept', () => {
+  const tree = (body: string): string => `\`\`\`\n${body}\n\`\`\``;
+  const files = { 'src/money.js': '', 'tests/money.test.js': '', 'lib/a.js': '' };
+  for (const note of ['# to be removed', '# moved to lib', '# replaced by lib', '# source code', '- the tests', '(tests)']) {
+    assert.equal(ask(tree(`app/\n\u251c\u2500\u2500 src/   ${note}\n\u2514\u2500\u2500 tests/`), files), null, note);
+  }
 });

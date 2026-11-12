@@ -130,6 +130,30 @@ test('unknown subcommand exits 2', () => {
   }
 });
 
+test('check --rules reads the Markdown from a UTF-8 file, BOM stripped, instead of stdin', () => {
+  const dir = repo(LEDGER);
+  const rules = join(dir, 'new-rules.md');
+  // Non-ASCII Spanish text: a shell pipe can re-encode it, a file read as UTF-8 cannot.
+  writeFileSync(rules, '\uFEFF- Mantén este archivo actualizado.\n- Usa céntimos enteros; nunca decimales.\n');
+  const r = gate(['check', '--rules', rules, '--file', join(dir, 'CLAUDE.md')], '- Write clean code.\n');
+  assert.equal(r.status, 0, r.stderr);
+  const verdicts = r.stdout.split('\n').filter((l) => /^\d+: /.test(l));
+  assert.deepEqual(verdicts.map((l) => l.replace(/ {2}".*$/, '')), ['1: cut · file-filler · question 3', '2: keep']);
+  assert.match(r.stdout, /"- Mantén este archivo actualizado\."/);
+  assert.match(r.stdout, /"- Usa céntimos enteros; nunca decimales\."/);
+  const json = JSON.parse(gate(['check', '--json', '--rules', rules, '--file', join(dir, 'CLAUDE.md')]).stdout) as { text: string }[];
+  assert.equal(json[0]?.text, '- Mantén este archivo actualizado.');
+});
+
+test('check --rules needs a readable path', () => {
+  for (const args of [['check', '--rules'], ['check', '--rules', '--json'], ['check', '--rules', join(tmpdir(), 'themis-no-such-rules.md')]]) {
+    const r = gate(args, '- a\n');
+    assert.equal(r.status, 2, args.join(' '));
+    assert.match(r.stderr, /usage: gate/);
+    assert.equal(r.stdout, '');
+  }
+});
+
 test('--file takes a path, not the next option', () => {
   const r = gate(['check', '--file', '--json'], '- a\n');
   assert.equal(r.status, 2);

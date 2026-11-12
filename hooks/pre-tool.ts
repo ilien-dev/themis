@@ -97,9 +97,11 @@ function checkGate(input: HookInput, file: string): void {
     return;
   }
   if (mode === 'ask') {
-    // Only an ask of the gate leaves something for PostToolUse to record.
+    // Only an ask of the gate leaves something for PostToolUse to record. The message is built first, so
+    // nothing is left pending if building it fails and no prompt is shown.
+    const message = formatAsk(verdicts, name, 'ask');
     writePending(pendingKey(input.session_id ?? '', file), flagged.map((v) => ruleHash(v.rule.text)));
-    decide('ask', formatAsk(verdicts, name, 'ask'));
+    decide('ask', message);
     return;
   }
   emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: formatAsk(verdicts, name, 'report') } });

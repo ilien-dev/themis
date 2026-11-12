@@ -271,7 +271,7 @@
 {"id":"facturas-19","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- La configuración está en `src/facturas/config.py`.","expect":"fix","code":"dead-reference"}
 {"id":"mono-11","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Lint this package with `pnpm run lint`.","expect":"keep","gap":"packages/web/package.json has no lint script, but the gate does not report a missing script in a repository with more than one package.json."}
 {"id":"shop-79","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- IMPORTANT: see `src/missing.ts`.","expect":"fix","code":"dead-reference"}
-{"id":"mono-12","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Build this package with `pnpm build`.","expect":"cut","code":"inferable-script"}
+{"id":"mono-12","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Build this package with `pnpm build`.","expect":"keep","gap":"packages/web/package.json has a build script, so the rule only names it; the gate keeps it because \"package\" is not a word of the build job."}
 {"id":"mono-13","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Shared types are in `src/index.ts`.","expect":"keep"}
 {"id":"shop-80","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- The bundle is written to `dist/assets/`.","expect":"keep"}
 {"id":"shop-81","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- The design tokens follow https://example.com/tokens and `src/**/*.css`.","expect":"keep"}
@@ -402,7 +402,7 @@
 {"id":"q1-lint-07","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Always run the linter before you push to the shared branch: `npm run lint`","expect":"keep"}
 {"id":"q1-ledger-01","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"# Ledger - Project Instructions for Claude","expect":"cut","code":"inferable-title"}
 {"id":"q1-ledger-02","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger instructions for Claude","expect":"keep","gap":"A title in a paragraph that only repeats the package name; only headings are judged as titles, since a paragraph usually says more."}
-{"id":"q1-ledger-03","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger instructions for Claude","expect":"keep","line":3,"gap":"a sentence that only names the package; only the first paragraph of a file is read as a title"}
+{"id":"q1-ledger-03","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger instructions for Claude","expect":"keep","line":3,"gap":"a sentence that only names the package; only a heading is judged as a title, never a paragraph, wherever it sits"}
 {"id":"q1-readme-title-01","repo":"tests/gate/repos/q1-readme-title","file":"CLAUDE.md","rule":"# The Ledger Bookkeeping Service For Freelancers","expect":"cut","code":"inferable-title"}
 {"id":"q1-ledger-04","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"# Testing rules","expect":"keep"}
 {"id":"q1-paths-01","repo":"tests/gate/repos/q1-paths","file":"CLAUDE.md","rule":"1. `src/` - application code\n2. `tests/` - the tests\n3. `docs/` - documentation","expect":"cut","code":"inferable-tree"}

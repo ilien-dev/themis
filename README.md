@@ -143,12 +143,12 @@ When you approve a rule that the gate had flagged, themis records it in `.claude
 The skill calls these; you can too.
 
 ```
-node hooks/dist/gate.js check  [--file CLAUDE.md] [--json]   # Markdown on stdin; --file says which repository
+node hooks/dist/gate.js check  [--rules <file>] [--file CLAUDE.md] [--json]   # Markdown from --rules (read as UTF-8) or stdin; --file says which repository
 node hooks/dist/gate.js audit  <file> [--json] [--prune]     # a verdict for every rule, and the coverage
 node hooks/dist/gate.js report <corpus.jsonl> [--json]       # precision, false-cut rate and coverage of a labelled corpus
 ```
 
-The exit code is 0 for any valid input and 2 for wrong usage or an unreadable file.
+Prefer `--rules` to a pipe: Windows PowerShell 5.1 re-encodes piped text, so accented letters arrive changed and can change a verdict. The exit code is 0 for any valid input and 2 for wrong usage or an unreadable file.
 
 ### Limits
 
