@@ -426,3 +426,11 @@ test('manifest, hooks and skill are consistent', () => {
   assert.match(md, /^---\nname: themis\ndescription: "[^"]+"\nwhen_to_use: "[^"]+"/);
   assert.match(md, /AGENTS\.md/);
 });
+
+test('the skill tells every mode to run the gate', () => {
+  const md = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'skills', 'themis', 'SKILL.md'), 'utf8').replace(/\r/g, '');
+  assert.match(md, /gate\.js check/);
+  assert.match(md, /gate\.js audit/);
+  assert.ok(!md.includes('## What does not belong'));
+  assert.ok(md.length <= 6500, `${md.length} characters`);
+});
