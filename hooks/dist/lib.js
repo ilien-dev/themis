@@ -70,6 +70,17 @@ export function read(path) {
         return null;
     }
 }
+// What the cap counts: the text of a rule file plus every file it pulls in with @path.
+export function tokenCount(file, text) {
+    let imported = 0;
+    for (const p of imports(file, text)) {
+        const t = existsSync(p) && statSync(p).isFile() ? read(p) : null;
+        if (t)
+            imported += estimateTokens(t);
+    }
+    const own = estimateTokens(text);
+    return { own, imported, total: own + imported };
+}
 // Files a rule file pulls in with @path, resolved; code spans and blocks do not import.
 export function imports(file, text) {
     const body = text.replace(/```[\s\S]*?```/g, '').replace(/`[^`]*`/g, '');

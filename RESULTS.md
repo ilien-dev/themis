@@ -1,26 +1,33 @@
 # Results
 
-What was measured about the parts that themis 2.0.0 keeps, and the rule gate added in 2.2.0. The numbers come from the 1.x evaluation rounds: headless sessions on `claude-opus-5-5` at `medium` effort, each in a fresh temp git repo, with user settings, hooks and plugins excluded in every arm (`--setting-sources project,local`).
+What was measured about themis 2.3.0: the skill in sessions, and the rule gate on two held-out corpora. The session numbers come from one round on 2026-11-12: headless sessions on `claude-opus-5-5` at `medium` effort with Claude Code 2.1.322, each in a fresh temp git repo, with user settings, hooks and plugins excluded in every arm (`--setting-sources project,local`).
 
 - **base**: no plugin. For `init` the base prompt is the built-in `/init`; for `audit` it is the same request in plain words.
 - **themis**: the plugin, loaded with `--plugin-dir`.
 
 | case | targets | base | themis | base $/run | themis $/run |
 |---|---|---:|---:|---:|---:|
-| c13-themis-init | lean CLAUDE.md with the real gotchas (vs `/init`) | 0/3 | **3/3** | $0.134 | $0.158 |
-| c14-themis-audit | prune a bloated CLAUDE.md, keep gotchas, fix stale commands | 0/3 | **3/3** | $0.128 | $0.241 |
-| c15-cap | adding to a CLAUDE.md near the cap stays under it | 0/3* | **3/3** | $0.134 | $0.174 |
-| c20-cap-shell | shell appends to CLAUDE.md are blocked | — | 3/3 | — | $0.122 |
+| c13-themis-init | lean CLAUDE.md with the real gotchas (vs `/init`) | 0/3 | **3/3** | $0.119 | $0.218 |
+| c14-themis-audit | prune a bloated CLAUDE.md, keep gotchas, fix stale commands | 0/3 | **3/3** | $0.151 | $0.278 |
+| c15-cap | adding to a CLAUDE.md near the cap stays under it | 0/3 | **3/3** | $0.135 | $0.248 |
+| c20-cap-shell | shell appends to CLAUDE.md are blocked | — | 3/3 | — | $0.179 |
+| c21-edit-verdicts | asked to add four rules: the two the gate cuts are left out and reported, the shouted one is written without emphasis, the fourth is written | — | 3/3 | — | $0.156 |
+| c22-sync-differ | asked to edit a pair that differs: neither file is touched, the lines only each has are shown, and the answer ends with the question | — | 3/3 | — | $0.132 |
+| c23-unresolved-reference | a rule names a file that moved and another a directory that does not exist: the first is repaired, the second written as given and reported | — | 3/3 | — | $0.157 |
 
-\* On the calibrated fixture. The first fixture (3/3) sat far below the cap and tested nothing.
+**c15 took three wordings.** With the first text of this release the skill passed 2 of 3, and after it was shortened to its size budget, 0 of 3: in every failure Claude saw from the `Tokens:` line that the result would pass the cap, proposed to condense the existing list and asked first, without writing. In 1.x the denied edit and its message were what made it condense. The step now says to make room without asking, and that text passed 3 of 3. The passing runs condense 62 near-identical lines into one, which this fixture invites; a file with distinct lines near the cap is not covered.
+
+The themis column is from two rounds of the same day. c14, c15 and c21 ran on the final text of the edit step; c13, c20, c22 and c23 ran just before that step was reworded, on a skill otherwise the same apart from one closing phrase of `sync`. The base column ran once.
 
 ## What these numbers do not cover
 
-- **They were not re-run for 2.0.0.** They were taken on 1.0.0, when the skill was called `hestia`, was user-invoked only, and ran next to a resident rule that 2.0.0 removes. The skill's text on what belongs in the file is unchanged; its AGENTS.md and sync parts are new.
-- **Parity has no session-level measurement.** Copying an edit to the other file, refusing an edit while the two differ and the session-start report are covered by the hook tests in `tests/hooks.test.ts`, which are deterministic. How reliably a model asks the user instead of choosing a version was not measured.
+- **c21 to c23 have no base arm.** They test what the skill does with the gate's verdicts and with a pair that differs, which has no counterpart without the plugin.
+- **The graders follow the gate.** The c14 grader now requires gone what the gate cuts on its fixture, and no longer "Double-check your work", which the gate keeps. So c14 and c21 measure whether the skill applies the gate's verdicts, not whether those verdicts are right; the corpora below measure that.
+- **Headless only.** Nobody answers a question in these runs. What happens after the user answers in `sync`, the `ask` mode of the gate, and a user who insists on a rule the gate cut were not run.
+- **Unset options only.** The skill reads the cap and the gate settings from `${user_config.*}`, which Claude Code fills in for options the user has set. In these runs no option was set, the references stayed as written and the skill fell back to the defaults, as it says to. A session with an option set was not measured.
 - n is 3 per cell, so small effects are invisible.
 - The fixtures are small Node repos.
-- Graders are deterministic regexes and file checks. In the themis arm they now also require `AGENTS.md` to be an exact copy of `CLAUDE.md`; that check has not been run in a session.
+- Graders are deterministic regexes and file checks.
 - The token estimate for the cap is characters ÷ 3.6. It is not calibrated against the real tokenizer.
 
 ## Rule gate
@@ -201,7 +208,7 @@ Of the 18 rules that carry the note now, 13 were labelled keep, 3 cut, 1 rewrite
 
 - **The labels have not been reviewed by the user.** The plan has a review step: a sample of 30 labels, plus every case where the gate interrupts and the label says keep. It has not been done for either corpus, so every number above is provisional until it is. The disagreement on bare titles has to be settled there.
 - **One label per rule.** No rule was labelled twice, so the agreement between labellers is unknown; the tail-of-path cases of the first corpus and the titles of the second show it is not perfect.
-- **The 1.x session evals c13 to c15 were not re-run with the gate.** One mismatch is known. The c14 grader (`evals/cases/c14-themis-audit/grade.ts`) requires "double-check" lines to be removed, while the gate keeps "Double-check your work" and "Be thorough", because no vendor guide for a model in the two-month window asks to remove them. c14 as graded today would fail on that line. The grader also requires the stale `npm run test:unit` to be gone: since the demotion the gate keeps that line with an `unresolved-reference` note, and the skill tells Claude to check the reference and repair it, as it did for `fix`. That path has not been run in a session.
+- **The session evals say nothing about the gate's accuracy.** They were re-run with the gate in 2.3.0 (top of this file), with graders that follow its verdicts.
 - **The regression corpus is not a measurement.** `tests/gate/corpus.jsonl` has 794 cases on 68 small repositories, with 50 recorded gaps. It pins the gate's behaviour so a change is noticed, but its labels were written alongside the checks.
 - **Root rule files of Node projects only.** No other language. The first corpus has only `CLAUDE.md` files and takes the first 60 rules of a file; the second takes 22 `AGENTS.md` and 18 `CLAUDE.md` files and the first 40 rules.
 - **Small counts per code.** Most reason codes fired fewer than ten times on the second corpus, and several not at all, so their precision is not known.
@@ -210,7 +217,8 @@ Of the 18 rules that carry the note now, 13 were labelled keep, 3 cut, 1 rewrite
 ## Re-running
 
 ```
-node evals/run.ts --case "c1*,c20*" --arms base,themis --runs 3 --tag mytag   # billed sessions
+node evals/run.ts --case "c13*,c14*,c15*" --arms base,themis --runs 3 --tag mytag   # billed sessions
+node evals/run.ts --case "c2*" --arms themis --runs 3 --tag mytag
 node evals/report.ts base=mytag themis=mytag
 node hooks/dist/gate.js report tests/gate/holdout.jsonl    # the gate, no billing
 node hooks/dist/gate.js report tests/gate/holdout2.jsonl   # add --paths for the described-path detector

@@ -1,0 +1,1 @@
+{ "prompt": "Add these rules to CLAUDE.md: 1) Sum amounts only with `addCents` from `src/lib/money.js`. 2) Report fixtures live in `tests/fixtures/reports/`.", "maxTurns": 30 }

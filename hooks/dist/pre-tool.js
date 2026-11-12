@@ -1,8 +1,8 @@
 // PreToolUse: keep every CLAUDE.md / CLAUDE.local.md / AGENTS.md under a token cap, imports included,
 // and refuse an edit that would hide a difference between CLAUDE.md and AGENTS.md.
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
-import { run, emit, option, gatePaths, estimateTokens, read, imports, RULE_FILE, writesRuleFile, twinOf, pairState } from "./lib.js";
+import { run, emit, option, gatePaths, read, tokenCount, RULE_FILE, writesRuleFile, twinOf, pairState } from "./lib.js";
 import { newRules } from "./gate/extract.js";
 import { readFacts } from "./gate/facts.js";
 import { formatAsk, formatNotes } from "./gate/format.js";
@@ -26,27 +26,15 @@ function applyEdits(file, input) {
     }
     return text;
 }
-function importTokens(file, text) {
-    let total = 0;
-    for (const p of imports(file, text)) {
-        const t = existsSync(p) && statSync(p).isFile() ? read(p) : null;
-        if (t)
-            total += estimateTokens(t);
-    }
-    return total;
-}
 function checkCap(file, toolInput) {
     const cap = Number(option('claude_md_cap', '2500'));
     if (!cap)
         return false;
-    const next = applyEdits(file, toolInput);
-    const own = estimateTokens(next);
-    const imported = importTokens(file, next);
-    const total = own + imported;
+    const { own, imported, total } = tokenCount(file, applyEdits(file, toolInput));
     if (total <= cap)
         return false;
     const before = read(file);
-    if (before !== null && total < estimateTokens(before) + importTokens(file, before))
+    if (before !== null && total < tokenCount(file, before).total)
         return false; // shrinking is allowed
     return deny(`${basename(file)} would be ~${total} tokens (${own} own + ${imported} imported); the cap is ${cap}. ` +
         'Make room instead of growing it: merge or drop lines the model would follow anyway, or move procedures into a skill or doc referenced by path. ' +

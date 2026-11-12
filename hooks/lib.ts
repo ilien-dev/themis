@@ -98,6 +98,19 @@ export function read(path: string): string | null {
   try { return readFileSync(path, 'utf8'); } catch { return null; }
 }
 
+export interface TokenCount { readonly own: number; readonly imported: number; readonly total: number }
+
+// What the cap counts: the text of a rule file plus every file it pulls in with @path.
+export function tokenCount(file: string, text: string): TokenCount {
+  let imported = 0;
+  for (const p of imports(file, text)) {
+    const t = existsSync(p) && statSync(p).isFile() ? read(p) : null;
+    if (t) imported += estimateTokens(t);
+  }
+  const own = estimateTokens(text);
+  return { own, imported, total: own + imported };
+}
+
 // Files a rule file pulls in with @path, resolved; code spans and blocks do not import.
 export function imports(file: string, text: string): string[] {
   const body = text.replace(/```[\s\S]*?```/g, '').replace(/`[^`]*`/g, '');

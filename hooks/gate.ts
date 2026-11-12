@@ -1,23 +1,26 @@
 // The rule gate from the command line, for the skill and for measurement:
 //   gate check  [--rules <path>] [--file <path>] [--json] [--paths]   markdown from --rules (UTF-8) or stdin; --file sets the repository (default ./CLAUDE.md)
-//   gate audit  <file> [--json] [--prune] [--paths]  every rule of a file and the coverage; --prune drops stale accepted rules
+//   gate audit  <file> [--json] [--prune] [--paths]  every rule of a file, the coverage and the token estimate; --prune drops stale accepted rules
 //   gate report <corpus.jsonl> [--json] [--paths]    precision, false-cut rate and coverage of a labelled corpus
 // --paths turns on the described-path detector (the gate_paths option of the hook), off by default.
 // Exit code 0 whenever the input is valid, 2 on wrong usage or unreadable input.
 import { existsSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
-import { gitLines, read, RULE_FILE } from './lib.ts';
+import { estimateTokens, gitLines, read, RULE_FILE, tokenCount } from './lib.ts';
 import { pruneAccepted } from './gate/accepted.ts';
 import { CorpusRunner, matches, parseCorpus, type Case } from './gate/corpus.ts';
 import { parseRules } from './gate/extract.ts';
 import { readFacts, type Facts } from './gate/facts.ts';
-import { coverage, formatAudit, formatMetrics, formatNotes, formatStaleVendor, metrics, snippet, staleVendor } from './gate/format.ts';
+import { coverage, formatAudit, formatMetrics, formatNotes, formatStaleVendor, metrics, snippet, staleVendor, tokenLine, unjudgedLine } from './gate/format.ts';
 import { PHRASES } from './gate/tables/phrases.ts';
 import { ruleHash } from './gate/text.ts';
 import { contextFor, judgeAll } from './gate/verdict.ts';
 import type { Verdict } from './gate/types.ts';
 
 const USAGE = 'usage: gate check [--rules <path>] [--file <path>] [--json] [--paths] | gate audit <file> [--json] [--prune] [--paths] | gate report <corpus.jsonl> [--json] [--paths]';
+
+// The checks on scripts, dependencies and the project name read package.json and nothing else.
+const NO_MANIFEST = 'No package.json found: the checks on scripts, dependencies and the project name had nothing to read, so fewer rules are judged here.';
 
 class UsageError extends Error {}
 // Valid usage on input that is not there: the message says how to get it, and the usage line is left out.
@@ -76,10 +79,13 @@ async function check(argv: readonly string[]): Promise<void> {
   const fromFile = rulesPath === undefined ? null : read(resolve(rulesPath));
   if (rulesPath !== undefined && fromFile === null) throw new UsageError(`cannot read ${rulesPath}`);
   const markdown = fromFile === null ? await stdin() : fromFile.replace(/^\uFEFF/, '');
-  const verdicts = judgeText(markdown, readFacts(resolve(args.values.get('--file') ?? 'CLAUDE.md')), args.flags.has('--paths'));
+  const target = resolve(args.values.get('--file') ?? 'CLAUDE.md');
+  const verdicts = judgeText(markdown, readFacts(target), args.flags.has('--paths'));
   if (args.flags.has('--json')) { out(JSON.stringify(verdicts.map(toJson), null, 2)); return; }
   const notes = formatNotes(verdicts);
-  out([...verdicts.map(checkLine), ...(notes === '' ? [] : ['', notes])].join('\n'));
+  // What the target holds now and the size of the text checked, to compare with the cap before editing.
+  const tokens = `${tokenLine(basename(target), tokenCount(target, read(target) ?? ''))} The text checked is ~${estimateTokens(markdown)}.`;
+  out([...verdicts.map(checkLine), ...(notes === '' ? [] : ['', notes]), '', tokens].join('\n'));
 }
 
 // Hashes of every rule in the repository's rule files: the accepted store is shared by all of them.
@@ -106,11 +112,16 @@ function audit(argv: readonly string[]): void {
   const canPrune = facts.inRepo && facts.filesKnown;
   const pruned = prune && canPrune ? pruneAccepted(facts.root, liveHashes(file, facts)) : null;
   const verdicts = judgeText(text, facts, args.flags.has('--paths'));
+  const tokens = tokenCount(file, text);
   if (args.flags.has('--json')) {
-    out(JSON.stringify({ verdicts: verdicts.map(toJson), coverage: coverage(verdicts), ...(prune ? { pruned } : {}) }, null, 2));
+    out(JSON.stringify({ verdicts: verdicts.map(toJson), coverage: coverage(verdicts), tokens, packageJson: facts.pkg !== null, ...(prune ? { pruned } : {}) }, null, 2));
     return;
   }
   const lines = [formatAudit(verdicts)];
+  const unjudged = unjudgedLine(verdicts);
+  if (unjudged !== '') lines.push(unjudged);
+  if (facts.pkg === null) lines.push(NO_MANIFEST);
+  lines.push(tokenLine(basename(file), tokens));
   if (pruned !== null) lines.push(`Pruned ${pruned} stale accepted ${pruned === 1 ? 'entry' : 'entries'}.`);
   else if (prune) lines.push('Not pruned: the rule files of this repository are unknown outside a git repository.');
   const notes = formatNotes(verdicts);

@@ -202,3 +202,38 @@ test('--prune does nothing outside a git repository, where sibling rule files ca
   const json = JSON.parse(gate(['audit', join(dir, 'CLAUDE.md'), '--prune', '--json']).stdout) as Record<string, unknown>;
   assert.equal(json['pruned'], null);
 });
+
+test('audit says how many rules no check judged, and the token estimate with imports', () => {
+  const dir = repo({ ...LEDGER, 'docs/more.md': 'x'.repeat(360) });
+  writeFileSync(join(dir, 'CLAUDE.md'), `${MARKDOWN}\n@docs/more.md\n`);
+  const r = gate(['audit', join(dir, 'CLAUDE.md')]);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^Not judged: 2 rules matched nothing \(note no-evidence\)\. They are kept because no check applies, not because a check approved them\.$/m);
+  const own = Math.ceil(`${MARKDOWN}\n@docs/more.md\n`.length / 3.6);
+  assert.ok(r.stdout.includes(`Tokens: CLAUDE.md is ~${own + 100} (${own} own + 100 imported), estimated as characters ÷ 3.6.`), r.stdout);
+  assert.doesNotMatch(r.stdout, /No package\.json found/);
+  const data = JSON.parse(gate(['audit', join(dir, 'CLAUDE.md'), '--json']).stdout) as { tokens: unknown; packageJson: boolean };
+  assert.deepEqual(data.tokens, { own, imported: 100, total: own + 100 });
+  assert.equal(data.packageJson, true);
+});
+
+test('audit leaves out the not-judged line when every rule was answered, and says when there is no package.json', () => {
+  const dir = repo({ 'main.py': '' });
+  writeFileSync(join(dir, 'CLAUDE.md'), '- Write clean code.\n');
+  const r = gate(['audit', join(dir, 'CLAUDE.md')]);
+  assert.equal(r.status, 0, r.stderr);
+  assert.doesNotMatch(r.stdout, /Not judged/);
+  assert.match(r.stdout, /^No package\.json found: the checks on scripts, dependencies and the project name had nothing to read, so fewer rules are judged here\.$/m);
+  assert.equal((JSON.parse(gate(['audit', join(dir, 'CLAUDE.md'), '--json']).stdout) as { packageJson: boolean }).packageJson, false);
+});
+
+test('check ends with what the target holds now and the size of the text checked', () => {
+  const dir = repo(LEDGER);
+  writeFileSync(join(dir, 'CLAUDE.md'), 'x'.repeat(720));
+  const r = gate(['check', '--file', join(dir, 'CLAUDE.md')], 'y'.repeat(36));
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.trimEnd().endsWith('Tokens: CLAUDE.md is ~200 (200 own + 0 imported), estimated as characters ÷ 3.6. The text checked is ~10.'), r.stdout);
+  // A target that does not exist yet counts as empty.
+  const fresh = gate(['check', '--file', join(dir, 'pkg', 'CLAUDE.md')], '- All money values are integer cents.\n');
+  assert.match(fresh.stdout, /Tokens: CLAUDE\.md is ~0 \(0 own \+ 0 imported\)/);
+});

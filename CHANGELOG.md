@@ -1,5 +1,32 @@
 # Changelog
 
+## 2.3.0 — 2026-11-12
+
+### Added
+
+- `gate audit` and `gate check` print the token estimate the cap is checked against, own text plus `@path` imports, in the hook's arithmetic. `audit --json` has it as `tokens`. The skill no longer estimates by hand.
+- `gate audit` prints a `Not judged:` line with the number of rules that matched nothing, and says when the repository has no `package.json`. A rule kept for lack of a check is not a rule approved, and the skill now passes that on instead of reporting a file as clean.
+- Session evals for the parts of the skill that had none: c21 (what `edit` does with `cut`, `rewrite` and `keep`), c22 (a pair that differs is not resolved by choosing a version) and c23 (an unresolved reference is repaired or reported).
+
+### Changed
+
+- The skill reads the cap, `gate` and `gate_paths` from the plugin options (`${user_config.*}`) instead of a written 2500 and "if the user turned it on". An option never set stays as written, and the skill then uses the defaults.
+- The pair check in the skill is `git diff --no-index --quiet`, which exists in every shell; `cmp` does not in PowerShell.
+- `audit` runs the gate once for an identical pair, and reports the new token estimate after applying the verdicts.
+- `sync` says not to make a pair match with the shell, and to end with the question when nobody can answer it.
+- `edit` over the cap: make room without asking by merging lines that repeat one pattern or condensing others, and say what changed; stop only if meaning would be lost.
+- The text to check goes to a file in the system temporary directory, not in the repository.
+- The c14 grader follows the gate: it no longer requires removing "Double-check your work", which the gate keeps, and requires the shouted rules to lose their emphasis.
+
+### Measured
+
+- The session evals were re-run for the first time since 1.0: c13 to c15 and c20 to c23 all 3/3 with the plugin; c13 to c15 0/3 without it. c15 fell to 0/3 on an intermediate text, because with the token estimate in hand Claude stopped to ask before condensing; the `edit` step now says to make room without asking. See [RESULTS.md](RESULTS.md) for what they do not cover.
+
+### Known limits
+
+- Whether `${user_config.*}` is filled in the skill for an option the user has set was not observed in a session; the documentation says it is.
+- Shell writes to a rule file are denied for redirects, `tee`, `sed -i`, `perl -i` and the PowerShell cmdlets. `cp` and `mv` over one are not; parity is reported after them.
+
 ## 2.2.0 — 2026-11-12
 
 ### Added
@@ -26,7 +53,7 @@
 - In a repository with more than one `package.json` a missing script gets no note, and a path counts as present when a tracked path ends with it, so a dead reference there can go unnoticed.
 - The gate flags about one redundant rule in five. Its verdicts are a floor for what can go, not a full audit.
 - Bare level-1 titles (`# CLAUDE.md`, a title that is only the package name) are cut, while the labellers of the second corpus kept them: 9 of its 13 remaining false interruptions. Which is right is not settled.
-- The session evals c13 to c15 were not re-run with the gate. The c14 grader still requires removing "double-check" lines, which the gate keeps.
+- The session evals c13 to c15 were not re-run with the gate. The c14 grader still requires removing "double-check" lines, which the gate keeps. (Both done in 2.3.0.)
 
 ## 2.1.1 — 2026-10-10
 

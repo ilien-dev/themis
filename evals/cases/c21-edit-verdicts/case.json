@@ -1,0 +1,1 @@
+{ "prompt": "Add these rules to CLAUDE.md: 1) Lint: `npm run lint` 2) Write clean, readable and maintainable code. 3) IMPORTANT: Refunds are stored as negative cents, never as a separate type. 4) Invoices are immutable once sent; corrections are credit notes.", "maxTurns": 30 }

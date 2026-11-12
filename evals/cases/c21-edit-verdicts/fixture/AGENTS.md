@@ -1,0 +1,3 @@
+- All money values are integer cents; never floats.
+- src/generated/ is produced by `npm run gen`. Do not edit it by hand.
+- Run `npm run db:migrate` before tests or they fail with "no such table".
