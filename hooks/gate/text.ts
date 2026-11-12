@@ -50,9 +50,10 @@ export function citedPaths(text: string): string[] {
 const NPM_SCRIPTS = new Set(['test', 'start', 'stop', 'restart']);
 const NOT_SCRIPTS = new Set(['install', 'i', 'add', 'ci', 'init', 'publish', 'exec', 'x', 'dlx', 'create', 'remove', 'rm', 'update', 'up', 'link', 'audit', 'help', 'config', 'cache', 'pack', 'version']);
 
-// `npm run x`, `npm test`, `pnpm x`, `yarn x`, `bun run x`.
-export function citedScripts(text: string): { pm: string; script: string }[] {
-  const out: { pm: string; script: string }[] = [];
+// `npm run x`, `npm test`, `pnpm x`, `yarn x`, `bun run x`. `explicit` is set for the `run` form, the only
+// one that cannot be something else: `pnpm vitest` and `yarn prisma` run a binary when no script has that name.
+export function citedScripts(text: string): { pm: string; script: string; explicit: boolean }[] {
+  const out: { pm: string; script: string; explicit: boolean }[] = [];
   for (const s of spans(text)) {
     const m = /^(npm|pnpm|yarn|bun)\s+(run\s+)?([\w:.-]+)/.exec(s.trim());
     const pm = m?.[1];
@@ -60,7 +61,7 @@ export function citedScripts(text: string): { pm: string; script: string }[] {
     if (pm === undefined || script === undefined) continue;
     const explicit = m?.[2] !== undefined;
     if (!explicit && (pm === 'npm' ? !NPM_SCRIPTS.has(script) : NOT_SCRIPTS.has(script))) continue;
-    out.push({ pm, script });
+    out.push({ pm, script, explicit });
   }
   return out;
 }

@@ -15,8 +15,8 @@ const OTHER_PACKAGE = /\s(?:-w|-F|-C|--workspaces?|--filter|--prefix|--cwd|--dir
 const EMPHASIS = /(?<![\p{L}\p{N}_])(IMPORTANT|CRITICAL|MUST|NEVER|ALWAYS|IMPORTANTE|CRÍTICO|NUNCA|SIEMPRE)(?![\p{L}\p{N}_])/u;
 // A bare name such as `Node.js` or `socket.io` is a library, not a file; only these extensions mark a file.
 export const BARE_FILE_EXT = /\.(?:md|json|ya?ml|toml|tsx?|[cm]js|txt|sh|py|go|rs|css|html)$/i;
-const EXT = /\.[A-Za-z0-9]{1,5}$/;
-const LOCATION = /(?::\d+(?::\d+)?|#L\d+(?:-L?\d+)?)$/; // src/a.ts:42, src/a.ts:42:7, src/a.ts#L10-L20
+// src/a.ts:42, :42:7, :146-162, #L10-L20, ::parse(), ::Money.parse, #parse
+const LOCATION = /(?::\d+(?:[:-]\d+)?|#L\d+(?:-L?\d+)?|::[\w$.]+(?:\(\))?|#[\w$.-]+(?:\(\))?)$/;
 const LIST_MARKER = /^\s*(?:[-*+]|\d+[.)])\s+/;
 // Directories a fresh clone does not have.
 const GENERATED = new Set(['dist', 'build', 'out', 'target', 'coverage', 'node_modules', '.next', '.nuxt', '.turbo', '.cache', 'tmp', 'vendor']);
@@ -62,14 +62,14 @@ function generated(p, facts) {
     return anchored.some((a) => p === a || p.startsWith(`${a}/`)) || anywhere.some((n) => segments.includes(n));
 }
 // A file or a directory that exists, tracked or on disk, from the repo root or from the rule file's directory.
-// A bare file name counts when any tracked file has that name.
+// A bare file name counts when any tracked file has that name, and a longer path when it is the tail of a
+// tracked path (`src/module.ts` of `packages/core/src/module.ts`): rules often cite paths from a package.
 function alive(p, facts) {
     const starts = [p, posix(relative(facts.root, join(facts.dir, p)))];
-    const bare = p.includes('/') ? null : p;
     for (const f of facts.files) {
         if (starts.some((s) => f === s || f.startsWith(`${s}/`)))
             return true;
-        if (bare !== null && f.endsWith(`/${bare}`))
+        if (f.endsWith(`/${p}`) || (p.includes('/') && f.includes(`/${p}/`)))
             return true;
     }
     return existsSync(join(facts.root, p)) || existsSync(join(facts.dir, p));
@@ -91,20 +91,31 @@ function deadPath(p, facts) {
     const first = p.split('/')[0] ?? '';
     if (existsSync(join(facts.root, first)) || existsSync(join(facts.dir, first)))
         return true;
-    // The first segment is unknown: a URL path, a package subpath or a branch name unless it looks like this repo's.
-    return EXT.test(p) || topDirs(facts).has(first);
+    // The first segment is unknown: a URL without a scheme, a package subpath or a branch name, unless a
+    // tracked directory has that name.
+    return topDirs(facts).has(first);
+}
+// Another package.json than the nearest one is tracked: a script the rule cites may live there, whether
+// or not the root declares workspaces.
+function otherPackages(facts, own) {
+    for (const f of facts.files)
+        if ((f === 'package.json' || f.endsWith('/package.json')) && f !== own)
+            return true;
+    return false;
 }
 // The dead-reference answer for a rule, or null. Question 5 uses it to leave such a rule to question 7.
 export function deadReference(rule, facts) {
     if (facts.inRepo && facts.filesKnown) {
-        const dead = citedPaths(rule.text).map(clean).find((p) => deadPath(p, facts));
+        const dead = [...new Set(citedPaths(rule.text).map(clean))].find((p) => deadPath(p, facts));
         if (dead !== undefined)
             return fix(`\`${dead}\` not found`);
     }
-    if (facts.pkg !== null && !spans(rule.text).some((s) => OTHER_PACKAGE.test(` ${s}`))) {
-        const known = facts.pkg.scripts;
-        const missing = citedScripts(rule.text).find((s) => !s.script.startsWith('-') && !BUILTIN_SCRIPTS.has(s.script) && !PM_COMMANDS.has(s.script) && !Object.hasOwn(known, s.script));
-        if (missing !== undefined)
+    const pkg = facts.pkg;
+    if (pkg !== null && !spans(rule.text).some((s) => OTHER_PACKAGE.test(` ${s}`))) {
+        // Only `<pm> run <s>` and npm's own `npm test` / `npm start` forms name a script for certain.
+        const missing = citedScripts(rule.text).find((s) => (s.explicit || s.pm === 'npm') &&
+            !s.script.startsWith('-') && !BUILTIN_SCRIPTS.has(s.script) && !PM_COMMANDS.has(s.script) && !Object.hasOwn(pkg.scripts, s.script));
+        if (missing !== undefined && !otherPackages(facts, pkg.path))
             return fix(`scripts.${missing.script} not in package.json`);
     }
     return null;

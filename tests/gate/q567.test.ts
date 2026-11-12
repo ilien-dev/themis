@@ -274,3 +274,41 @@ test('q5 moves a path only for a prohibition about a file operation on a real fi
     '1. `src/` - code\n2. `src/generated/` - never import it from a route\n3. `docs/` - notes',
   ]) assert.equal(ask(q5, t), null, t);
 });
+
+// Final review: references that resolve in ways the first version missed.
+test('q7 reports only explicit run forms as missing scripts', () => {
+  for (const s of ['pnpm vitest run src/a.test.ts', 'yarn prisma migrate dev', 'pnpm tsc --noEmit', 'bun scripts/seed.ts', 'pnpm missing', 'yarn missing']) {
+    assert.equal(ask(q7, `- Use \`${s}\``), null, s);
+  }
+  for (const s of ['npm run missing', 'pnpm run missing', 'yarn run missing', 'bun run missing']) {
+    assert.equal(ask(q7, `- Use \`${s}\``)?.evidence, 'scripts.missing not in package.json', s);
+  }
+});
+test('q7 abstains on a missing script when another package.json is tracked', () => {
+  const r = repo({ 'package.json': '{"scripts":{"lint":"eslint ."}}', 'site/package.json': '{"scripts":{"docs":"x"}}' });
+  assert.equal(ask(q7, '- Build the docs: `npm run docs`', readFacts(join(r, 'CLAUDE.md'))), null);
+});
+test('q7 treats a multi-segment path as alive when a tracked path ends with it', () => {
+  const r = repo({ 'package.json': '{}', 'packages/core/src/module.ts': '', 'packages/core/src/deep/x.ts': '' });
+  const f = readFacts(join(r, 'CLAUDE.md'));
+  for (const s of ['src/module.ts', 'core/src/module.ts', 'src/deep', 'src/deep/']) assert.equal(ask(q7, `See \`${s}\`.`, f), null, s);
+  assert.equal(ask(q7, 'See `packages/core/src/gone.ts`.', f)?.code, 'dead-reference');
+  assert.equal(ask(q7, 'See `rc/module.ts`.', readFacts(join(repo({ 'package.json': '{}', 'rc/a.ts': '', 'x/src/module.ts': '' }), 'CLAUDE.md')))?.code, 'dead-reference');
+});
+test('q7 strips line ranges and symbols before resolving a path', () => {
+  for (const s of ['src/money.js:146-162', 'src/money.js::parse()', 'src/money.js::Money.parse', 'src/money.js#parse', 'src/money.js#Money.parse()']) {
+    assert.equal(ask(q7, `See \`${s}\`.`), null, s);
+  }
+  assert.equal(ask(q7, 'See `src/missing.js:1-20`.')?.evidence, '`src/missing.js` not found');
+});
+test('q7 does not judge a path whose first segment the repository does not know', () => {
+  for (const s of ['peonping.github.io/docs/index.html', 'example.com/a/b.json', 'other-repo/src/a.ts']) assert.equal(ask(q7, `See \`${s}\`.`), null, s);
+});
+test('q6 counts the content lines of a code block, not its fences or blank lines', () => {
+  const block = (n: number, lead = ''): string => `${lead}\`\`\`ts\n${Array.from({ length: n }, (_, i) => `const a${i} = ${i};\n`).join('')}\n\`\`\``;
+  assert.equal(ask(q6, block(8)), null);
+  assert.equal(ask(q6, block(6, 'Example:\n')), null);
+  const a = ask(q6, block(9));
+  assert.equal(a?.code, 'long-procedure');
+  assert.equal(a.evidence, '9 lines');
+});

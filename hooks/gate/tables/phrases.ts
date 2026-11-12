@@ -62,9 +62,10 @@ export const PHRASES: readonly Phrase[] = [
   generic(String.raw`(?:siempre\s+)?(?:recuerda\s+)?mant\u00e9n\s+(?:alta\s+)?la\s+calidad\s+del\s+c\u00f3digo(?:\s+alta)?`),
   generic(String.raw`(?:siempre\s+)?(?:recuerda\s+)?comun\u00edcate\s+(?:claramente|bien)(?:\s+sobre\s+(?:tus|los)\s+cambios)?`),
 
-  // File filler: sentences about the file itself.
-  filler(String.raw`this\s+file\s+(?:gives|provides)\s+(?:(?:claude|you|some|the|project|agents?|models?)\s+){0,3}(?:context|guidance)(?:\s+(?:about|on|for)\s+(?:the\s+)?[^\s.,;:!?]{1,40}\s+project)?(?:\s+so\s+(?:that\s+)?(?:it|claude|you)\s+can\s+(?:help|work|assist)(?:\s+(?:effectively|better|well))?)?`),
-  filler(String.raw`keep\s+(?:it|this\s+file)\s+(?:up[- ]to[- ]date|updated|current)(?:\s+as\s+(?:the\s+)?project\s+(?:evolves|changes|grows))?`),
-  filler(String.raw`este\s+archivo\s+(?:da|proporciona|ofrece|contiene)\s+(?:(?:a|al|claude|te|le|agente|el|un|algo|de)\s+){0,3}(?:contexto|orientaci\u00f3n|gu\u00eda)(?:\s+(?:sobre|acerca\s+de)\s+(?:el\s+|la\s+)?proyecto\s+[^\s.,;:!?]{1,40})?(?:\s+para\s+que\s+(?:pueda|puedas)\s+ayudar(?:\s+(?:bien|mejor|eficazmente))?)?`),
-  filler(String.raw`mant(?:\u00e9n|en)(?:lo|\s+este\s+archivo)\s+actualizado(?:\s+a\s+medida\s+que\s+(?:el\s+)?proyecto\s+(?:evoluciona|cambia|crece))?`),
+  // File filler: sentences about the file itself. Each names the file; "keep it updated" alone could be
+  // about anything, so "it" counts only in the sentence right after one that names this file.
+  filler(String.raw`this\s+file\s+(?:gives|provides)\s+(?:(?:claude|you|some|the|project|agents?|models?)\s+){0,3}(?:context|guidance)(?:\s+(?:about|on|for)\s+(?:the\s+)?[^\s.,;:!?]{1,40}\s+project)?(?:\s+so\s+(?:that\s+)?(?:it|claude|you)\s+can\s+(?:help|work|assist)(?:\s+(?:effectively|better|well))?)?(?:[.;]\s+keep\s+it\s+(?:up[- ]to[- ]date|updated|current)(?:\s+as\s+(?:the\s+)?project\s+(?:evolves|changes|grows))?)?`),
+  filler(String.raw`keep\s+(?:this\s+(?:file|document)|claude\.md|agents\.md)\s+(?:up[- ]to[- ]date|updated|current)(?:\s+as\s+(?:the\s+)?project\s+(?:evolves|changes|grows))?`),
+  filler(String.raw`este\s+archivo\s+(?:da|proporciona|ofrece|contiene)\s+(?:(?:a|al|claude|te|le|agente|el|un|algo|de)\s+){0,3}(?:contexto|orientaci\u00f3n|gu\u00eda)(?:\s+(?:sobre|acerca\s+de)\s+(?:el\s+|la\s+)?proyecto\s+[^\s.,;:!?]{1,40})?(?:\s+para\s+que\s+(?:pueda|puedas)\s+ayudar(?:\s+(?:bien|mejor|eficazmente))?)?(?:[.;]\s+mant(?:\u00e9n|en)lo\s+actualizado(?:\s+a\s+medida\s+que\s+(?:el\s+)?proyecto\s+(?:evoluciona|cambia|crece))?)?`),
+  filler(String.raw`mant(?:\u00e9n|en)\s+(?:este\s+(?:archivo|documento)|claude\.md|agents\.md)\s+actualizado(?:\s+a\s+medida\s+que\s+(?:el\s+)?proyecto\s+(?:evoluciona|cambia|crece))?`),
 ];

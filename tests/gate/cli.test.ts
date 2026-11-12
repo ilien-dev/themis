@@ -18,7 +18,8 @@ function gate(args: readonly string[], input = '', cwd = root): { status: number
   return { status: r.status, stdout: r.stdout, stderr: r.stderr };
 }
 
-const LEDGER = { 'package.json': '{"name":"ledger","scripts":{"lint":"node lint.js"}}', 'src/money.js': '' };
+// docs/ exists, so a missing file under it is a dead reference rather than a path of something else.
+const LEDGER = { 'package.json': '{"name":"ledger","scripts":{"lint":"node lint.js"}}', 'src/money.js': '', 'docs/guide.md': '' };
 const MARKDOWN = '# Ledger\n\n- Write clean code.\n- All money values are integer cents; never floats.\n- See `docs/missing.md`.\n';
 
 test('check reads markdown on stdin and prints one verdict per rule', () => {

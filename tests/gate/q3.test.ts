@@ -59,7 +59,6 @@ test('the file filler of c14 is cut as file-filler', () => {
   const a = ask('This file gives Claude context about the Ledger project so it can help effectively. Keep it updated as the project evolves.');
   assert.equal(a?.code, 'file-filler');
   assert.match(a.evidence, /^phrases: filler "This file gives Claude context/);
-  assert.equal(ask('Keep it updated.')?.code, 'file-filler');
   assert.equal(ask('Este archivo proporciona contexto sobre el proyecto Ledger. Mantenlo actualizado.')?.code, 'file-filler');
 });
 
@@ -154,4 +153,13 @@ test('a behaviour instruction to the agent is not generic advice', () => {
     'Sé minucioso.', 'Sé cuidadoso y minucioso.',
   ]) assert.equal(ask(t), null, t);
   assert.equal(ask('Write clean code. Handle errors properly. Be thorough.'), null); // "Be thorough" is left over
+});
+
+test('file filler names the file it is about', () => {
+  for (const t of ['Keep it updated.', 'Keep it up to date.', 'Mantenlo actualizado.', 'Keep it current as the project evolves.']) assert.equal(ask(t), null, t);
+  for (const t of ['Keep this file updated.', 'Keep this document up to date.', 'Keep CLAUDE.md up to date.', 'Keep AGENTS.md current.', 'Mantén este archivo actualizado.', 'Mantén este documento actualizado.']) {
+    assert.equal(ask(t)?.code, 'file-filler', t);
+  }
+  // In the sentence after one about this file, "it" is that file.
+  assert.equal(ask('This file gives Claude context about the Ledger project. Keep it updated.')?.code, 'file-filler');
 });

@@ -121,6 +121,7 @@ test('a repo with files.txt is judged against that listing, and its rule file ne
       writeFileSync(join(base, name, 'package.json'), '{"name":"snap","scripts":{}}');
       writeFileSync(join(base, name, 'rules.md'), '- Entry point is `src/main.ts`\n');
       if (listing !== null) writeFileSync(join(base, name, 'files.txt'), listing);
+      else { mkdirSync(join(base, name, 'src')); writeFileSync(join(base, name, 'src', 'other.ts'), ''); } // src/ exists, src/main.ts does not
     };
     repo('listed', 'package.json\nsrc/main.ts\n');
     repo('bare', null);

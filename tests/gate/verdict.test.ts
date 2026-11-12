@@ -35,7 +35,7 @@ test('citedPaths skips urls, globs and versions, accepts backslashes', () => {
 });
 test('citedScripts reads package manager invocations', () => {
   assert.deepEqual(citedScripts('run `npm run lint`, `pnpm build`, `npm test` or `npm install`'), [
-    { pm: 'npm', script: 'lint' }, { pm: 'pnpm', script: 'build' }, { pm: 'npm', script: 'test' },
+    { pm: 'npm', script: 'lint', explicit: true }, { pm: 'pnpm', script: 'build', explicit: false }, { pm: 'npm', script: 'test', explicit: false },
   ]);
 });
 test('hasReason and hasAnchor', () => {

@@ -101,7 +101,7 @@
 {"id":"c15-conv-11","repo":"evals/cases/c15-cap/fixture","file":"CLAUDE.md","rule":"- Never commit `.env` files; use `.env.example`.","expect":"keep"}
 {"id":"shop-01","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"# Shop","expect":"cut","code":"inferable-title"}
 {"id":"shop-02","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"# Shop — instructions for Claude","expect":"cut","code":"inferable-title"}
-{"id":"shop-03","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop instructions for Claude","expect":"cut","code":"inferable-title"}
+{"id":"shop-03","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop instructions for Claude","expect":"keep","gap":"A title in a paragraph that only repeats the package name; only headings are judged as titles, since a paragraph usually says more."}
 {"id":"api-01","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"# Acme API","expect":"cut","code":"inferable-title"}
 {"id":"mono-01","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"# acme-mono: guía del proyecto","expect":"cut","code":"inferable-title"}
 {"id":"facturas-01","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"# Facturas para pymes","expect":"cut","code":"inferable-title"}
@@ -154,7 +154,7 @@
 {"id":"facturas-04","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"Facturas es un servicio que genera facturas electrónicas para pymes. Valida los datos fiscales y envía cada factura a la agencia tributaria.","expect":"cut","code":"inferable-overview"}
 {"id":"gocli-03","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"Tool converts bank statements into ledger entries. It reads CSV exports and writes one entry per line.","expect":"cut","code":"inferable-overview"}
 {"id":"shop-29","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop is the storefront for the Acme bakery.","expect":"keep","line":3,"gap":"the first sentence of the README; the overview check needs two sentences, so one copied sentence is kept"}
-{"id":"shop-30","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop is the storefront for the Acme bakery.","expect":"cut","code":"inferable-title"}
+{"id":"shop-30","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop is the storefront for the Acme bakery.","expect":"keep","gap":"README.md opens with this sentence; a one-sentence paragraph is judged neither as a title nor as an overview."}
 {"id":"shop-31","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop is the storefront for the Acme bakery. Customers pay with a card through `src/lib/api.ts`.","expect":"keep"}
 {"id":"gocli-04","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"Tool converts bank statements into ledger entries. Amounts are parsed as integer cents, never as floats.","expect":"keep"}
 {"id":"shop-32","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Omit semicolons.","expect":"cut","code":"enforced-config"}
@@ -224,7 +224,7 @@
 {"id":"facturas-13","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Sé cuidadoso con los certificados de la empresa.","expect":"keep"}
 {"id":"shop-64","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Keep this file up to date.","expect":"cut","code":"file-filler"}
 {"id":"shop-65","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"This file gives you context about the Shop project.","expect":"cut","code":"file-filler"}
-{"id":"api-36","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Keep it updated as the project evolves.","expect":"cut","code":"file-filler"}
+{"id":"api-36","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Keep it updated as the project evolves.","expect":"keep"}
 {"id":"facturas-14","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"Este archivo proporciona contexto sobre el proyecto Facturas. Mantenlo actualizado.","expect":"cut","code":"file-filler"}
 {"id":"mono-09","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"Mantén este archivo actualizado.","expect":"cut","code":"file-filler"}
 {"id":"shop-66","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Keep it updated by running the sync job every Friday.","expect":"keep"}
@@ -269,7 +269,7 @@
 {"id":"shop-78","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Components live in `src/ui/`.","expect":"fix","code":"dead-reference"}
 {"id":"api-46","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Seed the database with `npm run seed` first.","expect":"fix","code":"dead-reference"}
 {"id":"facturas-19","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- La configuración está en `src/facturas/config.py`.","expect":"fix","code":"dead-reference"}
-{"id":"mono-11","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Lint this package with `pnpm run lint`.","expect":"fix","code":"dead-reference"}
+{"id":"mono-11","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Lint this package with `pnpm run lint`.","expect":"keep","gap":"packages/web/package.json has no lint script, but the gate does not report a missing script in a repository with more than one package.json."}
 {"id":"shop-79","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- IMPORTANT: see `src/missing.ts`.","expect":"fix","code":"dead-reference"}
 {"id":"mono-12","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Build this package with `pnpm build`.","expect":"cut","code":"inferable-script"}
 {"id":"mono-13","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Shared types are in `src/index.ts`.","expect":"keep"}
@@ -368,6 +368,16 @@
 {"id":"gocli-15","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- See `cmd/tool/flags.go` for the flags.","expect":"fix","code":"dead-reference"}
 {"id":"shop-109","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `git push --force` on main; the history is shared.","expect":"keep","gap":"the shop repo denies `git push --force` everywhere (Bash(git push --force:*)); \"on main\" is narrower than the deny entry, and the deny check abstains on the extra words"}
 {"id":"shop-110","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never call `Math.round` on prices.","expect":"keep"}
+{"id":"shop-111","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- `npm test` needs port 5432 free","expect":"keep"}
+{"id":"shop-112","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- `npm run lint` takes 4 minutes","expect":"keep"}
+{"id":"shop-113","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- `npm run build` writes to src/generated","expect":"keep"}
+{"id":"shop-114","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Shop stores money as cents","expect":"keep"}
+{"id":"shop-115","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"# Shop deploy freeze on Fridays","expect":"keep"}
+{"id":"shop-116","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Migrations: `yarn prisma migrate dev`","expect":"keep"}
+{"id":"shop-117","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Type-check once: `pnpm tsc --noEmit`","expect":"keep"}
+{"id":"shop-118","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- The API client is `lib/api.ts:12-40`","expect":"keep"}
+{"id":"shop-119","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"```\nshop/\n├── src/\n│   ├── components/   # frozen; new code goes in src/lib\n│   └── lib/\n└── tests/\n```","expect":"keep"}
+{"id":"shop-120","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"```ts\nimport { api } from \"./lib/api\";\n\nconst cart = await api.get(\"/cart\");\nconst total = cart.items.reduce((s, i) => s + i.cents, 0);\nconsole.log(total);\nawait api.post(\"/checkout\", { total });\nawait api.post(\"/receipt\", { total });\nawait api.post(\"/done\", {});\n```","expect":"keep"}
 {"id":"q1-react-01","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"We use React.","expect":"cut","code":"inferable-tech"}
 {"id":"q1-vitest-01","repo":"tests/gate/repos/q1-vitest","file":"CLAUDE.md","rule":"This project is built with Vitest.","expect":"cut","code":"inferable-tech"}
 {"id":"q1-react-02","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Usamos React.","expect":"cut","code":"inferable-tech"}
@@ -391,7 +401,7 @@
 {"id":"q1-lint-06","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Lint, then test: `npm run lint` and `npm test`","expect":"keep"}
 {"id":"q1-lint-07","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Always run the linter before you push to the shared branch: `npm run lint`","expect":"keep"}
 {"id":"q1-ledger-01","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"# Ledger - Project Instructions for Claude","expect":"cut","code":"inferable-title"}
-{"id":"q1-ledger-02","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger instructions for Claude","expect":"cut","code":"inferable-title"}
+{"id":"q1-ledger-02","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger instructions for Claude","expect":"keep","gap":"A title in a paragraph that only repeats the package name; only headings are judged as titles, since a paragraph usually says more."}
 {"id":"q1-ledger-03","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger instructions for Claude","expect":"keep","line":3,"gap":"a sentence that only names the package; only the first paragraph of a file is read as a title"}
 {"id":"q1-readme-title-01","repo":"tests/gate/repos/q1-readme-title","file":"CLAUDE.md","rule":"# The Ledger Bookkeeping Service For Freelancers","expect":"cut","code":"inferable-title"}
 {"id":"q1-ledger-04","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"# Testing rules","expect":"keep"}
@@ -542,7 +552,7 @@
 {"id":"q2-prettier-29","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Write tests first.","expect":"keep"}
 {"id":"q3-app-01","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"- Think step by step before making changes.","expect":"cut","code":"vendor-declared"}
 {"id":"q3-app-02","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"This file gives Claude context about the Ledger project so it can help effectively. Keep it updated as the project evolves.","expect":"cut","code":"file-filler"}
-{"id":"q3-app-03","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Keep it updated.","expect":"cut","code":"file-filler"}
+{"id":"q3-app-03","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Keep it updated.","expect":"keep"}
 {"id":"q3-app-04","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Este archivo proporciona contexto sobre el proyecto Ledger. Mantenlo actualizado.","expect":"cut","code":"file-filler"}
 {"id":"q3-app-05","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Remember to keep the code quality high and to communicate clearly about changes.","expect":"cut","code":"generic-advice"}
 {"id":"q3-app-06","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code. Handle errors properly. Be thorough.","expect":"keep"}

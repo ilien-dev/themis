@@ -47,7 +47,8 @@ export function citedPaths(text) {
 }
 const NPM_SCRIPTS = new Set(['test', 'start', 'stop', 'restart']);
 const NOT_SCRIPTS = new Set(['install', 'i', 'add', 'ci', 'init', 'publish', 'exec', 'x', 'dlx', 'create', 'remove', 'rm', 'update', 'up', 'link', 'audit', 'help', 'config', 'cache', 'pack', 'version']);
-// `npm run x`, `npm test`, `pnpm x`, `yarn x`, `bun run x`.
+// `npm run x`, `npm test`, `pnpm x`, `yarn x`, `bun run x`. `explicit` is set for the `run` form, the only
+// one that cannot be something else: `pnpm vitest` and `yarn prisma` run a binary when no script has that name.
 export function citedScripts(text) {
     const out = [];
     for (const s of spans(text)) {
@@ -59,7 +60,7 @@ export function citedScripts(text) {
         const explicit = m?.[2] !== undefined;
         if (!explicit && (pm === 'npm' ? !NPM_SCRIPTS.has(script) : NOT_SCRIPTS.has(script)))
             continue;
-        out.push({ pm, script });
+        out.push({ pm, script, explicit });
     }
     return out;
 }

@@ -83,9 +83,9 @@ test('a heading with the package name is inferable', () => {
   const a = ask('# Ledger - Project Instructions for Claude', { 'package.json': '{"name":"ledger"}' });
   assert.deepEqual(a, { verdict: 'cut', code: 'inferable-title', question: 1, evidence: 'package.json: name' });
 });
-test('only the first paragraph of the file can be a title', () => {
+test('a paragraph is not a title, first in the file or not', () => {
   const files = { 'package.json': '{"name":"ledger"}' };
-  assert.equal(ask('Ledger instructions for Claude', files)?.code, 'inferable-title');
+  assert.equal(ask('Ledger instructions for Claude', files), null);
   const second = parseRules('Intro text.\n\nLedger instructions for Claude')[1];
   assert.ok(second !== undefined);
   assert.equal(q1(second, readFacts(join(repo(files), 'CLAUDE.md'))), null);
@@ -172,4 +172,42 @@ test('the extended negations stop a technology rule', () => {
   for (const text of ['Use React without Redux.', 'Use React unless told otherwise.', 'Only use React.', 'Dont use React.', 'Usa React salvo en el admin.', 'Usa solo React.']) {
     assert.equal(ask(text, REACT), null, text);
   }
+});
+
+// Final review: a script, a title or a tree that carries information is kept.
+const SCRIPTS = { 'package.json': '{"name":"acme","scripts":{"test":"node --test","lint":"eslint .","build":"tsc","dev":"vite"}}' };
+test('a script rule is cut only when the rest is a label from a closed vocabulary', () => {
+  for (const text of [
+    '- `npm test` needs port 5432 free', '- `npm run lint` takes 4 minutes', '- `npm run build` writes to src/generated',
+    '- `npm test` needs the database running', '- Build: `npm run build` (output in dist_web)', '- `npm run dev` on staging',
+    '- Pruebas: `npm test` tarda 4 minutos',
+  ]) assert.equal(ask(text, SCRIPTS), null, text);
+  for (const text of ['- Lint: `npm run lint`', '- Run the tests with `npm test`', '- Dev server: `npm run dev`', '- Ejecuta las pruebas con `npm test`']) {
+    assert.equal(ask(text, SCRIPTS)?.code, 'inferable-script', text);
+  }
+});
+test('a title is cut only when every other word is filler', () => {
+  const acme = { 'package.json': '{"name":"acme"}' };
+  assert.equal(ask('# acme deploy freeze on Fridays', acme), null);
+  assert.equal(ask('# Acme for the billing team', acme), null);
+  assert.equal(ask('# Acme', acme)?.code, 'inferable-title');
+  assert.equal(ask('# Acme — instructions for Claude', acme)?.code, 'inferable-title');
+  assert.equal(ask('# Acme: guía del proyecto', acme)?.code, 'inferable-title');
+});
+test('a paragraph is never a title, not even on line 1', () => {
+  const acme = { 'package.json': '{"name":"acme"}' };
+  for (const text of ['acme stores money as cents', 'Acme instructions for Claude']) assert.equal(ask(text, acme), null, text);
+});
+test('a tree block whose comments carry more than a short description is kept', () => {
+  const tree = (body: string): string => `\`\`\`\n${body}\n\`\`\``;
+  const files = { 'src/money.js': '', 'tests/money.test.js': '', 'packages/web/a.ts': '' };
+  for (const body of [
+    'app/\n\u251c\u2500\u2500 src/   # frozen; new code goes in packages/web\n\u2514\u2500\u2500 tests/',
+    'app/\n\u251c\u2500\u2500 src/   # legacy\n\u2514\u2500\u2500 tests/',
+    'app/\n\u251c\u2500\u2500 src/   # generated\n\u2514\u2500\u2500 tests/',
+    'app/\n\u251c\u2500\u2500 src/   # code: money in cents\n\u2514\u2500\u2500 tests/',
+    'app/\n\u251c\u2500\u2500 src/   # the money code for every invoice\n\u2514\u2500\u2500 tests/',
+    'app/\n\u251c\u2500\u2500 src/   # v2 code\n\u2514\u2500\u2500 tests/',
+  ]) assert.equal(ask(tree(body), files), null, body);
+  assert.equal(ask(tree('app/\n\u251c\u2500\u2500 src/   # source code\n\u2514\u2500\u2500 tests/  # the tests'), files)?.code, 'inferable-tree');
 });
