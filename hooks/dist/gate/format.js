@@ -16,7 +16,13 @@ export function snippet(text) {
     return clip(lines.find((l) => l !== '' && !/^(?:`{3,}|~{3,})[\w-]*$/.test(l)) ?? lines[0] ?? '');
 }
 const withTarget = (v) => (v.target === undefined ? v.evidence : `${v.evidence} → ${v.target}`);
-export function formatAsk(verdicts, fileName) {
+// The last paragraph: the user reads an ask; only Claude reads a report, so it must pass the verdicts on.
+const TRAILER = {
+    ask: 'Approve to add them as written; themis will remember the choice. Deny to drop the edit.',
+    report: 'themis did not block this edit. Tell the user which of these rules were flagged and why. ' +
+        'Repair a `fix` or `rewrite` yourself; do not remove or move a rule without telling the user.',
+};
+export function formatAsk(verdicts, fileName, mode) {
     const flagged = verdicts.filter(interrupts);
     if (flagged.length === 0)
         return '';
@@ -30,7 +36,7 @@ export function formatAsk(verdicts, fileName) {
     return [
         `themis: ${flagged.length} of ${counted} new rules in ${fileName} may not be needed.`,
         ...blocks,
-        'Approve to add them as written; themis will remember the choice. Deny to drop the edit.',
+        TRAILER[mode],
     ].join('\n\n');
 }
 function describe(note, v) {

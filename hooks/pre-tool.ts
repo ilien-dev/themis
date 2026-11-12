@@ -7,7 +7,7 @@ import type { HookInput, ToolInput } from './lib.ts';
 import { newRules } from './gate/extract.ts';
 import { readFacts } from './gate/facts.ts';
 import { formatAsk, formatNotes } from './gate/format.ts';
-import { pendingKey, writePending } from './gate/accepted.ts';
+import { clearPending, pendingKey, writePending } from './gate/accepted.ts';
 import { ruleHash } from './gate/text.ts';
 import { contextFor, interrupts, judgeAll } from './gate/verdict.ts';
 
@@ -96,15 +96,13 @@ function checkGate(input: HookInput, file: string): void {
     if (notes) emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: notes } });
     return;
   }
-  const ask = formatAsk(verdicts, name);
   if (mode === 'ask') {
-    writePending(pendingKey(input.session_id ?? '', file, input.raw_tool_input), flagged.map((v) => ruleHash(v.rule.text)));
-    decide('ask', ask);
+    // Only an ask of the gate leaves something for PostToolUse to record.
+    writePending(pendingKey(input.session_id ?? '', file), flagged.map((v) => ruleHash(v.rule.text)));
+    decide('ask', formatAsk(verdicts, name, 'ask'));
     return;
   }
-  emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: `${ask}
-
-Not blocked. Drop or fix these rules unless the user asked for them as written.` } });
+  emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: formatAsk(verdicts, name, 'report') } });
 }
 
 await run((input) => {
@@ -118,6 +116,9 @@ await run((input) => {
   }
   if (!ti.file_path || !RULE_FILE.test(basename(ti.file_path))) return;
   const file = resolve(cwd, ti.file_path);
+  // An approval pending from an earlier call (a denied ask) must not be recorded for this one, whatever
+  // decides it: the cap, parity, the gate off or in report mode, or no new rule at all.
+  clearPending(pendingKey(input.session_id ?? '', file));
   if (checkCap(file, ti) || checkParity(file, input.tool_name, ti)) return;
   try { checkGate(input, file); } catch (e) { if (process.env['THEMIS_DEBUG']) console.error(e); } // the gate never gets in the way
 });

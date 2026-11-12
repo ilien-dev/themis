@@ -79,8 +79,8 @@ export function recordAccepted(root, verdicts, date) {
         entries.set(ruleHash(v.rule.text), v.target === undefined ? base : { ...base, target: v.target });
         added = true;
     }
-    if (added || entries.size === 0)
-        writeEntries(root, entries);
+    if (added)
+        writeEntries(root, entries); // an invalid file is repaired by the next write that adds something
 }
 export function pruneAccepted(root, liveHashes) {
     const entries = readEntries(root);
@@ -95,8 +95,10 @@ export function pruneAccepted(root, liveHashes) {
         writeEntries(root, entries);
     return removed;
 }
-export function pendingKey(sessionId, file, toolInput) {
-    return createHash('sha256').update(JSON.stringify([sessionId, file, toolInput ?? null])).digest('hex');
+// One pending approval per session and rule file. The tool input is left out: nothing guarantees that
+// PreToolUse and PostToolUse receive it identically, and pre-tool clears the key on every call anyway.
+export function pendingKey(sessionId, file) {
+    return createHash('sha256').update(JSON.stringify([sessionId, file])).digest('hex');
 }
 const pendingDir = () => join(tmpdir(), 'themis-gate');
 export function writePending(key, hashes) {
@@ -113,6 +115,12 @@ export function writePending(key, hashes) {
             catch { /* a stale file that cannot go is not worth failing for */ }
         }
         writeFileSync(join(dir, `${key}.json`), JSON.stringify(hashes));
+    }
+    catch { /* hooks fail silent */ }
+}
+export function clearPending(key) {
+    try {
+        rmSync(join(pendingDir(), `${key}.json`), { force: true });
     }
     catch { /* hooks fail silent */ }
 }

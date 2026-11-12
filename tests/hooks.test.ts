@@ -323,6 +323,20 @@ const GENERIC = '- Write clean code.\n';
 const GOTCHA = '- Run `make seed` before the first test run: the fixtures database is not created by the test command.\n';
 const ASK = { CLAUDE_PLUGIN_OPTION_GATE: 'ask' };
 const accepted = (dir: string): string => join(dir, '.claude', 'themis-accepted.json');
+const REPORT = { CLAUDE_PLUGIN_OPTION_GATE: 'report' };
+const OFF = { CLAUDE_PLUGIN_OPTION_GATE: 'off' };
+// Approvals are remembered only in a git repository, so the tests that check nothing is recorded use one:
+// outside a repository they would pass for the wrong reason.
+function repoProject(files: Record<string, string> = {}): string {
+  const dir = project(files);
+  assert.equal(git(dir, 'init', '-q').status, 0);
+  return dir;
+}
+const sessionId = (): string => `s-${Date.now()}-${Math.random()}`;
+const preIn = (dir: string, session_id: string, tool_name: string, tool_input: Fields, env: Env): HookOutput | null =>
+  hook('pre-tool.js', { session_id, tool_name, tool_input, cwd: dir }, env);
+const postIn = (dir: string, session_id: string, tool_name: string, tool_input: Fields, env: Env): HookOutput | null =>
+  hook('parity.js', { session_id, hook_event_name: 'PostToolUse', tool_name, tool_input, cwd: dir }, env);
 
 test('gate=ask: a generic rule asks, a valid gotcha passes', () => {
   const dir = project();
@@ -336,7 +350,8 @@ test('gate defaults to report: tells Claude without interrupting', () => {
   const out = write(project(), GENERIC, 'CLAUDE.md', { CLAUDE_PLUGIN_OPTION_GATE: '' }); // empty = the default
   assert.equal(decision(out), null);
   assert.match(context(out), /generic-advice/);
-  assert.match(context(out), /Not blocked/);
+  assert.match(context(out), /themis did not block this edit\. Tell the user which of these rules were flagged and why\./);
+  assert.doesNotMatch(context(out), /Approve|Deny|Drop or fix/);
 });
 
 test('gate=off is silent; ask falls back to report when no prompt can be answered', () => {
@@ -364,7 +379,7 @@ test('gate: the cap decides before the gate speaks', () => {
 });
 
 test('gate: an approved ask is remembered by the PostToolUse that follows', () => {
-  const dir = project();
+  const dir = repoProject();
   const session_id = `s-${Date.now()}-${Math.random()}`;
   const input = { file_path: 'CLAUDE.md', content: GENERIC };
   assert.equal(decision(hook('pre-tool.js', { session_id, tool_name: 'Write', tool_input: input, cwd: dir }, ASK)), 'ask');
@@ -376,7 +391,7 @@ test('gate: an approved ask is remembered by the PostToolUse that follows', () =
 });
 
 test('gate: nothing is recorded without a pending ask, nor in report mode', () => {
-  const dir = project();
+  const dir = repoProject();
   writeFileSync(join(dir, 'CLAUDE.md'), GENERIC);
   post(dir, 'Write', { file_path: 'CLAUDE.md', content: GENERIC }, ASK);
   assert.ok(!existsSync(accepted(dir)));
@@ -385,6 +400,73 @@ test('gate: nothing is recorded without a pending ask, nor in report mode', () =
   hook('pre-tool.js', { session_id, tool_name: 'Write', tool_input: input, cwd: dir }, { CLAUDE_PLUGIN_OPTION_GATE: 'report' });
   hook('parity.js', { session_id, hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: input, cwd: dir }, { CLAUDE_PLUGIN_OPTION_GATE: 'report' });
   assert.ok(!existsSync(accepted(dir)));
+});
+
+test('gate: a denied ask leaves nothing to record for the same edit in report mode', () => {
+  const dir = repoProject();
+  const s = sessionId();
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(preIn(dir, s, 'Write', input, ASK)), 'ask'); // denied: the file is not written, no PostToolUse
+  assert.equal(decision(preIn(dir, s, 'Write', input, REPORT)), null);
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC);
+  postIn(dir, s, 'Write', input, REPORT);
+  assert.ok(!existsSync(accepted(dir)));
+});
+
+test('gate: an ask followed by the same edit with the gate off records nothing', () => {
+  const dir = repoProject();
+  const s = sessionId();
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(preIn(dir, s, 'Write', input, ASK)), 'ask');
+  assert.equal(preIn(dir, s, 'Write', input, OFF), null);
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC);
+  postIn(dir, s, 'Write', input, OFF);
+  assert.ok(!existsSync(accepted(dir)));
+});
+
+test('gate: a write approved at the parity prompt is not recorded as a gate approval', () => {
+  const dir = repoProject({ 'CLAUDE.md': 'a\n', 'AGENTS.md': 'a\n' });
+  const s = sessionId();
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(preIn(dir, s, 'Write', input, ASK)), 'ask'); // the gate asks; denied
+  writeFileSync(join(dir, 'AGENTS.md'), 'changed by hand\n');
+  const out = preIn(dir, s, 'Write', input, ASK); // now parity asks, and the gate is not consulted
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /differ/);
+  assert.doesNotMatch(reason(out), /generic-advice/);
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC); // approved
+  postIn(dir, s, 'Write', input, ASK);
+  assert.ok(!existsSync(accepted(dir)));
+});
+
+test('gate: when parity denies or asks, parity decides and the gate says nothing', () => {
+  const dir = repoProject({ 'CLAUDE.md': GOTCHA, 'AGENTS.md': 'theirs\n' });
+  const edit = pre(dir, 'Edit', { file_path: 'CLAUDE.md', old_string: GOTCHA, new_string: `${GOTCHA}${GENERIC}` }, ASK);
+  assert.equal(decision(edit), 'deny');
+  assert.doesNotMatch(reason(edit), /themis: \d+ of|generic-advice/);
+  const written = write(dir, `${GOTCHA}${GENERIC}`, 'CLAUDE.md', ASK);
+  assert.equal(decision(written), 'ask');
+  assert.match(reason(written), /differ/);
+  assert.doesNotMatch(reason(written), /themis: \d+ of|generic-advice/);
+});
+
+test('gate: a MultiEdit is judged on the rules its edits add', () => {
+  const dir = repoProject({ 'CLAUDE.md': GOTCHA });
+  const out = pre(dir, 'MultiEdit', { file_path: 'CLAUDE.md', edits: [{ old_string: GOTCHA, new_string: `${GOTCHA}${GENERIC}` }] }, ASK);
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /1 of 1 new rules/);
+  assert.match(reason(out), /generic-advice/);
+});
+
+test('gate: outside a git repository an approval is not remembered', () => {
+  const dir = project();
+  const s = sessionId();
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(preIn(dir, s, 'Write', input, ASK)), 'ask');
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC);
+  postIn(dir, s, 'Write', input, ASK);
+  assert.ok(!existsSync(accepted(dir)));
+  assert.ok(!existsSync(join(dir, '.claude')));
 });
 
 test('gate: a cold pre-tool process stays fast on a real CLAUDE.md', () => {

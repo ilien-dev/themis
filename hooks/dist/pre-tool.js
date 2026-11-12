@@ -6,7 +6,7 @@ import { run, emit, option, estimateTokens, read, imports, RULE_FILE, writesRule
 import { newRules } from "./gate/extract.js";
 import { readFacts } from "./gate/facts.js";
 import { formatAsk, formatNotes } from "./gate/format.js";
-import { pendingKey, writePending } from "./gate/accepted.js";
+import { clearPending, pendingKey, writePending } from "./gate/accepted.js";
 import { ruleHash } from "./gate/text.js";
 import { contextFor, interrupts, judgeAll } from "./gate/verdict.js";
 function decide(permissionDecision, reason) {
@@ -100,15 +100,13 @@ function checkGate(input, file) {
             emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: notes } });
         return;
     }
-    const ask = formatAsk(verdicts, name);
     if (mode === 'ask') {
-        writePending(pendingKey(input.session_id ?? '', file, input.raw_tool_input), flagged.map((v) => ruleHash(v.rule.text)));
-        decide('ask', ask);
+        // Only an ask of the gate leaves something for PostToolUse to record.
+        writePending(pendingKey(input.session_id ?? '', file), flagged.map((v) => ruleHash(v.rule.text)));
+        decide('ask', formatAsk(verdicts, name, 'ask'));
         return;
     }
-    emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: `${ask}
-
-Not blocked. Drop or fix these rules unless the user asked for them as written.` } });
+    emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: formatAsk(verdicts, name, 'report') } });
 }
 await run((input) => {
     const ti = input.tool_input;
@@ -122,6 +120,9 @@ await run((input) => {
     if (!ti.file_path || !RULE_FILE.test(basename(ti.file_path)))
         return;
     const file = resolve(cwd, ti.file_path);
+    // An approval pending from an earlier call (a denied ask) must not be recorded for this one, whatever
+    // decides it: the cap, parity, the gate off or in report mode, or no new rule at all.
+    clearPending(pendingKey(input.session_id ?? '', file));
     if (checkCap(file, ti) || checkParity(file, input.tool_name, ti))
         return;
     try {

@@ -11,11 +11,15 @@ import { readFacts } from "./gate/facts.js";
 import { ruleHash } from "./gate/text.js";
 import { contextFor, judgeAll } from "./gate/verdict.js";
 // The user approved an edit that the gate asked about: remember those rules so they are not asked again.
+// Only the pending rules that are in the file now count, and only in a repository: outside one there is
+// no project to keep `.claude/themis-accepted.json` in.
 function recordApproved(input, file) {
-    const hashes = takePending(pendingKey(input.session_id ?? '', file, input.raw_tool_input));
+    const hashes = takePending(pendingKey(input.session_id ?? '', file));
     if (hashes === null)
         return;
     const facts = readFacts(file);
+    if (!facts.inRepo)
+        return;
     const verdicts = judgeAll(parseRules(read(file) ?? ''), facts, contextFor(facts)).filter((v) => hashes.includes(ruleHash(v.rule.text)));
     recordAccepted(facts.root, verdicts, new Date().toISOString().slice(0, 10));
 }

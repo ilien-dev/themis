@@ -95,13 +95,21 @@ test('pruneAccepted on a missing file returns 0 and creates nothing', () => {
 });
 
 test('takePending returns the hashes once and null the second time', () => {
-  const key = pendingKey('s1', '/p/CLAUDE.md', { content: 'x' });
+  // One pending approval per session and rule file: the key does not depend on the tool input.
+  const key = pendingKey('s1', '/p/CLAUDE.md');
   assert.match(key, /^[0-9a-f]{64}$/);
-  assert.notEqual(key, pendingKey('s2', '/p/CLAUDE.md', { content: 'x' }));
-  assert.notEqual(key, pendingKey('s1', '/p/CLAUDE.md', { content: 'y' }));
-  assert.equal(key, pendingKey('s1', '/p/CLAUDE.md', { content: 'x' }));
+  assert.notEqual(key, pendingKey('s2', '/p/CLAUDE.md'));
+  assert.notEqual(key, pendingKey('s1', '/p/AGENTS.md'));
+  assert.equal(key, pendingKey('s1', '/p/CLAUDE.md'));
   writePending(key, ['aaaa', 'bbbb']);
   assert.deepEqual(takePending(key), ['aaaa', 'bbbb']);
   assert.equal(takePending(key), null);
   assert.equal(existsSync(join(tmpdir(), 'themis-gate', `${key}.json`)), false);
+});
+
+test('recordAccepted given only keep verdicts creates no file', () => {
+  const root = tmp();
+  recordAccepted(root, [keep('- Run `npm test` before pushing')], '2026-11-12');
+  assert.equal(existsSync(join(root, '.claude')), false);
+  rmSync(root, { recursive: true, force: true });
 });

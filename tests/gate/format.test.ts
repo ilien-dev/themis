@@ -13,7 +13,7 @@ const MOVE: Verdict = {
 };
 
 test('formatAsk names each interrupted rule with its verdict, code, question and evidence', () => {
-  assert.equal(formatAsk([CUT, keep('- Amounts are cents.'), MOVE], 'CLAUDE.md'), [
+  assert.equal(formatAsk([CUT, keep('- Amounts are cents.'), MOVE], 'CLAUDE.md', 'ask'), [
     'themis: 2 of 3 new rules in CLAUDE.md may not be needed.',
     '',
     '  "- Write clean code."',
@@ -26,7 +26,15 @@ test('formatAsk names each interrupted rule with its verdict, code, question and
     '',
     'Approve to add them as written; themis will remember the choice. Deny to drop the edit.',
   ].join('\n'));
-  assert.equal(formatAsk([keep('- Amounts are cents.')], 'CLAUDE.md'), '');
+  assert.equal(formatAsk([keep('- Amounts are cents.')], 'CLAUDE.md', 'ask'), '');
+});
+
+test('in report mode the trailer tells Claude to tell the user, not to drop rules', () => {
+  const out = formatAsk([CUT, MOVE], 'CLAUDE.md', 'report');
+  assert.ok(out.startsWith('themis: 2 of 2 new rules in CLAUDE.md may not be needed.'));
+  assert.ok(out.endsWith('\n\nthemis did not block this edit. Tell the user which of these rules were flagged and why. ' +
+    'Repair a `fix` or `rewrite` yourself; do not remove or move a rule without telling the user.'));
+  assert.doesNotMatch(out, /Approve|Deny|remember/);
 });
 
 test('a snippet is the first line, at most 100 characters', () => {
@@ -92,7 +100,7 @@ test('metrics: a gap is not a rule to keep, and closing one is a correct interru
 
 test('formatAsk counts headings among the new rules only when one is interrupted', () => {
   const heading = keep('# Notes', [], 'heading');
-  assert.match(formatAsk([heading, CUT, keep('- Amounts are cents.')], 'CLAUDE.md'), /^themis: 1 of 2 new rules in CLAUDE\.md/);
+  assert.match(formatAsk([heading, CUT, keep('- Amounts are cents.')], 'CLAUDE.md', 'ask'), /^themis: 1 of 2 new rules in CLAUDE\.md/);
   const title: Verdict = { rule: rule('# Ledger', 'heading'), verdict: 'cut', code: 'inferable-title', question: 1, evidence: 'package.json: name', notes: [] };
-  assert.match(formatAsk([title, heading, CUT], 'CLAUDE.md'), /^themis: 2 of 2 new rules in CLAUDE\.md/);
+  assert.match(formatAsk([title, heading, CUT], 'CLAUDE.md', 'ask'), /^themis: 2 of 2 new rules in CLAUDE\.md/);
 });

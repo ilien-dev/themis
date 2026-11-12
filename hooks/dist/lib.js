@@ -19,7 +19,6 @@ export function parseInput(raw) {
         session_id: filled(input['session_id']),
         permission_mode: filled(input['permission_mode']),
         agent_id: filled(input['agent_id']),
-        raw_tool_input: input['tool_input'],
         tool_input: {
             ...editInput(ti),
             file_path: filled(ti['file_path']),
