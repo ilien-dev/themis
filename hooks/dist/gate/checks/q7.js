@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { read } from "../../lib.js";
 import { citedPaths, citedScripts, spans } from "../text.js";
-// Question 7: does the rule shout instead of explain? What it points at that is gone becomes a note.
+// Question 7: does the rule shout instead of explain? What it points at that is gone is a note, not an answer.
 const BUILTIN_SCRIPTS = new Set(['install', 'ci', 'test', 'start']); // npm brings these
 // Package manager subcommands that are not scripts (the extraction already drops the npm ones).
 export const PM_COMMANDS = new Set([
@@ -123,12 +123,10 @@ export function unresolvedReference(rule, facts) {
     }
     return null;
 }
-export const q7 = (rule, facts) => {
+export const q7 = (rule) => {
     if (rule.kind === 'heading' || rule.kind === 'code')
         return null;
-    // A rule whose reference does not resolve is left whole, its emphasis too: the note asks for a look.
-    if (unresolvedReference(rule, facts) !== null)
-        return null;
+    // A reference that does not resolve is a note (verdict.ts), not an answer; the emphasis is still judged.
     const outside = rule.text.replace(LIST_MARKER, '').replace(/`[^`\n]*`/g, ' ');
     const word = EMPHASIS.exec(outside)?.[1];
     if (word === undefined)

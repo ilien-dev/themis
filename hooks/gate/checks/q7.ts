@@ -6,7 +6,7 @@ import type { Facts } from '../facts.ts';
 import type { Answer, Rule } from '../types.ts';
 import type { Check } from '../verdict.ts';
 
-// Question 7: does the rule shout instead of explain? What it points at that is gone becomes a note.
+// Question 7: does the rule shout instead of explain? What it points at that is gone is a note, not an answer.
 
 const BUILTIN_SCRIPTS = new Set(['install', 'ci', 'test', 'start']); // npm brings these
 // Package manager subcommands that are not scripts (the extraction already drops the npm ones).
@@ -121,11 +121,9 @@ export function unresolvedReference(rule: Rule, facts: Facts): string | null {
   return null;
 }
 
-export const q7: Check = (rule: Rule, facts: Facts) => {
+export const q7: Check = (rule: Rule) => {
   if (rule.kind === 'heading' || rule.kind === 'code') return null;
-  // A rule whose reference does not resolve is left whole, its emphasis too: the note asks for a look.
-  if (unresolvedReference(rule, facts) !== null) return null;
-
+  // A reference that does not resolve is a note (verdict.ts), not an answer; the emphasis is still judged.
   const outside = rule.text.replace(LIST_MARKER, '').replace(/`[^`\n]*`/g, ' ');
   const word = EMPHASIS.exec(outside)?.[1];
   if (word === undefined) return null;

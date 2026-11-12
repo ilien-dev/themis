@@ -94,21 +94,25 @@ function checkGate(input, file) {
     const verdicts = judgeAll(added, facts, contextFor(facts, { paths: gatePaths() }));
     const name = basename(file);
     const flagged = verdicts.filter(interrupts);
+    const notes = formatNotes(verdicts);
     if (flagged.length === 0) {
-        const notes = formatNotes(verdicts);
         if (notes)
             emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: notes } });
         return;
     }
     if (mode === 'ask') {
         // Only an ask of the gate leaves something for PostToolUse to record. The message is built first, so
-        // nothing is left pending if building it fails and no prompt is shown.
+        // nothing is left pending if building it fails and no prompt is shown. The user reads the ask; the notes
+        // on kept rules are for Claude, which receives additionalContext with any decision but defer.
         const message = formatAsk(verdicts, name, 'ask');
         writePending(pendingKey(input.session_id ?? '', file), flagged.map((v) => ruleHash(v.rule.text)));
-        decide('ask', message);
+        emit({ hookSpecificOutput: {
+                hookEventName: 'PreToolUse', permissionDecision: 'ask', permissionDecisionReason: message, ...(notes ? { additionalContext: notes } : {}),
+            } });
         return;
     }
-    emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: formatAsk(verdicts, name, 'report') } });
+    const report = formatAsk(verdicts, name, 'report');
+    emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: notes ? `${report}\n\n${notes}` : report } });
 }
 await run((input) => {
     const ti = input.tool_input;

@@ -2,6 +2,8 @@
 // One case per rule of each snapshot's rules.md (the first <cap> when a file has more), without `expect`.
 // The defaults rebuild the first corpus: tests/gate/holdout, 60, tests/gate/holdout-unlabelled.jsonl. The second:
 //   node tests/gate/holdout/unlabel.mjs tests/gate/holdout2 40 tests/gate/holdout2-unlabelled.jsonl
+// The output is what the labellers were given. It is not stored in the repository (tests/gate/.gitignore): the
+// labelled .jsonl holds the same rules, and this script writes it again from the rebuilt snapshots.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';

@@ -27,7 +27,7 @@ What was measured about the parts that themis 2.0.0 keeps, and the rule gate add
 
 The gate (`hooks/dist/gate.js`, new in 2.2.0) judges each rule with fixed checks and no model. It was measured on two corpora it had never seen: the first for the checks of the first version, the second for the detectors added after it.
 
-The snapshots of third-party repositories that both corpora run against are not stored in this repository (see `tests/gate/.gitignore`). The rules, labels, commits and licences are stored; `collect.mjs` and `fetch-cited.mjs` in `tests/gate/holdout/` rebuild the snapshots from GitHub at the recorded commits.
+The snapshots of third-party repositories that both corpora run against are not stored in this repository (see `tests/gate/.gitignore`). The rules, labels, commits and licences are stored; `collect.mjs` and `fetch-cited.mjs` in `tests/gate/holdout/` rebuild the snapshots from GitHub at the recorded commits, with the commands in each corpus's `SOURCES.md`. Rebuilt first-corpus snapshots also contain `.gitignore` and the source files the rules cite, which the snapshots of the original blind run did not, so that run's figures may not reproduce exactly.
 
 ### First held-out corpus
 
@@ -40,6 +40,8 @@ The snapshots of third-party repositories that both corpora run against are not 
 ```
 node hooks/dist/gate.js report tests/gate/holdout.jsonl
 ```
+
+The figures below were measured at commit 9995519. At the current commit the same command prints the figures of the current checks, which are in the last table of this section.
 
 | | |
 |---|---|
@@ -101,7 +103,7 @@ A review of the blind run found checks that flagged rules carrying information, 
 
 The 95% condition is still not met: precision is 87.7%, and 65 interruptions are fewer than the 100 it requires. The default stays `report`.
 
-**This corpus is now development data.** The detectors described below were designed and reviewed on it, and one label was changed after a reviewer checked the cited file (`mateenagy__vue-formify-16`, keep to cut), so it has 908 keep labels instead of 909. Its current numbers are an upper bound, not a validation, and were taken while the source files its rules cite were only partly stored:
+**This corpus is now development data.** The detectors described below were designed and reviewed on it, and one label was changed after a reviewer checked the cited file (`mateenagy__vue-formify-16`, keep to cut), so it has 908 keep labels instead of 909. Its current numbers are an upper bound, not a validation, and were taken while the source files its rules cite were only partly stored. They do not count toward the condition for `ask` as the default, however high:
 
 | | at d176786 | after demoting dead-reference |
 |---|---|---|
@@ -124,6 +126,8 @@ This corpus measures the detectors added after the first measurement: the `/init
 node hooks/dist/gate.js report tests/gate/holdout2.jsonl
 node hooks/dist/gate.js report tests/gate/holdout2.jsonl --paths
 ```
+
+The figures below were measured at commit d176786. At the current commit the same commands print the figures after the demotion, given in the next section.
 
 | | default (`gate_paths` off) | with `--paths` |
 |---|---|---|
@@ -175,11 +179,11 @@ The nine titles are a disagreement between labellers, not clearly a fault of the
 
 **The condition for `ask` as the default is not met.** It is a precision of interruption of at least 95% on at least 100 interrupted rules; this run reached 73.7% on 99. The default of `gate` stays `report`, and `gate_paths` stays `false`.
 
-**What this means.** In report mode the gate flags about one redundant rule in five (19.5%), and about one in four of its flags (26 of 99) is wrong. The new detectors moved recall from 16% on the first blind run to 19.5% here, far from the estimated 50%. The largest family, a path with a description, could not be made safe by script and is off by default. The detectors that held up are the `/init` boilerplate, described scripts and plain stack lists. The gate's verdicts are a floor for what can go, not a full audit of a file.
+**What this means.** In report mode the gate flags about one redundant rule in five (19.5%), and about one in four of its flags (26 of 99) is wrong. Recall was 16% on the first blind run and is 19.5% here, far from the estimated 50%. Those two figures come from two corpora labelled with different instructions, so their difference is not a measured gain. The largest family, a path with a description, could not be made safe by script and is off by default. Described scripts and plain stack lists had no wrong firings, but fired only 3 and 1 times. The `/init` boilerplate (`file-filler`) was right 9 of 16 times, and every miss was a bare title, which is the disputed case. The gate's verdicts are a floor for what can go, not a full audit of a file.
 
 ### After demoting dead-reference to a note (not blind)
 
-Both blind runs found that `dead-reference` is the main source of false interruptions: 27 of its 73 firings matched the label on the first corpus, 1 of 18 on the second. So a reference that does not resolve no longer interrupts. The rule is kept with the note `unresolved-reference`, which names the path or script that was not found. **This single change was decided from the two measurements, so the numbers below are not blind.** Nothing else was changed or tuned against the second corpus.
+Both blind runs found that `dead-reference` is the main source of false interruptions: 27 of its 73 firings matched the label on the first corpus, 1 of 18 on the second. So a reference that does not resolve no longer interrupts. The rule is kept with the note `unresolved-reference`, which names the path or script that was not found. **This change was decided from the two measurements, so the numbers below are not blind.** In the same step, and also not blind, a rule with an unresolved reference is still checked for emphasis: `` IMPORTANT: see `src/missing.ts` `` is a `rewrite`, where the first version of the demotion kept it whole. That second adjustment changed no figure on this corpus. Nothing else was changed or tuned against the second corpus, apart from replacing a test e-mail address and password in one rule's text with `[redacted]`, which leaves its verdict as it was. The gate as shipped, after the demotion, has no blind measurement.
 
 | second corpus | blind, at d176786 | after the demotion |
 |---|---|---|

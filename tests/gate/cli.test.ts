@@ -130,6 +130,18 @@ test('report prints precision, false-cut rate and coverage', () => {
   assert.ok(Array.isArray((json as unknown as { staleVendor: unknown }).staleVendor));
 });
 
+test('report on a corpus whose snapshot is missing names the scripts that rebuild it', () => {
+  const corpus = `${JSON.stringify({ id: 'a', repo: 'tests/gate/holdout9/x__y', file: 'CLAUDE.md', rule: '- Write clean code.', expect: 'cut', code: 'generic-advice' })}\n`;
+  const dir = repo({ 'corpus.jsonl': corpus });
+  const r = gate(['report', join(dir, 'corpus.jsonl')]);
+  assert.equal(r.status, 2);
+  assert.equal(r.stdout, '');
+  assert.match(r.stderr, /tests\/gate\/holdout9\/x__y not found/);
+  assert.match(r.stderr, /collect\.mjs/);
+  assert.match(r.stderr, /fetch-cited\.mjs/);
+  assert.doesNotMatch(r.stderr, /usage: gate/);
+});
+
 test('unknown subcommand exits 2', () => {
   // A corpus whose case holds two rules, and one with a line that is not JSON, are wrong input too.
   const bad = repo({

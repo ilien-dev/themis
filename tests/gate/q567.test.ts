@@ -173,15 +173,19 @@ test('q7 does not flag capitals inside a span, acronyms or identifiers', () => {
 });
 
 // Two blind measurements found most unresolved references were rules to keep: q7 no longer interrupts them.
-test('q7 never answers a rule with an unresolved reference, not even for its emphasis', () => {
-  for (const t of ['See `src/missing.js`.', '- Run unit tests: `npm run test:unit`', 'IMPORTANT: see `src/missing.js`.']) {
-    assert.equal(ask(q7, t), null, t);
-  }
+test('q7 never answers a rule for its unresolved reference, but still rewrites its emphasis', () => {
+  for (const t of ['See `src/missing.js`.', '- Run unit tests: `npm run test:unit`']) assert.equal(ask(q7, t), null, t);
+  const a = ask(q7, '- IMPORTANT: see `src/missing.ts`');
+  assert.equal(a?.verdict, 'rewrite');
+  assert.equal(a.code, 'emphasis');
+  const v = judge(first('- IMPORTANT: see `src/missing.ts`'), facts, ctx);
+  assert.equal(v.verdict, 'rewrite');
+  assert.equal(v.code, 'emphasis');
 });
 
 test('a rule with an unresolved reference is kept with a note that carries the reference', () => {
   for (const [t, evidence] of [['- See `src/missing.js`.', '`src/missing.js` not found'],
-    ['- Run unit tests: `npm run test:unit`', 'scripts.test:unit not in package.json'], ['- IMPORTANT: see `src/missing.js`.', '`src/missing.js` not found']]) {
+    ['- Run unit tests: `npm run test:unit`', 'scripts.test:unit not in package.json']]) {
     const v = judge(first(t ?? ''), facts, ctx);
     assert.equal(v.verdict, 'keep', t);
     assert.equal(v.code, null);

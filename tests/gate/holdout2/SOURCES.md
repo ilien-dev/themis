@@ -1,6 +1,16 @@
 # Second held-out corpus sources
 
-Snapshots of public Node/TypeScript/JavaScript repositories, taken at the commit shown, used to validate the gate blind (nobody read the rules, the checks or the tables before collecting). `rules.md` in each directory is the repository's root rule file stored under another name; the text belongs to its authors under the licence listed. The snapshot directories are not versioned (see `../.gitignore`): rebuild them with `node tests/gate/holdout/collect.mjs tests/gate/holdout2/sources.json --extras`, which reads everything from GitHub at the exact commits in `sources.json`. `../holdout2-unlabelled.jsonl` has one case per rule (`node tests/gate/holdout/unlabel.mjs tests/gate/holdout2 40 tests/gate/holdout2-unlabelled.jsonl`). The labels are in `../holdout2.jsonl`.
+Snapshots of public Node/TypeScript/JavaScript repositories, taken at the commit shown, used to validate the gate blind (nobody read the rules, the checks or the tables before collecting). The repository holds only `sources.json`, this file and the labelled cases in `../holdout2.jsonl`; the scripts are in `../holdout/`, and the snapshots of the third-party repositories are not stored (see `../.gitignore`). A snapshot directory, once rebuilt, is named `<owner>__<repo>` and holds `rules.md` (the repository's root rule file under another name), `files.txt` (its file listing) and the files the gate reads. The rule text belongs to its authors under the licence listed. In one rule (`pawcoding__astro-loader-pocketbase-17`) a test e-mail address and password from an upstream fixture are replaced by `[redacted]`.
+
+To rebuild the snapshots (it needs the `gh` CLI, signed in), from the repository root:
+
+```
+node tests/gate/holdout/collect.mjs tests/gate/holdout2/sources.json --extras
+node tests/gate/holdout/fetch-cited.mjs tests/gate/holdout2.jsonl tests/gate/holdout2
+node hooks/dist/gate.js report tests/gate/holdout2.jsonl
+```
+
+`collect.mjs` reads everything from GitHub at the exact commits in `sources.json`. `node tests/gate/holdout/unlabel.mjs tests/gate/holdout2 40 tests/gate/holdout2-unlabelled.jsonl` writes the cases without labels, as the labellers got them (not stored).
 
 Selection was fixed before looking at any rule, with the same criteria as the first corpus: primary language TypeScript or JavaScript, a root `package.json`, licence MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause or ISC (as GitHub identifies it), and a root `AGENTS.md` or `CLAUDE.md` of at least 10 rules by the gate's own parser. Candidates were taken in the order GitHub code search returned them (`filename:AGENTS.md path:/ language:markdown` first, screened until 22 repositories were taken so that at least 15 use AGENTS.md; then `filename:CLAUDE.md path:/ language:markdown` until there were at least 40 repositories and about 1,000 rules). A candidate found by both searches was taken once, with the file of the search that found it first, and noted below when it has both files. A file of more than 40 rules contributes its first 40. Forks, repositories whose licence is not one of the five, the 40 repositories of the first corpus and the reference repositories (instrlint, ctxlint) are skipped. Besides the files the first corpus stored, each snapshot has `.gitignore`, up to 30 `package.json` files of the tree at their real paths, and the licence file.
 

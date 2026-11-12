@@ -2,6 +2,8 @@
 
 Fecha: 2026-11-12 · Estado: implementado (fase 1) · Versión objetivo: themis 2.2.0 (fase 1)
 
+Nota posterior: `CORREGIR` ya no interrumpe. Una referencia que no se resuelve queda en `keep` con la nota `unresolved-reference`; ver «Resultado» en `2026-11-13-filtro-de-reglas-cobertura-design.md`.
+
 Los veredictos y notas se nombran aquí en español. En el código y en los mensajes del plugin van en inglés (`keep`, `cut`, `move`, `rewrite`, `fix`, `conflict`); la tabla de equivalencias está en el plan de la fase 1.
 
 Investigación de respaldo: un informe («Filtro determinista de reglas CLAUDE.md») y sus notas de investigación, que se guardan fuera del repositorio y no forman parte de él.

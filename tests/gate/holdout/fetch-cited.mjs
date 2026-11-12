@@ -1,6 +1,7 @@
-// Stores the source files that the rules cite: node tests/gate/holdout/fetch-cited.mjs <unlabelled.jsonl> <corpus directory>
-//   node tests/gate/holdout/fetch-cited.mjs tests/gate/holdout-unlabelled.jsonl tests/gate/holdout
-//   node tests/gate/holdout/fetch-cited.mjs tests/gate/holdout2-unlabelled.jsonl tests/gate/holdout2
+// Stores the source files that the rules cite: node tests/gate/holdout/fetch-cited.mjs <cases.jsonl> <corpus directory>
+// The cases are the labelled corpus (or the unlabelled one unlabel.mjs writes); only `repo` and `rule` are read.
+//   node tests/gate/holdout/fetch-cited.mjs tests/gate/holdout.jsonl tests/gate/holdout
+//   node tests/gate/holdout/fetch-cited.mjs tests/gate/holdout2.jsonl tests/gate/holdout2
 // Every backticked span, bold span and parenthesised token of a rule that looks like a path is matched against the
 // snapshot's files.txt (exact path, or the one path ending with /<token>, the shortest when several do). Each hit is
 // downloaded once, at the commit of sources.json, to its real relative path in the snapshot, when it is text, at most
@@ -11,7 +12,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
 const [jsonl, dir] = process.argv.slice(2).map((p) => resolve(p));
-if (jsonl === undefined || dir === undefined) throw new Error('usage: fetch-cited.mjs <unlabelled.jsonl> <corpus directory>');
+if (jsonl === undefined || dir === undefined) throw new Error('usage: fetch-cited.mjs <cases.jsonl> <corpus directory>');
 const MAX_BYTES = 64 * 1024;
 const MAX_FILES = 80;
 const BINARY = /\.(?:png|jpe?g|gif|webp|ico|bmp|svgz|pdf|zip|gz|tgz|tar|bz2|xz|7z|rar|woff2?|ttf|otf|eot|mp[34]|wav|ogg|webm|mov|avi|wasm|so|dll|dylib|exe|bin|class|jar|sqlite3?|db|psd|ai|heic|node)$/i;

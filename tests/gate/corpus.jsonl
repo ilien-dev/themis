@@ -270,7 +270,7 @@
 {"id":"api-46","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Seed the database with `npm run seed` first.","expect":"keep","note":"unresolved-reference"}
 {"id":"facturas-19","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- La configuración está en `src/facturas/config.py`.","expect":"keep","note":"unresolved-reference"}
 {"id":"mono-11","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Lint this package with `pnpm run lint`.","expect":"keep","gap":"packages/web/package.json has no lint script, but the gate does not report a missing script in a repository with more than one package.json."}
-{"id":"shop-79","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- IMPORTANT: see `src/missing.ts`.","expect":"keep","note":"unresolved-reference"}
+{"id":"shop-79","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- IMPORTANT: see `src/missing.ts`.","expect":"rewrite","code":"emphasis"}
 {"id":"mono-12","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Build this package with `pnpm build`.","expect":"keep","gap":"packages/web/package.json has a build script, so the rule only names it; the gate keeps it because \"package\" is not a word of the build job."}
 {"id":"mono-13","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Shared types are in `src/index.ts`.","expect":"keep"}
 {"id":"shop-80","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- The bundle is written to `dist/assets/`.","expect":"keep"}
@@ -652,7 +652,7 @@
 {"id":"q567-54","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Read MUST_HAVE from the config.","expect":"keep"}
 {"id":"q567-55","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never use floats for money.","expect":"keep"}
 {"id":"q567-56","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Importantly, keep it short.","expect":"keep"}
-{"id":"q567-57","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"IMPORTANT: see `src/missing.js`.","expect":"keep","note":"unresolved-reference"}
+{"id":"q567-57","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"IMPORTANT: see `src/missing.js`.","expect":"rewrite","code":"emphasis"}
 {"id":"q567-58","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never deploy on Fridays unless the on-call approves.","expect":"keep"}
 {"id":"q567-59","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Retry at most 3 times before failing.","expect":"keep"}
 {"id":"q567-60","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"When the cache is cold, warm it with `src/money.js` first.","expect":"keep"}

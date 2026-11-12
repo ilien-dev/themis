@@ -1,6 +1,16 @@
 # Held-out corpus sources
 
-Snapshots of public Node/TypeScript/JavaScript repositories, taken at the commit shown. `rules.md` in each directory is the repository's root rule file, stored under another name; the text belongs to its authors under the licence listed. Collected by `collect.mjs` from `sources.json`; `../holdout-unlabelled.jsonl` has one case per rule (`unlabel.mjs` writes it).
+Public Node/TypeScript/JavaScript repositories, taken at the commit shown. The repository holds only `sources.json`, the scripts in this directory, this file and the labelled cases in `../holdout.jsonl`; the snapshots of the third-party repositories are not stored (see `../.gitignore`). A snapshot directory, once rebuilt, is named `<owner>__<repo>` and holds `rules.md` (the repository's root rule file under another name), `files.txt` (its file listing) and the files the gate reads. The rule text belongs to its authors under the licence listed.
+
+To rebuild the snapshots (it needs the `gh` CLI, signed in), from the repository root:
+
+```
+node tests/gate/holdout/collect.mjs
+node tests/gate/holdout/fetch-cited.mjs tests/gate/holdout.jsonl tests/gate/holdout
+node hooks/dist/gate.js report tests/gate/holdout.jsonl
+```
+
+`collect.mjs` reads everything from GitHub at the exact commits in `sources.json`. A rebuilt snapshot also has `.gitignore` and the source files the rules cite, which the snapshots of the original blind run did not have, so that run's figures may not reproduce exactly. `node tests/gate/holdout/unlabel.mjs` writes the cases without labels, as the labellers got them, to `../holdout-unlabelled.jsonl` (not stored).
 
 Selection was fixed before looking at any rule: primary language TypeScript or JavaScript, a root `package.json`, licence MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause or ISC, and a root `CLAUDE.md` (or `AGENTS.md`) of at least 10 rules. Candidates were taken in the order GitHub code search returned them (root `CLAUDE.md` hits first); a file of more than 60 rules contributes its first 60. Rules are the units of the gate's own parser (`parseRules`), headings and code blocks included. Forks, repositories whose licence GitHub does not identify (`NOASSERTION`, `none`) and the excluded reference repositories are skipped.
 

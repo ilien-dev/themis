@@ -363,6 +363,23 @@ test('gate=ask: an unresolved reference does not ask; Claude gets a note naming 
   assert.doesNotMatch(context(out), /may not be needed/);
 });
 
+// A flagged rule and a kept rule with a note in one edit: the note must reach Claude too.
+const MIXED = '- Write clean code.\n- See `docs/missing.md` for the layers.\n';
+const LEDGER_DOCS = { 'package.json': '{"name":"ledger"}', 'docs/guide.md': '' };
+test('gate=report: the notes of kept rules go with the flags of an edit', () => {
+  const out = write(repoProject(LEDGER_DOCS), MIXED, 'CLAUDE.md', REPORT);
+  assert.equal(decision(out), null);
+  assert.match(context(out), /generic-advice/);
+  assert.match(context(out), /themis did not block this edit[^\n]*\n\nthemis: notes on rules kept as written:\n.*unresolved-reference \(`docs\/missing\.md` not found\)/s);
+});
+test('gate=ask: the notes of kept rules go to Claude beside the ask', () => {
+  const out = write(repoProject(LEDGER_DOCS), MIXED, 'CLAUDE.md', ASK);
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /generic-advice/);
+  assert.doesNotMatch(reason(out), /unresolved-reference/);
+  assert.match(context(out), /unresolved-reference \(`docs\/missing\.md` not found\)/);
+});
+
 test('gate_paths turns on the described-path check; it is off by default', () => {
   const files = { 'package.json': '{"name":"gpu"}', 'lib/nvidia.js': '// Executes nvidia-smi and parses the CSV output.\n' };
   const rule = '- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output\n';

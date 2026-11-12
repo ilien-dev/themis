@@ -18,6 +18,9 @@ import { contextFor, judgeAll } from "./gate/verdict.js";
 const USAGE = 'usage: gate check [--rules <path>] [--file <path>] [--json] [--paths] | gate audit <file> [--json] [--prune] [--paths] | gate report <corpus.jsonl> [--json] [--paths]';
 class UsageError extends Error {
 }
+// Valid usage on input that is not there: the message says how to get it, and the usage line is left out.
+class InputError extends Error {
+}
 // `valued` are the options that take a path.
 function parseArgs(argv, allowed, valued = []) {
     const positional = [];
@@ -146,8 +149,11 @@ function report(argv) {
     }
     const base = corpusBase(corpus);
     const missing = [...new Set(cases.map((c) => c.repo))].find((r) => !existsSync(join(base, r)));
-    if (missing !== undefined)
-        throw new UsageError(`repo ${missing} not found under ${base}`);
+    if (missing !== undefined) {
+        // The snapshots of the held-out corpora are not stored in the repository.
+        throw new InputError(`repo ${missing} not found under ${base}. Rebuild the snapshots with tests/gate/holdout/collect.mjs ` +
+            'and then tests/gate/holdout/fetch-cited.mjs, as the SOURCES.md next to the corpus says.');
+    }
     const runner = new CorpusRunner(base, { paths: args.flags.has('--paths') });
     try {
         const results = cases.map((c) => ({ c, got: runner.run(c) }));
@@ -193,6 +199,10 @@ async function main(argv) {
         return 0;
     }
     catch (e) {
+        if (e instanceof InputError) {
+            process.stderr.write(`gate: ${e.message}\n`);
+            return 2;
+        }
         if (!(e instanceof UsageError))
             throw e;
         process.stderr.write(`gate: ${e.message}\n${USAGE}\n`);
