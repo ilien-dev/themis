@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { coverage, formatAsk, formatAudit, formatNotes, metrics, snippet } from '../../hooks/gate/format.ts';
+import { coverage, firstLine, formatAsk, formatAudit, formatNotes, metrics, snippet } from '../../hooks/gate/format.ts';
 import type { Rule, Verdict } from '../../hooks/gate/types.ts';
 
 const rule = (text: string, kind: Rule['kind'] = 'item', line = 1): Rule => ({ text, kind, line, lines: text.split('\n').length });
@@ -33,6 +33,8 @@ test('a snippet is the first line, at most 100 characters', () => {
   assert.equal(snippet('first line\nsecond'), 'first line');
   assert.equal(snippet('```text\nledger/\n├── src/\n```'), 'ledger/');
   assert.equal(snippet('```\n```'), '```');
+  assert.equal(firstLine('```text\nledger/\n```'), '```text'); // the ask shows the first line as written
+  assert.equal(firstLine(`- ${'x'.repeat(200)}`).length, 100);
   const long = snippet(`- ${'x'.repeat(200)}`);
   assert.equal(long.length, 100);
   assert.ok(long.endsWith('…'));

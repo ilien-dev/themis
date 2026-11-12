@@ -6,12 +6,14 @@ const NOTE_TEXT = {
     'no-anchor': 'nothing in it can be checked',
     'absolute-no-reason': 'an absolute without a reason',
 };
-// The first line of a rule, at most 100 characters. A bare fence (```) says nothing, so a code block
-// shows its first line of content.
+const clip = (line) => (line.length <= MAX_SNIPPET ? line : `${line.slice(0, MAX_SNIPPET - 1)}…`);
+// The first line of a rule, at most 100 characters: what the ask shows.
+export const firstLine = (text) => clip((text.split('\n')[0] ?? '').trim());
+// Like firstLine, but a bare fence (```) says nothing, so a code block shows its first line of content.
+// For the check and audit listings.
 export function snippet(text) {
     const lines = text.split('\n').map((l) => l.trim());
-    const line = lines.find((l) => l !== '' && !/^(?:`{3,}|~{3,})[\w-]*$/.test(l)) ?? lines[0] ?? '';
-    return line.length <= MAX_SNIPPET ? line : `${line.slice(0, MAX_SNIPPET - 1)}…`;
+    return clip(lines.find((l) => l !== '' && !/^(?:`{3,}|~{3,})[\w-]*$/.test(l)) ?? lines[0] ?? '');
 }
 const withTarget = (v) => (v.target === undefined ? v.evidence : `${v.evidence} → ${v.target}`);
 export function formatAsk(verdicts, fileName) {
@@ -19,7 +21,7 @@ export function formatAsk(verdicts, fileName) {
     if (flagged.length === 0)
         return '';
     const blocks = flagged.map((v) => [
-        `  "${snippet(v.rule.text)}"`,
+        `  "${firstLine(v.rule.text)}"`,
         `  ${v.verdict} · ${v.code ?? ''} · question ${v.question ?? ''}`,
         `  ${withTarget(v)}`,
     ].join('\n'));

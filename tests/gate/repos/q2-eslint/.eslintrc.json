@@ -1,0 +1,1 @@
+{"rules":{"quotes":["error","single"],"semi":"error","no-var":"error","prefer-const":2,"eqeqeq":["error","always"],"no-console":"error"}}

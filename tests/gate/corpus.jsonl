@@ -368,3 +368,304 @@
 {"id":"gocli-15","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- See `cmd/tool/flags.go` for the flags.","expect":"fix","code":"dead-reference"}
 {"id":"shop-109","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `git push --force` on main; the history is shared.","expect":"keep"}
 {"id":"shop-110","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never call `Math.round` on prices.","expect":"keep"}
+{"id":"q1-react-01","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"We use React.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-vitest-01","repo":"tests/gate/repos/q1-vitest","file":"CLAUDE.md","rule":"This project is built with Vitest.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-react-02","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Usamos React.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-react-03","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Hecho con React.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-react-04","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Written in TypeScript.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-mixed-01","repo":"tests/gate/repos/q1-mixed","file":"CLAUDE.md","rule":"Written in JavaScript.","expect":"keep"}
+{"id":"q1-npm-01","repo":"tests/gate/repos/q1-npm","file":"CLAUDE.md","rule":"Use npm.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-pnpm-01","repo":"tests/gate/repos/q1-pnpm","file":"CLAUDE.md","rule":"Use pnpm, not npm.","expect":"keep"}
+{"id":"q1-pnpm-02","repo":"tests/gate/repos/q1-pnpm","file":"CLAUDE.md","rule":"Use pnpm.","expect":"keep"}
+{"id":"q1-two-runners-01","repo":"tests/gate/repos/q1-two-runners","file":"CLAUDE.md","rule":"We use Jest.","expect":"keep"}
+{"id":"q1-express-01","repo":"tests/gate/repos/q1-express","file":"CLAUDE.md","rule":"Don't use Express for new routes.","expect":"keep"}
+{"id":"q1-react-05","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"No usamos React.","expect":"keep"}
+{"id":"q1-react-06","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"We use Vue.","expect":"keep"}
+{"id":"q1-react-query-01","repo":"tests/gate/repos/q1-react-query","file":"CLAUDE.md","rule":"Use React Query for all server state, never useEffect fetches.","expect":"keep"}
+{"id":"q1-react-07","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"We use React for every screen of the whole product.","expect":"keep","gap":"every screen is React anyway; the words after the name are filler, but more than connectives remain so the tech check abstains"}
+{"id":"q1-lint-01","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Lint: `npm run lint`","expect":"cut","code":"inferable-script"}
+{"id":"q1-lint-02","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Tests: `npm test`","expect":"cut","code":"inferable-script"}
+{"id":"q1-lint-03","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Run a single test: `npm test -- money`","expect":"keep"}
+{"id":"q1-lint-04","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Generate schema: `npm run gen`","expect":"keep"}
+{"id":"q1-lint-05","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Build: `npm run build`","expect":"fix","code":"dead-reference"}
+{"id":"q1-lint-06","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Lint, then test: `npm run lint` and `npm test`","expect":"keep"}
+{"id":"q1-lint-07","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Always run the linter before you push to the shared branch: `npm run lint`","expect":"keep"}
+{"id":"q1-ledger-01","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"# Ledger - Project Instructions for Claude","expect":"cut","code":"inferable-title"}
+{"id":"q1-ledger-02","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger instructions for Claude","expect":"cut","code":"inferable-title"}
+{"id":"q1-ledger-03","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger instructions for Claude","expect":"keep","line":3,"gap":"a sentence that only names the package; only the first paragraph of a file is read as a title"}
+{"id":"q1-readme-title-01","repo":"tests/gate/repos/q1-readme-title","file":"CLAUDE.md","rule":"# The Ledger Bookkeeping Service For Freelancers","expect":"cut","code":"inferable-title"}
+{"id":"q1-ledger-04","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"# Testing rules","expect":"keep"}
+{"id":"q1-paths-01","repo":"tests/gate/repos/q1-paths","file":"CLAUDE.md","rule":"1. `src/` - application code\n2. `tests/` - the tests\n3. `docs/` - documentation","expect":"cut","code":"inferable-tree"}
+{"id":"q1-paths-02","repo":"tests/gate/repos/q1-paths","file":"CLAUDE.md","rule":"1. `src/` - application code\n2. `tests/` - the tests\n3. `nope/` - nothing","expect":"keep"}
+{"id":"q1-paths-03","repo":"tests/gate/repos/q1-paths","file":"CLAUDE.md","rule":"1. `src/` - use it\n2. `tests/` - run them\n3. `docs/` - keep it updated","expect":"keep"}
+{"id":"q1-overview-01","repo":"tests/gate/repos/q1-overview","file":"CLAUDE.md","rule":"Ledger is a small bookkeeping service for freelancers. It tracks invoices, payments and expenses and produces monthly reports.","expect":"cut","code":"inferable-overview"}
+{"id":"q1-overview-02","repo":"tests/gate/repos/q1-overview","file":"CLAUDE.md","rule":"Ledger is a small bookkeeping service for freelancers. It tracks invoices, payments and expenses and produces monthly `reports`.","expect":"keep"}
+{"id":"q1-overview-03","repo":"tests/gate/repos/q1-overview","file":"CLAUDE.md","rule":"Ledger is a small bookkeeping service for freelancers","expect":"keep","gap":"the first sentence of the README; the overview check needs two sentences"}
+{"id":"q1-wide-01","repo":"tests/gate/repos/q1-wide","file":"CLAUDE.md","rule":"Use TypeScript strict mode.","expect":"keep"}
+{"id":"q1-wide-02","repo":"tests/gate/repos/q1-wide","file":"CLAUDE.md","rule":"Use Prettier with tabs.","expect":"keep"}
+{"id":"q1-wide-03","repo":"tests/gate/repos/q1-wide","file":"CLAUDE.md","rule":"Use Node 20.","expect":"keep"}
+{"id":"q1-wide-04","repo":"tests/gate/repos/q1-wide","file":"CLAUDE.md","rule":"Use React with Zod.","expect":"keep"}
+{"id":"q1-wide-05","repo":"tests/gate/repos/q1-wide","file":"CLAUDE.md","rule":"Use Vite and Zustand.","expect":"keep"}
+{"id":"q1-wide-06","repo":"tests/gate/repos/q1-wide","file":"CLAUDE.md","rule":"Use comments to express intent.","expect":"keep"}
+{"id":"q1-react-08","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Use react.","expect":"keep","gap":"says what \"Use React.\" says, which is cut; a lowercase ordinary word counts as a mention only inside a code span"}
+{"id":"q1-react-09","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Use React.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-react-10","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Use `react`.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-react-11","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Use React for the project.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-react-12","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Este proyecto usa React.","expect":"cut","code":"inferable-tech"}
+{"id":"q1-migrations-01","repo":"tests/gate/repos/q1-migrations","file":"CLAUDE.md","rule":"1. `src/` - code\n2. `docs/` - notes\n3. `migrations/` - generated, do not edit","expect":"keep"}
+{"id":"q1-migrations-02","repo":"tests/gate/repos/q1-migrations","file":"CLAUDE.md","rule":"1. `src/` - code\n2. `docs/` - notes\n3. `migrations/` - never touched by hand","expect":"keep"}
+{"id":"q1-ledger-05","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger must never use floats for money.","expect":"keep"}
+{"id":"q1-ledger-06","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"Ledger stores every amount as integer cents in the database layer always.","expect":"keep"}
+{"id":"q1-lint-08","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"Run `npm test` before every commit.","expect":"keep"}
+{"id":"q1-lint-09","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"Never commit without running `npm test`.","expect":"keep"}
+{"id":"q1-lint-10","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Tests, when touching money: `npm test`","expect":"keep"}
+{"id":"q1-tree-01","repo":"tests/gate/repos/q1-tree","file":"CLAUDE.md","rule":"```\napp/\n├── planned/\n└── future.js\n```","expect":"keep"}
+{"id":"q1-tree-02","repo":"tests/gate/repos/q1-tree","file":"CLAUDE.md","rule":"```\napp/\n├── src/\n└── tests/ # never edit by hand\n```","expect":"keep"}
+{"id":"q1-tree-03","repo":"tests/gate/repos/q1-tree","file":"CLAUDE.md","rule":"```\napp/\n├── src/\n└── tests/\n```","expect":"cut","code":"inferable-tree"}
+{"id":"q1-react-13","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Use React without Redux.","expect":"keep"}
+{"id":"q1-react-14","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Use React unless told otherwise.","expect":"keep"}
+{"id":"q1-react-15","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Only use React.","expect":"keep"}
+{"id":"q1-react-16","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Dont use React.","expect":"keep"}
+{"id":"q1-react-17","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Usa React salvo en el admin.","expect":"keep"}
+{"id":"q1-react-18","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"Usa solo React.","expect":"keep"}
+{"id":"q2-prettier-01","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use semicolons.","expect":"cut","code":"enforced-config"}
+{"id":"q2-prettier-none-01","repo":"tests/gate/repos/q2-prettier-none","file":"CLAUDE.md","rule":"Use semicolons.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-prettier-unrun-01","repo":"tests/gate/repos/q2-prettier-unrun","file":"CLAUDE.md","rule":"Use semicolons.","expect":"keep"}
+{"id":"q2-prettier-code-01","repo":"tests/gate/repos/q2-prettier-code","file":"CLAUDE.md","rule":"Use semicolons.","expect":"keep"}
+{"id":"q2-prettier-code-only-01","repo":"tests/gate/repos/q2-prettier-code-only","file":"CLAUDE.md","rule":"Use semicolons.","expect":"keep"}
+{"id":"q2-prettier-unset-01","repo":"tests/gate/repos/q2-prettier-unset","file":"CLAUDE.md","rule":"Use semicolons.","expect":"keep"}
+{"id":"q2-prettier-02","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Usa comillas simples.","expect":"cut","code":"enforced-config"}
+{"id":"q2-prettier-03","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Usa punto y coma.","expect":"cut","code":"enforced-config"}
+{"id":"q2-prettier-none-02","repo":"tests/gate/repos/q2-prettier-none","file":"CLAUDE.md","rule":"Sin punto y coma.","expect":"cut","code":"enforced-config"}
+{"id":"q2-prettier-04","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Usa comillas dobles.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-prettier-none-03","repo":"tests/gate/repos/q2-prettier-none","file":"CLAUDE.md","rule":"Do not use semicolons.","expect":"cut","code":"enforced-config"}
+{"id":"q2-prettier-05","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Avoid semicolons.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-prettier-none-04","repo":"tests/gate/repos/q2-prettier-none","file":"CLAUDE.md","rule":"No trailing commas.","expect":"cut","code":"enforced-config"}
+{"id":"q2-pkg-husky-01","repo":"tests/gate/repos/q2-pkg-husky","file":"CLAUDE.md","rule":"Usa comillas simples.","expect":"cut","code":"enforced-config"}
+{"id":"q2-lefthook-01","repo":"tests/gate/repos/q2-lefthook","file":"CLAUDE.md","rule":"Use semicolons.","expect":"cut","code":"enforced-config"}
+{"id":"q2-pre-commit-01","repo":"tests/gate/repos/q2-pre-commit","file":"CLAUDE.md","rule":"Use semicolons.","expect":"cut","code":"enforced-config"}
+{"id":"q2-workflow-01","repo":"tests/gate/repos/q2-workflow","file":"CLAUDE.md","rule":"Use semicolons.","expect":"cut","code":"enforced-config"}
+{"id":"q2-prettier-overrides-01","repo":"tests/gate/repos/q2-prettier-overrides","file":"CLAUDE.md","rule":"Use semicolons.","expect":"keep"}
+{"id":"q2-prettier-yaml-overrides-01","repo":"tests/gate/repos/q2-prettier-yaml-overrides","file":"CLAUDE.md","rule":"Use semicolons.","expect":"keep"}
+{"id":"q2-pkg-overrides-01","repo":"tests/gate/repos/q2-pkg-overrides","file":"CLAUDE.md","rule":"Use semicolons.","expect":"keep"}
+{"id":"q2-eslint-overrides-01","repo":"tests/gate/repos/q2-eslint-overrides","file":"CLAUDE.md","rule":"Use semicolons.","expect":"keep"}
+{"id":"q2-editorconfig-sections-01","repo":"tests/gate/repos/q2-editorconfig-sections","file":"CLAUDE.md","rule":"Indent with 2 spaces.","expect":"keep"}
+{"id":"q2-editorconfig-4-01","repo":"tests/gate/repos/q2-editorconfig-4","file":"CLAUDE.md","rule":"Indent with 2 spaces.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-prettier-06","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use trailing commas.","expect":"cut","code":"enforced-config"}
+{"id":"q2-prettier-none-05","repo":"tests/gate/repos/q2-prettier-none","file":"CLAUDE.md","rule":"Use trailing commas.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-prettier-07","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Set the tab width to 2.","expect":"keep","gap":".prettierrc sets tabWidth 2 and a script runs prettier; \"the\" is not part of the table phrase, so the rule is not recognised"}
+{"id":"q2-prettier-08","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Tab width 2.","expect":"cut","code":"enforced-config"}
+{"id":"q2-prettier-none-06","repo":"tests/gate/repos/q2-prettier-none","file":"CLAUDE.md","rule":"Tab width 2.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-prettier-09","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Max line length 100.","expect":"cut","code":"enforced-config"}
+{"id":"q2-prettier-none-07","repo":"tests/gate/repos/q2-prettier-none","file":"CLAUDE.md","rule":"Max line length 100.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-ts-strict-01","repo":"tests/gate/repos/q2-ts-strict","file":"CLAUDE.md","rule":"Enable strict mode.","expect":"cut","code":"enforced-config"}
+{"id":"q2-ts-loose-01","repo":"tests/gate/repos/q2-ts-loose","file":"CLAUDE.md","rule":"Enable strict mode.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-ts-empty-01","repo":"tests/gate/repos/q2-ts-empty","file":"CLAUDE.md","rule":"Enable strict mode.","expect":"keep"}
+{"id":"q2-ts-strict-02","repo":"tests/gate/repos/q2-ts-strict","file":"CLAUDE.md","rule":"Disallow implicit any.","expect":"cut","code":"enforced-config"}
+{"id":"q2-ts-implicit-01","repo":"tests/gate/repos/q2-ts-implicit","file":"CLAUDE.md","rule":"Disallow implicit any.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-ts-strict-03","repo":"tests/gate/repos/q2-ts-strict","file":"CLAUDE.md","rule":"Avoid unused variables.","expect":"keep"}
+{"id":"q2-ts-loose-02","repo":"tests/gate/repos/q2-ts-loose","file":"CLAUDE.md","rule":"Avoid unused variables.","expect":"cut","code":"enforced-config"}
+{"id":"q2-editorconfig-4-02","repo":"tests/gate/repos/q2-editorconfig-4","file":"CLAUDE.md","rule":"Indent with tabs.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-editorconfig-4-03","repo":"tests/gate/repos/q2-editorconfig-4","file":"CLAUDE.md","rule":"Indent with spaces.","expect":"keep","gap":".editorconfig sets indent_style = space; editorconfig is applied by editors, not run by a check, so the gate only reports a disagreement with it"}
+{"id":"q2-editorconfig-4-04","repo":"tests/gate/repos/q2-editorconfig-4","file":"CLAUDE.md","rule":"Use LF line endings.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-editorconfig-2-01","repo":"tests/gate/repos/q2-editorconfig-2","file":"CLAUDE.md","rule":"Use LF line endings.","expect":"keep","gap":".editorconfig sets end_of_line = lf; the gate only reports a disagreement with editorconfig"}
+{"id":"q2-editorconfig-2-02","repo":"tests/gate/repos/q2-editorconfig-2","file":"CLAUDE.md","rule":"Indent with 2 spaces.","expect":"keep","gap":".editorconfig sets indent_size = 2 and prettier runs, but prettier has no tabWidth here; the gate only reports a disagreement with editorconfig"}
+{"id":"q2-eslint-01","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Use single quotes.","expect":"cut","code":"enforced-config"}
+{"id":"q2-eslint-conflict-01","repo":"tests/gate/repos/q2-eslint-conflict","file":"CLAUDE.md","rule":"Use single quotes.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-eslint-02","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Use semicolons.","expect":"cut","code":"enforced-config"}
+{"id":"q2-eslint-conflict-02","repo":"tests/gate/repos/q2-eslint-conflict","file":"CLAUDE.md","rule":"Use semicolons.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-eslint-03","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Avoid var.","expect":"cut","code":"enforced-config"}
+{"id":"q2-eslint-conflict-03","repo":"tests/gate/repos/q2-eslint-conflict","file":"CLAUDE.md","rule":"Avoid var.","expect":"conflict","code":"config-conflict"}
+{"id":"q2-eslint-04","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Use `const` instead of `let` when possible.","expect":"keep"}
+{"id":"q2-eslint-05","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Prefer const.","expect":"cut","code":"enforced-config"}
+{"id":"q2-eslint-06","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Use === instead of ==.","expect":"cut","code":"enforced-config"}
+{"id":"q2-eslint-07","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Avoid console.log.","expect":"cut","code":"enforced-config"}
+{"id":"q2-eslint-weak-01","repo":"tests/gate/repos/q2-eslint-weak","file":"CLAUDE.md","rule":"Use single quotes.","expect":"keep"}
+{"id":"q2-eslint-unrun-01","repo":"tests/gate/repos/q2-eslint-unrun","file":"CLAUDE.md","rule":"Avoid var.","expect":"keep"}
+{"id":"q2-eslint-code-01","repo":"tests/gate/repos/q2-eslint-code","file":"CLAUDE.md","rule":"Avoid var.","expect":"keep"}
+{"id":"q2-eslint-weak-02","repo":"tests/gate/repos/q2-eslint-weak","file":"CLAUDE.md","rule":"Avoid console.log.","expect":"keep"}
+{"id":"q2-commitlint-01","repo":"tests/gate/repos/q2-commitlint","file":"CLAUDE.md","rule":"Use conventional commits.","expect":"cut","code":"enforced-config"}
+{"id":"q2-commitlint-02","repo":"tests/gate/repos/q2-commitlint","file":"CLAUDE.md","rule":"Commit messages must follow Conventional Commits.","expect":"cut","code":"enforced-config"}
+{"id":"q2-commitlint-unrun-01","repo":"tests/gate/repos/q2-commitlint-unrun","file":"CLAUDE.md","rule":"Use conventional commits.","expect":"keep"}
+{"id":"q2-commitlint-03","repo":"tests/gate/repos/q2-commitlint","file":"CLAUDE.md","rule":"Use conventional commits for releases only.","expect":"keep"}
+{"id":"q2-deny-force-01","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Never run `git push --force`.","expect":"cut","code":"enforced-deny"}
+{"id":"q2-deny-force-glob-01","repo":"tests/gate/repos/q2-deny-force-glob","file":"CLAUDE.md","rule":"Do not run `git push --force origin main`.","expect":"cut","code":"enforced-deny"}
+{"id":"q2-deny-force-02","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Nunca ejecutes `git push --force`.","expect":"cut","code":"enforced-deny"}
+{"id":"q2-none-01","repo":"tests/gate/repos/q2-none","file":"CLAUDE.md","rule":"Never run `git push --force`.","expect":"move","code":"absolute-command"}
+{"id":"q2-deny-rm-01","repo":"tests/gate/repos/q2-deny-rm","file":"CLAUDE.md","rule":"Never run `git push --force`.","expect":"move","code":"absolute-command"}
+{"id":"q2-deny-push-01","repo":"tests/gate/repos/q2-deny-push","file":"CLAUDE.md","rule":"Never run `git push --force`.","expect":"cut","code":"enforced-deny"}
+{"id":"q2-deny-build-exact-01","repo":"tests/gate/repos/q2-deny-build-exact","file":"CLAUDE.md","rule":"Never run `npm run build --watch`.","expect":"move","code":"absolute-command"}
+{"id":"q2-deny-build-exact-02","repo":"tests/gate/repos/q2-deny-build-exact","file":"CLAUDE.md","rule":"Never run `npm run build`.","expect":"cut","code":"enforced-deny"}
+{"id":"q2-deny-build-prefix-01","repo":"tests/gate/repos/q2-deny-build-prefix","file":"CLAUDE.md","rule":"Never run `npm run build --watch`.","expect":"cut","code":"enforced-deny"}
+{"id":"q2-deny-push-02","repo":"tests/gate/repos/q2-deny-push","file":"CLAUDE.md","rule":"Never run `git pushall`.","expect":"move","code":"absolute-command"}
+{"id":"q2-deny-force-03","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Never run `git push`.","expect":"move","code":"absolute-command"}
+{"id":"q2-deny-wildcard-01","repo":"tests/gate/repos/q2-deny-wildcard","file":"CLAUDE.md","rule":"Never run `git push`.","expect":"move","code":"absolute-command"}
+{"id":"q2-deny-read-01","repo":"tests/gate/repos/q2-deny-read","file":"CLAUDE.md","rule":"Never run `git push`.","expect":"move","code":"absolute-command"}
+{"id":"q2-deny-force-04","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Never run `git push --force` without asking me first.","expect":"keep"}
+{"id":"q2-deny-force-05","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Never run `git push --force` on main; the history is shared.","expect":"keep"}
+{"id":"q2-deny-force-06","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Run `git push --force` only after a backup.","expect":"keep"}
+{"id":"q2-deny-force-07","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Run `git push --force`.","expect":"keep"}
+{"id":"q2-prettier-10","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use semicolons only in `for` headers.","expect":"keep"}
+{"id":"q2-prettier-11","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Avoid semicolons in JSON fixtures.","expect":"keep"}
+{"id":"q2-prettier-12","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Always use semicolons.","expect":"keep"}
+{"id":"q2-prettier-13","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Never use semicolons in tests.","expect":"keep"}
+{"id":"q2-prettier-14","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use semicolons when the line ends a statement.","expect":"keep"}
+{"id":"q2-prettier-15","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use semicolons, except in Vue files.","expect":"keep"}
+{"id":"q2-prettier-16","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use semicolons in 3 places.","expect":"keep"}
+{"id":"q2-prettier-17","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use semicolons and keep lines short.","expect":"keep"}
+{"id":"q2-prettier-18","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Don't use semicolons after imports.","expect":"keep"}
+{"id":"q2-prettier-19","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use single quotes unless the string has an apostrophe.","expect":"keep"}
+{"id":"q2-prettier-20","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use single quotes in JavaScript but double quotes in JSX.","expect":"keep"}
+{"id":"q2-prettier-21","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Usa comillas simples excepto en JSX.","expect":"keep"}
+{"id":"q2-prettier-22","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Usa punto y coma solo en los tests.","expect":"keep"}
+{"id":"q2-prettier-23","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Usa comillas simples y nunca plantillas.","expect":"keep"}
+{"id":"q2-prettier-24","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Indent with 2 spaces in YAML.","expect":"keep"}
+{"id":"q2-prettier-25","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Tab width 2 for Python only.","expect":"keep"}
+{"id":"q2-prettier-26","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use semicolons. Use single quotes.","expect":"keep"}
+{"id":"q2-ts-strict-04","repo":"tests/gate/repos/q2-ts-strict","file":"CLAUDE.md","rule":"Enable strict mode in new packages.","expect":"keep"}
+{"id":"q2-ts-strict-05","repo":"tests/gate/repos/q2-ts-strict","file":"CLAUDE.md","rule":"Enable strict mode before releasing.","expect":"keep"}
+{"id":"q2-ts-strict-06","repo":"tests/gate/repos/q2-ts-strict","file":"CLAUDE.md","rule":"Never disable strict mode.","expect":"keep"}
+{"id":"q2-ts-strict-07","repo":"tests/gate/repos/q2-ts-strict","file":"CLAUDE.md","rule":"Enable strict mode, but allow any in tests.","expect":"keep"}
+{"id":"q2-ts-strict-08","repo":"tests/gate/repos/q2-ts-strict","file":"CLAUDE.md","rule":"Disallow implicit any only in src.","expect":"keep"}
+{"id":"q2-ts-strict-09","repo":"tests/gate/repos/q2-ts-strict","file":"CLAUDE.md","rule":"Enable strict mode when migrating.","expect":"keep"}
+{"id":"q2-ts-loose-03","repo":"tests/gate/repos/q2-ts-loose","file":"CLAUDE.md","rule":"Avoid unused variables except in test helpers.","expect":"keep"}
+{"id":"q2-eslint-08","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Semicolons are required by the legacy parser, see docs.","expect":"keep"}
+{"id":"q2-eslint-09","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Quotes inside strings must be escaped.","expect":"keep"}
+{"id":"q2-eslint-10","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Never use var in generated code.","expect":"keep"}
+{"id":"q2-eslint-11","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Use const for module-level constants and let for loop counters.","expect":"keep"}
+{"id":"q2-eslint-12","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Prefer const over let in hot paths.","expect":"keep"}
+{"id":"q2-eslint-13","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Strict mode is required for new files.","expect":"keep"}
+{"id":"q2-eslint-14","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"The strict flag stays off for the legacy folder.","expect":"keep"}
+{"id":"q2-eslint-15","repo":"tests/gate/repos/q2-eslint","file":"CLAUDE.md","rule":"Single quotes for strings, backticks for templates.","expect":"keep"}
+{"id":"q2-prettier-27","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"# Use semicolons","expect":"keep"}
+{"id":"q2-prettier-28","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"```\nUse semicolons.\n```","expect":"keep"}
+{"id":"q2-prettier-29","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Write tests first.","expect":"keep"}
+{"id":"q3-app-01","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"- Think step by step before making changes.","expect":"cut","code":"vendor-declared"}
+{"id":"q3-app-02","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"This file gives Claude context about the Ledger project so it can help effectively. Keep it updated as the project evolves.","expect":"cut","code":"file-filler"}
+{"id":"q3-app-03","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Keep it updated.","expect":"cut","code":"file-filler"}
+{"id":"q3-app-04","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Este archivo proporciona contexto sobre el proyecto Ledger. Mantenlo actualizado.","expect":"cut","code":"file-filler"}
+{"id":"q3-app-05","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Remember to keep the code quality high and to communicate clearly about changes.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-06","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code. Handle errors properly. Be thorough.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-07","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Escribe código limpio y maneja los errores.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-08","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Piensa paso a paso antes de responder.","expect":"cut","code":"vendor-declared"}
+{"id":"q3-app-09","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Piensa con cuidado.","expect":"cut","code":"vendor-declared"}
+{"id":"q3-app-10","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Siempre revisa tu trabajo antes de terminar.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-11","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-12","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Handle errors.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-13","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use TypeScript types.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-14","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Stay in scope.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-15","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Read files before editing.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-16","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Reuse existing code.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-17","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Double-check your work.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-18","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Be thorough.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-19","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Think carefully before answering.","expect":"cut","code":"vendor-declared"}
+{"id":"q3-app-20","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code: no function over 40 lines in `src/core/`.","expect":"keep"}
+{"id":"q3-app-21","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Handle errors with `AppError` from src/errors.js.","expect":"keep"}
+{"id":"q3-app-22","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code: no function over 40 lines.","expect":"keep"}
+{"id":"q3-app-23","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Think step by step and run `npm run lint` after each change.","expect":"fix","code":"dead-reference"}
+{"id":"q3-app-24","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Never write clean code without tests.","expect":"keep"}
+{"id":"q3-app-25","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code, except in generated files.","expect":"keep"}
+{"id":"q3-app-26","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Handle errors properly when the payment provider times out.","expect":"keep"}
+{"id":"q3-app-27","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Handle errors properly and retry 3 times.","expect":"keep"}
+{"id":"q3-app-28","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code in the billing module.","expect":"keep"}
+{"id":"q3-app-29","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Always handle errors properly, but log nothing about card numbers.","expect":"keep"}
+{"id":"q3-app-30","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Keep functions small and focused, under 20 lines.","expect":"keep"}
+{"id":"q3-app-31","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Think carefully before touching the ledger tables.","expect":"keep"}
+{"id":"q3-app-32","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Do not edit tests to make them pass unless the spec changed.","expect":"keep"}
+{"id":"q3-app-33","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Keep it updated by running the sync job every Friday.","expect":"keep"}
+{"id":"q3-app-34","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Be thorough with Stripe webhooks.","expect":"keep"}
+{"id":"q3-app-35","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use modern ES features only in src/.","expect":"keep"}
+{"id":"q3-app-36","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Siempre maneja los errores de pago con reintentos.","expect":"keep"}
+{"id":"q3-app-37","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use branded types.","expect":"keep"}
+{"id":"q3-app-38","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use opaque types.","expect":"keep"}
+{"id":"q3-app-39","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use strict types.","expect":"keep"}
+{"id":"q3-app-40","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Follow best practices for security.","expect":"keep"}
+{"id":"q3-app-41","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use latest Node features.","expect":"keep"}
+{"id":"q3-app-42","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"This file gives context about security.","expect":"keep"}
+{"id":"q3-app-43","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Este archivo proporciona contexto sobre seguridad.","expect":"keep"}
+{"id":"q3-app-44","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"All money values are integer cents.","expect":"keep"}
+{"id":"q3-app-45","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"# General guidelines","expect":"keep"}
+{"id":"q3-app-46","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"```\nWrite clean code.\n```","expect":"keep"}
+{"id":"q567-01","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Never run `npm publish` locally.","expect":"move","code":"absolute-command"}
+{"id":"q567-02","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- See `src/missing.js`.","expect":"fix","code":"dead-reference"}
+{"id":"q567-03","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Keep it small.","expect":"keep"}
+{"id":"q567-04","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Nunca ejecutes `git push --force`.","expect":"move","code":"absolute-command"}
+{"id":"q567-05","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Always avoid `docker system prune`.","expect":"move","code":"absolute-command"}
+{"id":"q567-06","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never edit `src/generated/a.ts` by hand.","expect":"move","code":"absolute-command"}
+{"id":"q567-07","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"All money values are integer cents; never floats.","expect":"keep"}
+{"id":"q567-08","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit src/generated/ by hand.","expect":"keep"}
+{"id":"q567-09","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not run `npm publish` locally.","expect":"keep"}
+{"id":"q567-10","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never use `any`.","expect":"keep"}
+{"id":"q567-11","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never call `useEffect` for derived state.","expect":"keep"}
+{"id":"q567-12","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Always write tests before the code.","expect":"keep"}
+{"id":"q567-13","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"1. Step number 1\n2. Step number 2\n3. Step number 3\n4. Step number 4\n5. Step number 5\n6. Step number 6","expect":"move","code":"long-procedure"}
+{"id":"q567-14","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"1. Step number 1\n2. Step number 2\n3. Step number 3\n4. Step number 4\n5. Step number 5","expect":"keep"}
+{"id":"q567-15","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Line 1 of a long note\nLine 2 of a long note\nLine 3 of a long note\nLine 4 of a long note\nLine 5 of a long note\nLine 6 of a long note\nLine 7 of a long note\nLine 8 of a long note\nLine 9 of a long note","expect":"move","code":"long-procedure"}
+{"id":"q567-16","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Line 1 of a long note\nLine 2 of a long note\nLine 3 of a long note\nLine 4 of a long note\nLine 5 of a long note\nLine 6 of a long note\nLine 7 of a long note\nLine 8 of a long note","expect":"keep"}
+{"id":"q567-17","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Every handler validates its input at the edge.\nDomain code never imports from the transport layer.\nErrors carry a stable code and a human message.\nLog lines are structured and never contain secrets.","expect":"move","code":"duplicated-passage"}
+{"id":"q567-18","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Domain code never imports from the transport layer.","expect":"keep"}
+{"id":"q567-19","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Every handler validates its input at the edge.\nErrors carry a stable code and a human message.\nTests cover each handler.","expect":"keep"}
+{"id":"q567-20","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Run unit tests: `npm run test:unit`","expect":"fix","code":"dead-reference"}
+{"id":"q567-21","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Lint with `npm run lint`","expect":"cut","code":"inferable-script"}
+{"id":"q567-22","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Run `npm install`","expect":"keep","gap":"how to install dependencies in a Node project with no other package manager; nothing the model does not know, but the script check only knows package scripts"}
+{"id":"q567-23","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Run `npm test`","expect":"keep"}
+{"id":"q567-24","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Build one package: `pnpm --filter web build`","expect":"keep"}
+{"id":"q567-25","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Use `pnpm -r build`","expect":"keep"}
+{"id":"q567-26","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Use `pnpm workspace`","expect":"keep"}
+{"id":"q567-27","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src\\money.js`.","expect":"keep"}
+{"id":"q567-28","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/money.js`.","expect":"keep"}
+{"id":"q567-29","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `docs/CONVENTIONS.md`.","expect":"keep"}
+{"id":"q567-30","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `docs/MISSING.md`.","expect":"fix","code":"dead-reference"}
+{"id":"q567-31","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `package.json`.","expect":"keep"}
+{"id":"q567-32","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit `src/generated/` by hand.","expect":"keep"}
+{"id":"q567-33","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit `./src/generated` by hand.","expect":"keep"}
+{"id":"q567-34","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit `docs` by hand.","expect":"keep"}
+{"id":"q567-35","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit `src/gone/` by hand.","expect":"fix","code":"dead-reference"}
+{"id":"q567-36","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `https://x.dev/a`.","expect":"keep"}
+{"id":"q567-37","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/**/*.ts`.","expect":"keep"}
+{"id":"q567-38","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `v2.1/3 beta`.","expect":"keep"}
+{"id":"q567-39","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Use `/api/users/list` here.","expect":"keep"}
+{"id":"q567-40","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Use `react/jsx-runtime` here.","expect":"keep"}
+{"id":"q567-41","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Use `feature/new-login` here.","expect":"keep"}
+{"id":"q567-42","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Use `on/off` here.","expect":"keep"}
+{"id":"q567-43","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Use `Node.js` here.","expect":"keep"}
+{"id":"q567-44","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Use `socket.io` here.","expect":"keep"}
+{"id":"q567-45","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Use `/etc/hosts` here.","expect":"keep"}
+{"id":"q567-46","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Use `~/notes.md` here.","expect":"keep"}
+{"id":"q567-47","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- IMPORTANT: Use arrow functions where appropriate.","expect":"rewrite","code":"emphasis"}
+{"id":"q567-48","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Handlers MUST validate input.","expect":"rewrite","code":"emphasis"}
+{"id":"q567-49","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"SIEMPRE valida la entrada.","expect":"rewrite","code":"emphasis"}
+{"id":"q567-50","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"NUNCA subas secretos.","expect":"rewrite","code":"emphasis"}
+{"id":"q567-51","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Es CRÍTICO validar.","expect":"rewrite","code":"emphasis"}
+{"id":"q567-52","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Set `NODE_ENV=IMPORTANT`","expect":"keep"}
+{"id":"q567-53","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Parse the HTTP and JSON payload.","expect":"keep"}
+{"id":"q567-54","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Read MUST_HAVE from the config.","expect":"keep"}
+{"id":"q567-55","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never use floats for money.","expect":"keep"}
+{"id":"q567-56","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Importantly, keep it short.","expect":"keep"}
+{"id":"q567-57","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"IMPORTANT: see `src/missing.js`.","expect":"fix","code":"dead-reference"}
+{"id":"q567-58","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never deploy on Fridays unless the on-call approves.","expect":"keep"}
+{"id":"q567-59","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Retry at most 3 times before failing.","expect":"keep"}
+{"id":"q567-60","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"When the cache is cold, warm it with `src/money.js` first.","expect":"keep"}
+{"id":"q7-bare-names-01","repo":"tests/gate/repos/q7-bare-names","file":"CLAUDE.md","rule":"See `settings.json`.","expect":"keep"}
+{"id":"q7-bare-names-02","repo":"tests/gate/repos/q7-bare-names","file":"CLAUDE.md","rule":"See `tsconfig.json`.","expect":"keep"}
+{"id":"q7-bare-names-03","repo":"tests/gate/repos/q7-bare-names","file":"CLAUDE.md","rule":"See `SKILL.md`.","expect":"keep"}
+{"id":"q7-bare-names-04","repo":"tests/gate/repos/q7-bare-names","file":"CLAUDE.md","rule":"See `missing.json`.","expect":"fix","code":"dead-reference"}
+{"id":"q7-subdir-01","repo":"tests/gate/repos/q7-subdir","file":"packages/app/CLAUDE.md","rule":"See `lib/x.ts`.","expect":"keep"}
+{"id":"q7-subdir-02","repo":"tests/gate/repos/q7-subdir","file":"packages/app/CLAUDE.md","rule":"See `lib/y.ts`.","expect":"fix","code":"dead-reference"}
+{"id":"q567-61","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/money.js:42`.","expect":"keep"}
+{"id":"q567-62","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/money.js:42:7`.","expect":"keep"}
+{"id":"q567-63","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/money.js#L10-L20`.","expect":"keep"}
+{"id":"q567-64","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/missing.js:42`.","expect":"fix","code":"dead-reference"}
+{"id":"q7-ignored-01","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `dist/x.js`.","expect":"keep"}
+{"id":"q7-ignored-02","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `node_modules/foo/x.js`.","expect":"keep"}
+{"id":"q7-ignored-03","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `coverage/lcov.info`.","expect":"keep"}
+{"id":"q7-ignored-04","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `cache-data/x.bin`.","expect":"keep"}
+{"id":"q7-ignored-05","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `a/b/secrets.json`.","expect":"keep"}
+{"id":"q7-ignored-06","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `src/missing.ts`.","expect":"fix","code":"dead-reference"}
+{"id":"q567-65","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never use `as any` casts.","expect":"keep"}
+{"id":"q567-66","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Always write `if (x) return` guards.","expect":"keep"}
+{"id":"q567-67","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never run `docker compose down -v` here.","expect":"move","code":"absolute-command"}
+{"id":"q567-68","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never run `rm -rf dist`.","expect":"move","code":"absolute-command"}
+{"id":"q567-69","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Always run `npm run lint` before committing.","expect":"move","code":"absolute-command"}
+{"id":"q567-70","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Siempre ejecuta `npm run lint`.","expect":"move","code":"absolute-command"}
+{"id":"q567-71","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never edit `src/missing.js` by hand.","expect":"fix","code":"dead-reference"}

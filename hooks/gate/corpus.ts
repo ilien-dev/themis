@@ -40,6 +40,8 @@ export function parseCorpus(text: string): Case[] {
     if (expect !== 'keep' && code === undefined) fail('code is required unless expect is keep');
     if (line !== undefined && (typeof line !== 'number' || !Number.isInteger(line) || line < 1)) fail('line must be a positive integer');
     if (gap !== undefined && (!str(gap) || expect !== 'keep')) fail('gap is a reason, only on keep');
+    const count = parseRules(rule as string).length;
+    if (count !== 1) fail(`rule parses to ${count} rules, not one`);
     if (ids.has(id as string)) fail(`duplicate id ${String(id)}`);
     ids.add(id as string);
     out.push(v as unknown as Case);

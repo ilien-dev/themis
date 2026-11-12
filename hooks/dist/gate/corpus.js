@@ -38,6 +38,9 @@ export function parseCorpus(text) {
             fail('line must be a positive integer');
         if (gap !== undefined && (!str(gap) || expect !== 'keep'))
             fail('gap is a reason, only on keep');
+        const count = parseRules(rule).length;
+        if (count !== 1)
+            fail(`rule parses to ${count} rules, not one`);
         if (ids.has(id))
             fail(`duplicate id ${String(id)}`);
         ids.add(id);

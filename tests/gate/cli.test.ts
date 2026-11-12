@@ -112,7 +112,13 @@ test('report prints precision, false-cut rate and coverage', () => {
 });
 
 test('unknown subcommand exits 2', () => {
-  for (const args of [['frobnicate'], [], ['audit'], ['check', '--nope'], ['report', 'missing.jsonl'], ['audit', 'a.md', 'b.md']]) {
+  // A corpus whose case holds two rules, and one with a line that is not JSON, are wrong input too.
+  const bad = repo({
+    'two.jsonl': `${JSON.stringify({ id: 'a', repo: 'r', file: 'CLAUDE.md', rule: '- one\n- two', expect: 'keep' })}\n`,
+    'broken.jsonl': '{"id":\n', 'r/package.json': '{}',
+  });
+  for (const args of [['frobnicate'], [], ['audit'], ['check', '--nope'], ['report', 'missing.jsonl'], ['audit', 'a.md', 'b.md'],
+    ['report', join(bad, 'two.jsonl')], ['report', join(bad, 'broken.jsonl')]]) {
     const r = gate(args);
     assert.equal(r.status, 2, args.join(' '));
     assert.match(r.stderr, /usage: gate/);
