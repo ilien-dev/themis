@@ -3,7 +3,7 @@ import { q2 } from './checks/q2.ts';
 import { q3 } from './checks/q3.ts';
 import { q5 } from './checks/q5.ts';
 import { q6 } from './checks/q6.ts';
-import { q7 } from './checks/q7.ts';
+import { q7, unresolvedReference } from './checks/q7.ts';
 import { loadAccepted } from './accepted.ts';
 import { TECH } from './tables/alias.ts';
 import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentionsAny, ruleHash, spans } from './text.ts';
@@ -78,7 +78,12 @@ export function judge(rule: Rule, facts: Facts, ctx: Context, checks: readonly R
       return a.target === undefined ? v : { ...v, target: a.target };
     }
   }
-  return { rule, verdict: 'keep', code: null, question: null, evidence: '', notes: notesFor(rule, facts, ctx) };
+  // A reference that does not resolve is the one note that carries evidence: which path or script it was.
+  const unresolved = unresolvedReference(rule, facts);
+  const notes = notesFor(rule, facts, ctx);
+  return unresolved === null
+    ? { rule, verdict: 'keep', code: null, question: null, evidence: '', notes }
+    : { rule, verdict: 'keep', code: null, question: null, evidence: unresolved, notes: ['unresolved-reference', ...notes] };
 }
 
 export function judgeAll(rules: readonly Rule[], facts: Facts, ctx: Context): Verdict[] {

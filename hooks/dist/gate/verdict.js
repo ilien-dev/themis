@@ -3,7 +3,7 @@ import { q2 } from "./checks/q2.js";
 import { q3 } from "./checks/q3.js";
 import { q5 } from "./checks/q5.js";
 import { q6 } from "./checks/q6.js";
-import { q7 } from "./checks/q7.js";
+import { q7, unresolvedReference } from "./checks/q7.js";
 import { loadAccepted } from "./accepted.js";
 import { TECH } from "./tables/alias.js";
 import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentionsAny, ruleHash, spans } from "./text.js";
@@ -52,7 +52,12 @@ export function judge(rule, facts, ctx, checks = CHECKS) {
             return a.target === undefined ? v : { ...v, target: a.target };
         }
     }
-    return { rule, verdict: 'keep', code: null, question: null, evidence: '', notes: notesFor(rule, facts, ctx) };
+    // A reference that does not resolve is the one note that carries evidence: which path or script it was.
+    const unresolved = unresolvedReference(rule, facts);
+    const notes = notesFor(rule, facts, ctx);
+    return unresolved === null
+        ? { rule, verdict: 'keep', code: null, question: null, evidence: '', notes }
+        : { rule, verdict: 'keep', code: null, question: null, evidence: unresolved, notes: ['unresolved-reference', ...notes] };
 }
 export function judgeAll(rules, facts, ctx) {
     let options = ctx.options;

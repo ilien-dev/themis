@@ -1,7 +1,7 @@
 import { ABSOLUTE, citedPaths, citedScripts, spans, words } from '../text.ts';
 import type { Answer } from '../types.ts';
 import type { Check } from '../verdict.ts';
-import { BARE_FILE_EXT, deadReference } from './q7.ts';
+import { BARE_FILE_EXT, unresolvedReference } from './q7.ts';
 
 // Question 5: is this an absolute prohibition about a command or a path? A permission or a hook enforces it.
 
@@ -35,7 +35,7 @@ export const q5: Check = (rule, facts) => {
   if (rule.kind === 'heading' || rule.kind === 'code') return null;
   const marker = ABSOLUTE.exec(rule.text)?.[0];
   if (marker === undefined) return null;
-  if (deadReference(rule, facts) !== null) return null; // question 7 reports that first
+  if (unresolvedReference(rule, facts) !== null) return null; // kept with a note: the reference needs a look first
   const never = NEVER.test(marker);
 
   const all = spans(rule.text);

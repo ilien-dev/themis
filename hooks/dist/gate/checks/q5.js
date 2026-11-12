@@ -1,5 +1,5 @@
 import { ABSOLUTE, citedPaths, citedScripts, spans, words } from "../text.js";
-import { BARE_FILE_EXT, deadReference } from "./q7.js";
+import { BARE_FILE_EXT, unresolvedReference } from "./q7.js";
 // Question 5: is this an absolute prohibition about a command or a path? A permission or a hook enforces it.
 // First tokens that make a span with spaces a shell command rather than a code fragment.
 const CLI = new Set([
@@ -32,8 +32,8 @@ export const q5 = (rule, facts) => {
     const marker = ABSOLUTE.exec(rule.text)?.[0];
     if (marker === undefined)
         return null;
-    if (deadReference(rule, facts) !== null)
-        return null; // question 7 reports that first
+    if (unresolvedReference(rule, facts) !== null)
+        return null; // kept with a note: the reference needs a look first
     const never = NEVER.test(marker);
     const all = spans(rule.text);
     // A bare name such as `Math.round` is a file only with a file extension or when the repository has it.

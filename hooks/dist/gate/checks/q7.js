@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { read } from "../../lib.js";
 import { citedPaths, citedScripts, spans } from "../text.js";
-// Question 7: does the rule point at something that is gone, or shout instead of explain?
+// Question 7: does the rule shout instead of explain? What it points at that is gone becomes a note.
 const BUILTIN_SCRIPTS = new Set(['install', 'ci', 'test', 'start']); // npm brings these
 // Package manager subcommands that are not scripts (the extraction already drops the npm ones).
 export const PM_COMMANDS = new Set([
@@ -21,7 +21,6 @@ const LIST_MARKER = /^\s*(?:[-*+]|\d+[.)])\s+/;
 // Directories a fresh clone does not have.
 const GENERATED = new Set(['dist', 'build', 'out', 'target', 'coverage', 'node_modules', '.next', '.nuxt', '.turbo', '.cache', 'tmp', 'vendor']);
 const posix = (p) => p.replaceAll('\\', '/');
-const fix = (evidence) => ({ verdict: 'fix', code: 'dead-reference', question: 7, evidence });
 const TOP_DIRS = new WeakMap();
 // The first segment of every tracked file that sits in a directory; computed on first use.
 function topDirs(facts) {
@@ -103,12 +102,16 @@ function otherPackages(facts, own) {
             return true;
     return false;
 }
-// The dead-reference answer for a rule, or null. Question 5 uses it to leave such a rule to question 7.
-export function deadReference(rule, facts) {
+// What a rule cites that does not resolve ("`docs/x.md` not found"), or null. Two blind measurements found
+// most such rules were worth keeping as written, so this is no longer a verdict: the rule is kept with the
+// unresolved-reference note (verdict.ts), and question 5 leaves it alone.
+export function unresolvedReference(rule, facts) {
+    if (rule.kind === 'heading' || rule.kind === 'code')
+        return null;
     if (facts.inRepo && facts.filesKnown) {
         const dead = [...new Set(citedPaths(rule.text).map(clean))].find((p) => deadPath(p, facts));
         if (dead !== undefined)
-            return fix(`\`${dead}\` not found`);
+            return `\`${dead}\` not found`;
     }
     const pkg = facts.pkg;
     if (pkg !== null && !spans(rule.text).some((s) => OTHER_PACKAGE.test(` ${s}`))) {
@@ -116,16 +119,16 @@ export function deadReference(rule, facts) {
         const missing = citedScripts(rule.text).find((s) => (s.explicit || s.pm === 'npm') &&
             !s.script.startsWith('-') && !BUILTIN_SCRIPTS.has(s.script) && !PM_COMMANDS.has(s.script) && !Object.hasOwn(pkg.scripts, s.script));
         if (missing !== undefined && !otherPackages(facts, pkg.path))
-            return fix(`scripts.${missing.script} not in package.json`);
+            return `scripts.${missing.script} not in package.json`;
     }
     return null;
 }
 export const q7 = (rule, facts) => {
     if (rule.kind === 'heading' || rule.kind === 'code')
         return null;
-    const dead = deadReference(rule, facts);
-    if (dead !== null)
-        return dead;
+    // A rule whose reference does not resolve is left whole, its emphasis too: the note asks for a look.
+    if (unresolvedReference(rule, facts) !== null)
+        return null;
     const outside = rule.text.replace(LIST_MARKER, '').replace(/`[^`\n]*`/g, ' ');
     const word = EMPHASIS.exec(outside)?.[1];
     if (word === undefined)

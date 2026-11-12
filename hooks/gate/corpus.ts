@@ -6,7 +6,7 @@ import { read } from '../lib.ts';
 import { parseRules } from './extract.ts';
 import { readFacts, type Facts } from './facts.ts';
 import { contextFor, judgeAll, type Context } from './verdict.ts';
-import type { Rule, Verdict, VerdictKind } from './types.ts';
+import type { Note, Rule, Verdict, VerdictKind } from './types.ts';
 
 // A labelled rule of the regression corpus, one JSON object per line of a .jsonl file.
 export interface Case {
@@ -19,9 +19,11 @@ export interface Case {
   readonly line?: number; // the rule's line in its file; 1 when absent
   readonly gap?: string; // a redundant rule the gate keeps: why it is really redundant
   readonly paths?: boolean; // judge with the described-path detector on (gate_paths)
+  readonly note?: Note; // only on keep: a note the kept rule must carry
 }
 
 const KINDS = new Set<string>(['keep', 'cut', 'move', 'rewrite', 'fix', 'conflict']);
+const NOTES = new Set<string>(['no-evidence', 'no-anchor', 'absolute-no-reason', 'unresolved-reference', 'accepted'] satisfies Note[]);
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const str = (v: unknown): v is string => typeof v === 'string' && v !== '';
 
@@ -35,7 +37,7 @@ export function parseCorpus(text: string): Case[] {
     let v: unknown;
     try { v = JSON.parse(raw); } catch { fail('not JSON'); }
     if (!isObject(v)) return fail('not an object');
-    const { id, repo, file, rule, expect, code, line, gap, paths } = v;
+    const { id, repo, file, rule, expect, code, line, gap, paths, note } = v;
     if (!str(id) || !str(repo) || !str(file) || !str(rule)) fail('id, repo, file and rule must be strings');
     if (typeof expect !== 'string' || !KINDS.has(expect)) fail('expect is not a verdict');
     if (code !== undefined && !str(code)) fail('code must be a string');
@@ -43,6 +45,7 @@ export function parseCorpus(text: string): Case[] {
     if (line !== undefined && (typeof line !== 'number' || !Number.isInteger(line) || line < 1)) fail('line must be a positive integer');
     if (gap !== undefined && (!str(gap) || expect !== 'keep')) fail('gap is a reason, only on keep');
     if (paths !== undefined && typeof paths !== 'boolean') fail('paths must be a boolean');
+    if (note !== undefined && (typeof note !== 'string' || !NOTES.has(note) || expect !== 'keep')) fail('note is a note, only on keep');
     const count = parseRules(rule as string).length;
     if (count !== 1) fail(`rule parses to ${count} rules, not one`);
     if (ids.has(id as string)) fail(`duplicate id ${String(id)}`);
@@ -121,6 +124,6 @@ export class CorpusRunner {
   }
 }
 
-// Does the gate give the case its label? A gap case may only be kept.
+// Does the gate give the case its label, and the note it names? A gap case may only be kept.
 export const matches = (c: Case, v: Verdict): boolean =>
-  v.verdict === c.expect && (c.expect === 'keep' || v.code === c.code);
+  v.verdict === c.expect && (c.expect === 'keep' || v.code === c.code) && (c.note === undefined || v.notes.includes(c.note));

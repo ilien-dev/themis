@@ -113,3 +113,12 @@ test('recordAccepted given only keep verdicts creates no file', () => {
   assert.equal(existsSync(join(root, '.claude')), false);
   rmSync(root, { recursive: true, force: true });
 });
+
+test('a rule accepted under the retired fix dead-reference still loads and is still kept as accepted', () => {
+  const root = tmp();
+  const answer: Answer = { verdict: 'fix', code: 'dead-reference', question: 7, evidence: '`docs/gone.md` not found' };
+  mkdirSync(join(root, '.claude'), { recursive: true });
+  writeFileSync(join(root, ACCEPTED_FILE), JSON.stringify({ version: 1, rules: { [ruleHash('See `docs/gone.md`')]: { ...answer, date: '2026-11-01' } } }));
+  assert.deepEqual(loadAccepted(root).get(ruleHash('See `docs/gone.md`')), answer);
+  rmSync(root, { recursive: true, force: true });
+});

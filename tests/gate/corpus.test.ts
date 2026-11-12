@@ -8,7 +8,7 @@ import { caseRule, CorpusRunner, matches, parseCorpus, type Case } from '../../h
 import { parseRules } from '../../hooks/gate/extract.ts';
 import { readFacts } from '../../hooks/gate/facts.ts';
 import { contextFor, judgeAll } from '../../hooks/gate/verdict.ts';
-import { REASON_CODES, type Verdict } from '../../hooks/gate/types.ts';
+import { REASON_CODES, RETIRED_CODES, type Verdict } from '../../hooks/gate/types.ts';
 
 // The regression corpus: every labelled rule must get its verdict and reason code.
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -29,8 +29,11 @@ test('the corpus has at least 150 cases and every reason code at least 5', () =>
   for (const c of cases) if (c.code !== undefined) assert.ok(known.has(c.code), `${c.id}: unknown code ${c.code}`);
   for (const code of REASON_CODES) {
     const n = cases.filter((c) => c.code === code).length;
-    assert.ok(n >= 5, `${code}: ${n} cases`);
+    if (RETIRED_CODES.has(code)) assert.equal(n, 0, `${code} is no longer given`);
+    else assert.ok(n >= 5, `${code}: ${n} cases`);
   }
+  // What dead-reference used to flag is now a note on a kept rule.
+  assert.ok(cases.filter((c) => c.note === 'unresolved-reference').length >= 5);
   // Both languages, and enough rules that must enter as written to measure false cuts.
   const spanish = cases.filter((c) => /[áéíóúñ]|\b(?:usa|nunca|siempre|ejecutes|piensa|este)\b/i.test(c.rule));
   assert.ok(spanish.length >= 20, `${spanish.length} Spanish cases`);
@@ -111,6 +114,16 @@ test('a gap is only allowed on a kept rule and names why the rule is redundant',
   assert.throws(() => parseCorpus('{"id":"x","repo":"r","file":"f","rule":"- a","expect":"cut"}'), /code is required/);
 });
 
+test('a case may name a note that the kept rule must carry', () => {
+  const [c] = parseCorpus('{"id":"x","repo":"r","file":"f","rule":"- a","expect":"keep","note":"unresolved-reference"}');
+  assert.ok(c !== undefined);
+  const v: Verdict = { rule: caseRule(c), verdict: 'keep', code: null, question: null, evidence: '', notes: [] };
+  assert.equal(matches(c, v), false);
+  assert.equal(matches(c, { ...v, notes: ['unresolved-reference'] }), true);
+  assert.throws(() => parseCorpus('{"id":"x","repo":"r","file":"f","rule":"- a","expect":"keep","note":"nope"}'), /note/);
+  assert.throws(() => parseCorpus('{"id":"x","repo":"r","file":"f","rule":"- a","expect":"cut","code":"emphasis","note":"no-evidence"}'), /note/);
+});
+
 // A snapshot of a third-party repository: files.txt is its file listing, rules.md holds the rule file's
 // text, and the rule file itself need not exist under its real name.
 test('a repo with files.txt is judged against that listing, and its rule file need not exist', () => {
@@ -135,8 +148,8 @@ test('a repo with files.txt is judged against that listing, and its rule file ne
       assert.equal(facts.root, snapshots.dirFor('listed'));
       assert.ok(facts.files.has('src/main.ts'));
       assert.ok(facts.filesKnown);
-      assert.notEqual(snapshots.run(listed).code, 'dead-reference');
-      assert.equal(snapshots.run(bare).code, 'dead-reference');
+      assert.ok(!snapshots.run(listed).notes.includes('unresolved-reference'));
+      assert.ok(snapshots.run(bare).notes.includes('unresolved-reference'));
     } finally {
       snapshots.dispose();
     }

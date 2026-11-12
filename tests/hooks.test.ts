@@ -354,6 +354,15 @@ test('gate defaults to report: tells Claude without interrupting', () => {
   assert.doesNotMatch(context(out), /Approve|Deny|Drop or fix/);
 });
 
+test('gate=ask: an unresolved reference does not ask; Claude gets a note naming it', () => {
+  const dir = repoProject({ 'package.json': '{"name":"ledger"}', 'docs/guide.md': '' });
+  const out = write(dir, '- See `docs/missing.md` for the layers.\n', 'CLAUDE.md', ASK);
+  assert.equal(decision(out), null);
+  assert.ok(out !== null);
+  assert.match(context(out), /unresolved-reference \(`docs\/missing\.md` not found\)/);
+  assert.doesNotMatch(context(out), /may not be needed/);
+});
+
 test('gate_paths turns on the described-path check; it is off by default', () => {
   const files = { 'package.json': '{"name":"gpu"}', 'lib/nvidia.js': '// Executes nvidia-smi and parses the CSV output.\n' };
   const rule = '- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output\n';

@@ -34,7 +34,7 @@ test('in report mode the trailer tells Claude to tell the user, not to drop rule
   const out = formatAsk([CUT, MOVE], 'CLAUDE.md', 'report');
   assert.ok(out.startsWith('themis: 2 of 2 new rules in CLAUDE.md may not be needed.'));
   assert.ok(out.endsWith('\n\nthemis did not block this edit. Tell the user which of these rules were flagged and why. ' +
-    'Repair a `fix` or `rewrite` yourself; do not remove or move a rule without telling the user.'));
+    'Apply a `rewrite` yourself; do not remove or move a rule without telling the user.'));
   assert.doesNotMatch(out, /Approve|Deny|remember/);
 });
 
@@ -57,6 +57,18 @@ test('formatNotes is empty without notes and explains each note otherwise', () =
     '  "- Never use floats.": no-evidence (nothing in the repository backs it), absolute-no-reason (an absolute without a reason)',
     '  "- Write clean code.": accepted (approved earlier despite cut · generic-advice)',
   ].join('\n'));
+});
+
+test('an unresolved-reference note shows which reference did not resolve, in the notes and in audit', () => {
+  const v: Verdict = { ...keep('- See `docs/gone.md`.', ['unresolved-reference']), evidence: '`docs/gone.md` not found' };
+  assert.equal(formatNotes([v]), [
+    'themis: notes on rules kept as written:',
+    '  "- See `docs/gone.md`.": unresolved-reference (`docs/gone.md` not found)',
+  ].join('\n'));
+  assert.match(formatAudit([v]), /^\| 1 \| - See `docs\/gone\.md`\. \| keep \| {2}\| {2}\| `docs\/gone\.md` not found \| unresolved-reference \|$/m);
+  assert.equal(formatAsk([v], 'CLAUDE.md', 'report'), '');
+  // Still covered with no-evidence beside it: question 7 checked the reference against the repository.
+  assert.deepEqual(coverage([{ ...v, notes: ['unresolved-reference', 'no-evidence'] }]), { covered: 1, total: 1 });
 });
 
 test('formatAudit escapes table cells and ends with the coverage line, headings not counted', () => {

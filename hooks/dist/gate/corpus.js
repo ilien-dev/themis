@@ -7,6 +7,7 @@ import { parseRules } from "./extract.js";
 import { readFacts } from "./facts.js";
 import { contextFor, judgeAll } from "./verdict.js";
 const KINDS = new Set(['keep', 'cut', 'move', 'rewrite', 'fix', 'conflict']);
+const NOTES = new Set(['no-evidence', 'no-anchor', 'absolute-no-reason', 'unresolved-reference', 'accepted']);
 const isObject = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
 const str = (v) => typeof v === 'string' && v !== '';
 // The cases of a corpus; throws with the line number of the first invalid one.
@@ -26,7 +27,7 @@ export function parseCorpus(text) {
         }
         if (!isObject(v))
             return fail('not an object');
-        const { id, repo, file, rule, expect, code, line, gap, paths } = v;
+        const { id, repo, file, rule, expect, code, line, gap, paths, note } = v;
         if (!str(id) || !str(repo) || !str(file) || !str(rule))
             fail('id, repo, file and rule must be strings');
         if (typeof expect !== 'string' || !KINDS.has(expect))
@@ -41,6 +42,8 @@ export function parseCorpus(text) {
             fail('gap is a reason, only on keep');
         if (paths !== undefined && typeof paths !== 'boolean')
             fail('paths must be a boolean');
+        if (note !== undefined && (typeof note !== 'string' || !NOTES.has(note) || expect !== 'keep'))
+            fail('note is a note, only on keep');
         const count = parseRules(rule).length;
         if (count !== 1)
             fail(`rule parses to ${count} rules, not one`);
@@ -118,5 +121,5 @@ export class CorpusRunner {
         this.facts.clear();
     }
 }
-// Does the gate give the case its label? A gap case may only be kept.
-export const matches = (c, v) => v.verdict === c.expect && (c.expect === 'keep' || v.code === c.code);
+// Does the gate give the case its label, and the note it names? A gap case may only be kept.
+export const matches = (c, v) => v.verdict === c.expect && (c.expect === 'keep' || v.code === c.code) && (c.note === undefined || v.notes.includes(c.note));

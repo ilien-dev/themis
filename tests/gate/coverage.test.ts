@@ -5,7 +5,7 @@ import { parseRules } from '../../hooks/gate/extract.ts';
 import { readFacts, type Facts } from '../../hooks/gate/facts.ts';
 import { describedPath, describedScript, projectOverview, q1, stackList } from '../../hooks/gate/checks/q1.ts';
 import { q3 } from '../../hooks/gate/checks/q3.ts';
-import { q7 } from '../../hooks/gate/checks/q7.ts';
+import { q7, unresolvedReference } from '../../hooks/gate/checks/q7.ts';
 import { contextFor, judgeAll, type Check, type CheckOptions } from '../../hooks/gate/verdict.ts';
 import type { Answer } from '../../hooks/gate/types.ts';
 import { repo } from './helpers.ts';
@@ -118,10 +118,13 @@ test('a described path naming a tool the manifest lacks is kept: the description
   assert.equal(ask(q1, '- `src/serve.ts`: MCP server using fastmcp', files), null);
   assert.equal(code(q1, '- `src/index.ts`: CLI interface using Commander', files), 'inferable-path');
 });
-test('a described path that does not exist is left to question 7', () => {
+test('a described path that does not exist is left to question 7, which keeps it with a note', () => {
   const text = '- `src/missing.ts` — helpers';
   assert.equal(ask(q1, text, PATHS), null);
-  assert.equal(ask(q7, text, PATHS)?.code, 'dead-reference');
+  assert.equal(ask(q7, text, PATHS), null);
+  const rule = parseRules(text)[0];
+  assert.ok(rule !== undefined);
+  assert.equal(unresolvedReference(rule, factsOf(PATHS)), '`src/missing.ts` not found');
 });
 test('a description over 25 words is kept', () => {
   const long = Array.from({ length: 26 }, (_, i) => ['parses', 'csv', 'output', 'from', 'the', 'driver', 'tool'][i % 7]).join(' ');

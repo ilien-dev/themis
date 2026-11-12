@@ -27,11 +27,11 @@ Cap: 2500 estimated tokens (characters ÷ 3.6), including files pulled in with `
 
 To check new lines, write them to a temporary file and run `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --rules <temp file> --file <target>`.
 
-Reasons: inferable from the repo (title, folder tree, scripts, stack lists, overview) or a stale version; enforced by a setting, lint rule or deny rule, or contradicting one; generic advice, filler, or behavior current models already follow; an absolute command a hook or permission enforces better; a duplicated passage or long procedure; a dead reference or capitalised emphasis.
+Reasons: inferable from the repo (title, folder tree, scripts, stack lists, overview) or a stale version; enforced by a setting, lint rule or deny rule, or contradicting one; generic advice, filler, or behavior current models already follow; an absolute command a hook or permission enforces better; a duplicated passage or long procedure; capitalised emphasis.
 
 Described paths are flagged only with `gate_paths` on: a file's words are no proof it says them.
 
-Verdicts: `keep`, `cut` (redundant, already enforced, or generic), `move` (belongs in a hook, `permissions.deny`, or a doc or skill plus a pointer), `fix` (a path or script that does not resolve), `rewrite` (drop the emphasis), `conflict` (contradicts the repo's configuration). Notes on a `keep` are information, not a reason to drop the rule.
+Verdicts: `keep`, `cut` (redundant, already enforced, or generic), `move` (belongs in a hook, `permissions.deny`, or a doc or skill plus a pointer), `rewrite` (drop the emphasis), `conflict` (contradicts the repo's configuration). Notes on a `keep` are information, not a reason to drop the rule.
 
 ## init
 
@@ -44,10 +44,9 @@ Verdicts: `keep`, `cut` (redundant, already enforced, or generic), `move` (belon
 
 1. Read the target file and its `@imports`, and estimate the total. If `CLAUDE.md` and `AGENTS.md` differ, stop and run **sync** first.
 2. Write each new line in the shortest form that keeps its meaning, and check them with `check` (**The gate**). Handle each verdict:
-   - `keep`: write it.
+   - `keep`: write it. With `unresolved-reference`, first find the path or script the rule meant: if it moved or was renamed, use the right one; if it may exist later or you cannot tell, write it as given and tell the user which reference did not resolve.
    - `cut`: do not write it. Tell the user in one line the verdict, reason and evidence. Write it as given only if the user insists; with `gate: ask` themis then asks them to confirm.
    - `move`: do not write it here; offer the destination the gate names and use it if the user agrees.
-   - `fix`: find the path or script the rule meant. If it moved or was renamed, use the right one; if it may exist later or you cannot tell, write it as given and tell the user which reference did not resolve.
    - `rewrite`: drop the capitalised emphasis, keep the meaning, then write it.
    - `conflict`: do not pick a side. Show the user both and ask which is right.
 3. If the result would exceed the cap, condense lines close to the change and say what you condensed. If that is not enough, stop and propose `/themis:themis audit`.
@@ -59,7 +58,7 @@ Verdicts: `keep`, `cut` (redundant, already enforced, or generic), `move` (belon
 3. Show the resulting token estimate, then, once the user approves, apply the verdicts. Leave rules marked `accepted` alone.
    - `cut`: remove the line.
    - `move`: put it at the destination the gate names; leave a one-line pointer if useful.
-   - `fix`: repair the reference in place (same search as in **edit**); if unresolved, leave the line and tell the user.
+   - `keep` with `unresolved-reference`: check the reference and repair it in place if it moved (same search as in **edit**); else leave the line and tell the user.
    - `rewrite`: rewrite in place, no emphasis.
    - `conflict`: show both sides and ask; change nothing until the user answers.
 

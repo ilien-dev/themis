@@ -5,6 +5,7 @@ const NOTE_TEXT = {
     'no-evidence': 'nothing in the repository backs it',
     'no-anchor': 'nothing in it can be checked',
     'absolute-no-reason': 'an absolute without a reason',
+    'unresolved-reference': 'a path or script that does not resolve',
 };
 const clip = (line) => (line.length <= MAX_SNIPPET ? line : `${line.slice(0, MAX_SNIPPET - 1)}…`);
 // The first line of a rule, at most 100 characters: what the ask shows.
@@ -20,7 +21,7 @@ const withTarget = (v) => (v.target === undefined ? v.evidence : `${v.evidence} 
 const TRAILER = {
     ask: 'Approve to add them as written; themis will remember the choice. Deny to drop the edit.',
     report: 'themis did not block this edit. Tell the user which of these rules were flagged and why. ' +
-        'Repair a `fix` or `rewrite` yourself; do not remove or move a rule without telling the user.',
+        'Apply a `rewrite` yourself; do not remove or move a rule without telling the user.',
 };
 export function formatAsk(verdicts, fileName, mode) {
     const flagged = verdicts.filter(interrupts);
@@ -40,6 +41,8 @@ export function formatAsk(verdicts, fileName, mode) {
     ].join('\n\n');
 }
 function describe(note, v) {
+    if (note === 'unresolved-reference' && v.evidence !== '')
+        return `${note} (${v.evidence})`;
     if (note !== 'accepted')
         return `${note} (${NOTE_TEXT[note]})`;
     const o = v.original;
@@ -52,9 +55,10 @@ export function formatNotes(verdicts) {
     return lines.length === 0 ? '' : ['themis: notes on rules kept as written:', ...lines].join('\n');
 }
 // A rule is covered when a check answered it, or it was kept with something in the repository behind it.
+// A reference checked and not found counts as answered, as it did when it was the verdict `fix`.
 export function coverage(verdicts) {
     const rules = verdicts.filter((v) => v.rule.kind !== 'heading');
-    const covered = rules.filter((v) => v.verdict !== 'keep' || !v.notes.includes('no-evidence')).length;
+    const covered = rules.filter((v) => v.verdict !== 'keep' || !v.notes.includes('no-evidence') || v.notes.includes('unresolved-reference')).length;
     return { covered, total: rules.length };
 }
 const percent = (x) => `${(x * 100).toFixed(1)}%`;

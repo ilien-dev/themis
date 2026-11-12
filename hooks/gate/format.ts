@@ -10,6 +10,7 @@ const NOTE_TEXT: Readonly<Record<Exclude<Note, 'accepted'>, string>> = {
   'no-evidence': 'nothing in the repository backs it',
   'no-anchor': 'nothing in it can be checked',
   'absolute-no-reason': 'an absolute without a reason',
+  'unresolved-reference': 'a path or script that does not resolve',
 };
 
 const clip = (line: string): string => (line.length <= MAX_SNIPPET ? line : `${line.slice(0, MAX_SNIPPET - 1)}…`);
@@ -30,7 +31,7 @@ const withTarget = (v: Verdict): string => (v.target === undefined ? v.evidence 
 const TRAILER = {
   ask: 'Approve to add them as written; themis will remember the choice. Deny to drop the edit.',
   report: 'themis did not block this edit. Tell the user which of these rules were flagged and why. ' +
-    'Repair a `fix` or `rewrite` yourself; do not remove or move a rule without telling the user.',
+    'Apply a `rewrite` yourself; do not remove or move a rule without telling the user.',
 } as const;
 
 export function formatAsk(verdicts: readonly Verdict[], fileName: string, mode: 'ask' | 'report'): string {
@@ -51,6 +52,7 @@ export function formatAsk(verdicts: readonly Verdict[], fileName: string, mode: 
 }
 
 function describe(note: Note, v: Verdict): string {
+  if (note === 'unresolved-reference' && v.evidence !== '') return `${note} (${v.evidence})`;
   if (note !== 'accepted') return `${note} (${NOTE_TEXT[note]})`;
   const o = v.original;
   return o === undefined ? 'accepted' : `accepted (approved earlier despite ${o.verdict} · ${o.code})`;
@@ -64,9 +66,10 @@ export function formatNotes(verdicts: readonly Verdict[]): string {
 }
 
 // A rule is covered when a check answered it, or it was kept with something in the repository behind it.
+// A reference checked and not found counts as answered, as it did when it was the verdict `fix`.
 export function coverage(verdicts: readonly Verdict[]): { covered: number; total: number } {
   const rules = verdicts.filter((v) => v.rule.kind !== 'heading');
-  const covered = rules.filter((v) => v.verdict !== 'keep' || !v.notes.includes('no-evidence')).length;
+  const covered = rules.filter((v) => v.verdict !== 'keep' || !v.notes.includes('no-evidence') || v.notes.includes('unresolved-reference')).length;
   return { covered, total: rules.length };
 }
 

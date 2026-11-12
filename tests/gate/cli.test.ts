@@ -31,9 +31,9 @@ test('check reads markdown on stdin and prints one verdict per rule', () => {
     '1: cut · inferable-title · question 1',
     '3: cut · generic-advice · question 3',
     '4: keep',
-    '5: fix · dead-reference · question 7',
+    '5: keep',
   ]);
-  assert.match(r.stdout, /`docs\/missing\.md` not found/);
+  assert.match(r.stdout, /\n {2}"- See `docs\/missing\.md`\.": unresolved-reference \(`docs\/missing\.md` not found\)/);
   assert.match(r.stdout, /themis: notes on rules kept as written:\n {2}"- All money values are integer cents; never floats\.": no-evidence/);
 });
 
@@ -62,11 +62,15 @@ test('check --json is parseable and has verdict, code, question, evidence, notes
   const list = JSON.parse(r.stdout) as Record<string, unknown>[];
   assert.equal(list.length, 4);
   for (const v of list) for (const k of ['line', 'text', 'verdict', 'code', 'question', 'evidence', 'notes']) assert.ok(k in v, k);
-  assert.deepEqual(list.map((v) => v['verdict']), ['cut', 'cut', 'keep', 'fix']);
+  assert.deepEqual(list.map((v) => v['verdict']), ['cut', 'cut', 'keep', 'keep']);
   const kept = list[2];
   assert.ok(kept !== undefined);
   assert.deepEqual(kept['notes'], ['no-evidence', 'no-anchor', 'absolute-no-reason']);
   assert.equal(kept['code'], null);
+  const unresolved = list[3];
+  assert.ok(unresolved !== undefined);
+  assert.equal((unresolved['notes'] as string[])[0], 'unresolved-reference');
+  assert.equal(unresolved['evidence'], '`docs/missing.md` not found');
 });
 
 test('audit prints the coverage line and --prune drops stale accepted entries', () => {

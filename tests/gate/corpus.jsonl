@@ -12,7 +12,7 @@
 {"id":"c14-30","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Write tests for your code.","expect":"cut","code":"generic-advice","line":30}
 {"id":"c14-31","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Be thorough and careful.","expect":"keep","line":31,"gap":"a behaviour instruction to the agent, likely redundant for current models; no vendor statement about a model released between 2026-09-12 and 2026-11-12 asks to remove it, so it stays until measured. The anti-laziness statement (\"reduce that guidance\") is about Claude 4.6, outside the window. The c14 grader does not look for it"}
 {"id":"c14-32","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Use modern ES features.","expect":"cut","code":"generic-advice","line":32}
-{"id":"c14-35","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Run unit tests: `npm run test:unit`","expect":"fix","code":"dead-reference","line":35}
+{"id":"c14-35","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Run unit tests: `npm run test:unit`","expect":"keep","note":"unresolved-reference","line":35}
 {"id":"c14-36","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Generate schema: `npm run gen`","expect":"cut","code":"inferable-script","line":36}
 {"id":"c14-37","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Lint: `npm run lint`","expect":"cut","code":"inferable-script","line":37}
 {"id":"c14-40","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- All money values are integer cents; never floats.","expect":"keep","line":40}
@@ -265,12 +265,12 @@
 {"id":"api-44","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"```js\napp.get('/route1', handler1);\napp.get('/route2', handler2);\napp.get('/route3', handler3);\napp.get('/route4', handler4);\napp.get('/route5', handler5);\napp.get('/route6', handler6);\napp.get('/route7', handler7);\napp.get('/route8', handler8);\napp.get('/route9', handler9);\napp.get('/route10', handler10);\n```","expect":"move","code":"long-procedure"}
 {"id":"shop-77","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"1. Step 1 of the release\n2. Step 2 of the release\n3. Step 3 of the release\n4. Step 4 of the release\n5. Step 5 of the release","expect":"keep"}
 {"id":"api-45","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"Line 1 of a note on the users routes\nLine 2 of a note on the users routes\nLine 3 of a note on the users routes\nLine 4 of a note on the users routes\nLine 5 of a note on the users routes\nLine 6 of a note on the users routes\nLine 7 of a note on the users routes\nLine 8 of a note on the users routes","expect":"keep"}
-{"id":"c14-extra-13","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- See `docs/ARCHITECTURE.md` for the layers.","expect":"fix","code":"dead-reference"}
-{"id":"shop-78","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Components live in `src/ui/`.","expect":"fix","code":"dead-reference"}
-{"id":"api-46","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Seed the database with `npm run seed` first.","expect":"fix","code":"dead-reference"}
-{"id":"facturas-19","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- La configuración está en `src/facturas/config.py`.","expect":"fix","code":"dead-reference"}
+{"id":"c14-extra-13","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- See `docs/ARCHITECTURE.md` for the layers.","expect":"keep","note":"unresolved-reference"}
+{"id":"shop-78","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Components live in `src/ui/`.","expect":"keep","note":"unresolved-reference"}
+{"id":"api-46","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Seed the database with `npm run seed` first.","expect":"keep","note":"unresolved-reference"}
+{"id":"facturas-19","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- La configuración está en `src/facturas/config.py`.","expect":"keep","note":"unresolved-reference"}
 {"id":"mono-11","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Lint this package with `pnpm run lint`.","expect":"keep","gap":"packages/web/package.json has no lint script, but the gate does not report a missing script in a repository with more than one package.json."}
-{"id":"shop-79","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- IMPORTANT: see `src/missing.ts`.","expect":"fix","code":"dead-reference"}
+{"id":"shop-79","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- IMPORTANT: see `src/missing.ts`.","expect":"keep","note":"unresolved-reference"}
 {"id":"mono-12","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Build this package with `pnpm build`.","expect":"keep","gap":"packages/web/package.json has a build script, so the rule only names it; the gate keeps it because \"package\" is not a word of the build job."}
 {"id":"mono-13","repo":"tests/gate/repos/mono","file":"packages/web/CLAUDE.md","rule":"- Shared types are in `src/index.ts`.","expect":"keep"}
 {"id":"shop-80","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- The bundle is written to `dist/assets/`.","expect":"keep"}
@@ -365,7 +365,7 @@
 {"id":"gocli-12","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Never edit `go.sum` by hand.","expect":"move","code":"absolute-command"}
 {"id":"gocli-13","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Keep `internal/parse` free of I/O.","expect":"keep"}
 {"id":"gocli-14","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- See `internal/parse/parse.go` for the CSV rules.","expect":"keep"}
-{"id":"gocli-15","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- See `cmd/tool/flags.go` for the flags.","expect":"fix","code":"dead-reference"}
+{"id":"gocli-15","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- See `cmd/tool/flags.go` for the flags.","expect":"keep","note":"unresolved-reference"}
 {"id":"shop-109","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `git push --force` on main; the history is shared.","expect":"keep","gap":"the shop repo denies `git push --force` everywhere (Bash(git push --force:*)); \"on main\" is narrower than the deny entry, and the deny check abstains on the extra words"}
 {"id":"shop-110","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never call `Math.round` on prices.","expect":"keep"}
 {"id":"shop-111","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- `npm test` needs port 5432 free","expect":"keep"}
@@ -397,7 +397,7 @@
 {"id":"q1-lint-02","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Tests: `npm test`","expect":"cut","code":"inferable-script"}
 {"id":"q1-lint-03","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Run a single test: `npm test -- money`","expect":"keep"}
 {"id":"q1-lint-04","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Generate schema: `npm run gen`","expect":"keep"}
-{"id":"q1-lint-05","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Build: `npm run build`","expect":"fix","code":"dead-reference"}
+{"id":"q1-lint-05","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Build: `npm run build`","expect":"keep","note":"unresolved-reference"}
 {"id":"q1-lint-06","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Lint, then test: `npm run lint` and `npm test`","expect":"keep"}
 {"id":"q1-lint-07","repo":"tests/gate/repos/q1-lint","file":"CLAUDE.md","rule":"- Always run the linter before you push to the shared branch: `npm run lint`","expect":"keep"}
 {"id":"q1-ledger-01","repo":"tests/gate/repos/q1-ledger","file":"CLAUDE.md","rule":"# Ledger - Project Instructions for Claude","expect":"cut","code":"inferable-title"}
@@ -572,7 +572,7 @@
 {"id":"q3-app-20","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code: no function over 40 lines in `src/core/`.","expect":"keep"}
 {"id":"q3-app-21","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Handle errors with `AppError` from src/errors.js.","expect":"keep"}
 {"id":"q3-app-22","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code: no function over 40 lines.","expect":"keep"}
-{"id":"q3-app-23","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Think step by step and run `npm run lint` after each change.","expect":"fix","code":"dead-reference"}
+{"id":"q3-app-23","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Think step by step and run `npm run lint` after each change.","expect":"keep","note":"unresolved-reference"}
 {"id":"q3-app-24","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Never write clean code without tests.","expect":"keep"}
 {"id":"q3-app-25","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code, except in generated files.","expect":"keep"}
 {"id":"q3-app-26","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Handle errors properly when the payment provider times out.","expect":"keep"}
@@ -597,7 +597,7 @@
 {"id":"q3-app-45","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"# General guidelines","expect":"keep"}
 {"id":"q3-app-46","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"```\nWrite clean code.\n```","expect":"keep"}
 {"id":"q567-01","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Never run `npm publish` locally.","expect":"move","code":"absolute-command"}
-{"id":"q567-02","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- See `src/missing.js`.","expect":"fix","code":"dead-reference"}
+{"id":"q567-02","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- See `src/missing.js`.","expect":"keep","note":"unresolved-reference"}
 {"id":"q567-03","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Keep it small.","expect":"keep"}
 {"id":"q567-04","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Nunca ejecutes `git push --force`.","expect":"move","code":"absolute-command"}
 {"id":"q567-05","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Always avoid `docker system prune`.","expect":"move","code":"absolute-command"}
@@ -615,7 +615,7 @@
 {"id":"q567-17","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Every handler validates its input at the edge.\nDomain code never imports from the transport layer.\nErrors carry a stable code and a human message.\nLog lines are structured and never contain secrets.","expect":"move","code":"duplicated-passage"}
 {"id":"q567-18","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Domain code never imports from the transport layer.","expect":"keep"}
 {"id":"q567-19","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Every handler validates its input at the edge.\nErrors carry a stable code and a human message.\nTests cover each handler.","expect":"keep"}
-{"id":"q567-20","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Run unit tests: `npm run test:unit`","expect":"fix","code":"dead-reference"}
+{"id":"q567-20","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Run unit tests: `npm run test:unit`","expect":"keep","note":"unresolved-reference"}
 {"id":"q567-21","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Lint with `npm run lint`","expect":"cut","code":"inferable-script"}
 {"id":"q567-22","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Run `npm install`","expect":"keep","gap":"how to install dependencies in a Node project with no other package manager; nothing the model does not know, but the script check only knows package scripts"}
 {"id":"q567-23","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"- Run `npm test`","expect":"keep"}
@@ -625,12 +625,12 @@
 {"id":"q567-27","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src\\money.js`.","expect":"keep"}
 {"id":"q567-28","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/money.js`.","expect":"keep"}
 {"id":"q567-29","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `docs/CONVENTIONS.md`.","expect":"keep"}
-{"id":"q567-30","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `docs/MISSING.md`.","expect":"fix","code":"dead-reference"}
+{"id":"q567-30","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `docs/MISSING.md`.","expect":"keep","note":"unresolved-reference"}
 {"id":"q567-31","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `package.json`.","expect":"keep"}
 {"id":"q567-32","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit `src/generated/` by hand.","expect":"keep"}
 {"id":"q567-33","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit `./src/generated` by hand.","expect":"keep"}
 {"id":"q567-34","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit `docs` by hand.","expect":"keep"}
-{"id":"q567-35","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit `src/gone/` by hand.","expect":"fix","code":"dead-reference"}
+{"id":"q567-35","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Do not edit `src/gone/` by hand.","expect":"keep","note":"unresolved-reference"}
 {"id":"q567-36","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `https://x.dev/a`.","expect":"keep"}
 {"id":"q567-37","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/**/*.ts`.","expect":"keep"}
 {"id":"q567-38","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `v2.1/3 beta`.","expect":"keep"}
@@ -652,33 +652,33 @@
 {"id":"q567-54","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Read MUST_HAVE from the config.","expect":"keep"}
 {"id":"q567-55","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never use floats for money.","expect":"keep"}
 {"id":"q567-56","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Importantly, keep it short.","expect":"keep"}
-{"id":"q567-57","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"IMPORTANT: see `src/missing.js`.","expect":"fix","code":"dead-reference"}
+{"id":"q567-57","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"IMPORTANT: see `src/missing.js`.","expect":"keep","note":"unresolved-reference"}
 {"id":"q567-58","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never deploy on Fridays unless the on-call approves.","expect":"keep"}
 {"id":"q567-59","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Retry at most 3 times before failing.","expect":"keep"}
 {"id":"q567-60","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"When the cache is cold, warm it with `src/money.js` first.","expect":"keep"}
 {"id":"q7-bare-names-01","repo":"tests/gate/repos/q7-bare-names","file":"CLAUDE.md","rule":"See `settings.json`.","expect":"keep"}
 {"id":"q7-bare-names-02","repo":"tests/gate/repos/q7-bare-names","file":"CLAUDE.md","rule":"See `tsconfig.json`.","expect":"keep"}
 {"id":"q7-bare-names-03","repo":"tests/gate/repos/q7-bare-names","file":"CLAUDE.md","rule":"See `SKILL.md`.","expect":"keep"}
-{"id":"q7-bare-names-04","repo":"tests/gate/repos/q7-bare-names","file":"CLAUDE.md","rule":"See `missing.json`.","expect":"fix","code":"dead-reference"}
+{"id":"q7-bare-names-04","repo":"tests/gate/repos/q7-bare-names","file":"CLAUDE.md","rule":"See `missing.json`.","expect":"keep","note":"unresolved-reference"}
 {"id":"q7-subdir-01","repo":"tests/gate/repos/q7-subdir","file":"packages/app/CLAUDE.md","rule":"See `lib/x.ts`.","expect":"keep"}
-{"id":"q7-subdir-02","repo":"tests/gate/repos/q7-subdir","file":"packages/app/CLAUDE.md","rule":"See `lib/y.ts`.","expect":"fix","code":"dead-reference"}
+{"id":"q7-subdir-02","repo":"tests/gate/repos/q7-subdir","file":"packages/app/CLAUDE.md","rule":"See `lib/y.ts`.","expect":"keep","note":"unresolved-reference"}
 {"id":"q567-61","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/money.js:42`.","expect":"keep"}
 {"id":"q567-62","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/money.js:42:7`.","expect":"keep"}
 {"id":"q567-63","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/money.js#L10-L20`.","expect":"keep"}
-{"id":"q567-64","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/missing.js:42`.","expect":"fix","code":"dead-reference"}
+{"id":"q567-64","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"See `src/missing.js:42`.","expect":"keep","note":"unresolved-reference"}
 {"id":"q7-ignored-01","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `dist/x.js`.","expect":"keep"}
 {"id":"q7-ignored-02","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `node_modules/foo/x.js`.","expect":"keep"}
 {"id":"q7-ignored-03","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `coverage/lcov.info`.","expect":"keep"}
 {"id":"q7-ignored-04","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `cache-data/x.bin`.","expect":"keep"}
 {"id":"q7-ignored-05","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `a/b/secrets.json`.","expect":"keep"}
-{"id":"q7-ignored-06","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `src/missing.ts`.","expect":"fix","code":"dead-reference"}
+{"id":"q7-ignored-06","repo":"tests/gate/repos/q7-ignored","file":"CLAUDE.md","rule":"See `src/missing.ts`.","expect":"keep","note":"unresolved-reference"}
 {"id":"q567-65","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never use `as any` casts.","expect":"keep"}
 {"id":"q567-66","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Always write `if (x) return` guards.","expect":"keep"}
 {"id":"q567-67","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never run `docker compose down -v` here.","expect":"move","code":"absolute-command"}
 {"id":"q567-68","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never run `rm -rf dist`.","expect":"move","code":"absolute-command"}
 {"id":"q567-69","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Always run `npm run lint` before committing.","expect":"move","code":"absolute-command"}
 {"id":"q567-70","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Siempre ejecuta `npm run lint`.","expect":"move","code":"absolute-command"}
-{"id":"q567-71","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never edit `src/missing.js` by hand.","expect":"fix","code":"dead-reference"}
+{"id":"q567-71","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never edit `src/missing.js` by hand.","expect":"keep","note":"unresolved-reference"}
 {"id":"cov-001","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"# CLAUDE.md","expect":"cut","code":"file-filler"}
 {"id":"cov-002","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"# AGENTS.md","expect":"cut","code":"file-filler"}
 {"id":"cov-003","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"# Project instructions","expect":"cut","code":"file-filler"}
