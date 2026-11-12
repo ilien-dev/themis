@@ -16,6 +16,7 @@ export interface Facts {
   readonly runs: ReadonlySet<Tool>;
   readonly deny: readonly string[];
   readonly files: ReadonlySet<string>;
+  readonly filesKnown: boolean; // false when git failed in a repo: an empty `files` then means nothing
   readonly languages: readonly string[];
   readonly docs: readonly { readonly file: string; readonly text: string }[];
 }
@@ -176,7 +177,9 @@ export function readFacts(ruleFile: string, override?: { files?: readonly string
     }
   }
 
-  const listed = override?.files ?? (inRepo ? gitLines(root, ['ls-files', '-z', '-co', '--exclude-standard']) ?? [] : []);
+  const git = override?.files === undefined && inRepo ? gitLines(root, ['ls-files', '-z', '-co', '--exclude-standard']) : [];
+  const filesKnown = git !== null;
+  const listed = override?.files ?? git ?? [];
   const files = new Set(listed.map(posix));
   const counts = new Map<string, number>();
   for (const f of files) {
@@ -194,5 +197,5 @@ export function readFacts(ruleFile: string, override?: { files?: readonly string
   for (const d of new Set([dir, root])) addDoc(d, 'README.md');
   for (const f of filesIn(join(root, 'docs'))) if (f.toLowerCase().endsWith('.md')) addDoc(join(root, 'docs'), f);
 
-  return { root, dir, inRepo, pkg, lockfiles, config, unreadable, runs, deny, files, languages, docs };
+  return { root, dir, inRepo, pkg, lockfiles, config, unreadable, runs, deny, files, filesKnown, languages, docs };
 }

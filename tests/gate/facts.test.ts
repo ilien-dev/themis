@@ -73,3 +73,8 @@ test('config parsers tolerate comments, trailing commas and nesting', () => {
   assert.deepEqual(parseFlatYaml('# c\nsemi: false\nwidth: 80\nname: "a b" # note\nnested:\n  x: 1\n'), { semi: false, width: 80, name: 'a b' });
   assert.deepEqual(parseEditorconfig('root = true\n[*.js]\nindent_size = 4\n[*]\nIndent_Style = Space\n'), { root: 'true', indent_style: 'space' });
 });
+test('filesKnown is true with a git listing and with override.files', () => {
+  const d = repo({ 'a.ts': '' });
+  assert.equal(readFacts(join(d, 'CLAUDE.md')).filesKnown, true);
+  assert.equal(readFacts(join(d, 'CLAUDE.md'), { files: [] }).filesKnown, true);
+});

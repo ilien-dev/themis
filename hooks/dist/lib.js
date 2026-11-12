@@ -116,7 +116,7 @@ export function pairState(a, b) {
     return pulls(a, ba, b) || pulls(b, bb, a) ? 'import' : 'differ';
 }
 export function gitLines(cwd, args) {
-    const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, windowsHide: true });
+    const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, maxBuffer: 64 * 1024 * 1024, windowsHide: true });
     return r.status === 0 ? r.stdout.split(/[\0\n]/).filter(Boolean) : null;
 }
 // Directories that may hold a pair. In a git repo: the ones Claude Code loads at launch (the working

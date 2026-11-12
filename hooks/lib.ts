@@ -145,7 +145,7 @@ export function pairState(a: string, b: string): PairState {
 }
 
 export function gitLines(cwd: string, args: readonly string[]): string[] | null {
-  const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, windowsHide: true });
+  const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, maxBuffer: 64 * 1024 * 1024, windowsHide: true });
   return r.status === 0 ? r.stdout.split(/[\0\n]/).filter(Boolean) : null;
 }
 
