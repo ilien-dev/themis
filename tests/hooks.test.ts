@@ -432,5 +432,5 @@ test('the skill tells every mode to run the gate', () => {
   assert.match(md, /gate\.js check/);
   assert.match(md, /gate\.js audit/);
   assert.ok(!md.includes('## What does not belong'));
-  assert.ok(md.length <= 6500, `${md.length} characters`);
+  assert.ok(md.length <= 7000, `${md.length} characters`);
 });

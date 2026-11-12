@@ -23,33 +23,33 @@ Cap: 2500 estimated tokens (characters ÷ 3.6), including files pulled in with `
 
 ## The gate
 
-`node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js` judges each rule with fixed checks, so results are repeatable. Its verdict is the criterion. Do not add cuts of your own in audit or init: what the gate keeps, stays.
+`node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js` judges each rule with fixed checks, so results are repeatable. Its verdict is the criterion. In audit and init add no cuts of your own: what the gate keeps, stays.
 
-It reports six kinds of reason, each with a code:
+It reports six kinds of reason:
 - Inferable from the repo: title, folder tree, scripts, stack, overview.
 - Enforced by configuration: a setting, lint rule or deny rule already does it, or the rule contradicts one.
 - Generic advice, filler, or behavior current models already follow.
 - An absolute command a hook or permission would enforce better.
-- A duplicated passage or a long procedure that belongs in a doc or skill.
-- A dead reference, or emphasis in capitals.
+- A duplicated passage or long procedure that belongs in a doc or skill.
+- A dead reference, or capitalised emphasis.
 
-Verdicts: `keep`, `cut` (redundant), `move` (belongs in a hook, `permissions.deny`, or a doc or skill plus a pointer), `fix` (a path or script that does not resolve), `rewrite` (drop the capitalised emphasis), `conflict` (contradicts the repo's configuration). Notes on a `keep` are information, not a reason to drop the rule.
+Verdicts: `keep`, `cut` (redundant, already enforced, or generic), `move` (belongs in a hook, `permissions.deny`, or a doc or skill plus a pointer), `fix` (a path or script that does not resolve), `rewrite` (drop the emphasis), `conflict` (contradicts the repo's configuration). Notes on a `keep` are information, not a reason to drop the rule.
 
 ## init
 
-1. Read the manifest, scripts, CI and lint config, README and a few source files.
-2. Run the cheap test and build commands you find, to confirm they work.
-3. Draft the lines the model would get wrong without: unguessable commands, non-default conventions, gotchas, repo etiquette, `path — when to read it` pointers. No project heading; `##` sections only for several lines of one kind. Pipe the draft to `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target>` before showing it, and apply the verdicts as in **edit**.
-4. Show the draft with its token estimate, then write `CLAUDE.md`. Check that `AGENTS.md` now exists with the same text.
+1. Read the manifest, scripts, CI and lint config, README and some source.
+2. Run the cheap test and build commands to confirm they work.
+3. Draft the lines the model would get wrong without: unguessable commands, non-default conventions, gotchas, repo etiquette, `path — when to read it` pointers. No project heading; `##` only for several lines of one kind. Pipe the draft to `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target>` before showing it, and apply the verdicts as in **edit**.
+4. Show the draft with its token estimate, then write `CLAUDE.md`. Check `AGENTS.md` now exists with the same text.
 
 ## edit
 
 1. Read the target file and its `@imports`, and estimate the total. If `CLAUDE.md` and `AGENTS.md` differ, stop and run **sync** first.
-2. Write each new line in the shortest form that keeps its meaning. Pipe the new lines to `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target>` and handle each verdict:
+2. Write each new line in the shortest form that keeps its meaning. Write them to a temporary file and run `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --file <target> < <temp file>` (works in both shells). Handle each verdict:
    - `keep`: write it.
-   - `cut`: do not write it. Tell the user in one line the verdict, reason and evidence. Write it as given only if the user insists; themis will then ask them to confirm.
+   - `cut`: do not write it. Tell the user in one line the verdict, reason and evidence. Write it as given only if the user insists; themis then asks them to confirm.
    - `move`: do not write it here. Offer the destination the gate names and do that instead if the user agrees.
-   - `fix`: look for the path or script the rule meant. If it moved or was renamed, write the rule with the right one. If it is meant to exist later or you cannot tell, write it as given and tell the user which reference did not resolve.
+   - `fix`: look for the path or script the rule meant. If it moved or was renamed, write the rule with the right one. If it may exist later or you cannot tell, write it as given and tell the user which reference did not resolve.
    - `rewrite`: drop the capitalised emphasis, keep the meaning, then write it.
    - `conflict`: do not pick a side. Show the user both and ask which is right.
 3. If the result would exceed the cap, condense lines close to the change and say what you condensed. If that is not enough, stop and propose `/themis:themis audit`.
@@ -57,15 +57,22 @@ Verdicts: `keep`, `cut` (redundant), `move` (belongs in a hook, `permissions.den
 ## audit
 
 1. Read `CLAUDE.md`, `AGENTS.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, `.claude/rules/*.md` and every `@import`, and estimate the total. If a pair is not identical, run **sync** on it first.
-2. Run `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js audit <file> --prune` and show its table. Check by hand nothing the table already covers.
-3. Show the resulting token estimate, then apply the approved changes using the handling in **edit**. Remove headings whose section is left empty. Merge before adding: when something new must go in, remove or condense something else so the file stays under the cap.
+2. Run `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js audit <file> --prune` once for each file and show the table. `--prune` only drops remembered approvals of rules that no longer exist; it never edits the rule file. Do not re-check by hand anything the table covers.
+3. Show the resulting token estimate, then, once the user approves, apply the verdicts. Leave rules marked `accepted` alone.
+   - `cut`: remove the line.
+   - `move`: put it at the destination the gate names; leave a one-line pointer if useful.
+   - `fix`: repair the reference in place (same search as in **edit**); if unresolved, leave the line and tell the user.
+   - `rewrite`: rewrite in place, no emphasis.
+   - `conflict`: show both sides and ask; change nothing until the user answers.
+
+   Remove headings whose section is left empty. Merge before adding: when something new must go in, remove or condense something else to stay under the cap.
 
 ## sync
 
 For each directory that has a `CLAUDE.md` or an `AGENTS.md` (the session-start notice lists the ones that need work):
 
 - **Only one exists.** Create the other with Write, with exactly the same text. No question needed.
-- **Both exist and differ.** Someone changed one outside themis, and you do not know which is right. Show which lines only each file has (`git diff --no-index CLAUDE.md AGENTS.md`, and `git log -1` on each for when it changed), then ask the user: keep `CLAUDE.md`'s text, keep `AGENTS.md`'s, or merge (show the merged text). Never choose for them, even when one looks newer or longer. Then Write the agreed full text to one of the two; Edit is rejected while they differ, and the Write asks the user to confirm.
+- **Both exist and differ.** Someone changed one outside themis, and you do not know which is right. Show the lines only each file has (`git diff --no-index CLAUDE.md AGENTS.md`, `git log -1` on each for when it changed), then ask the user: keep `CLAUDE.md`'s text, keep `AGENTS.md`'s, or merge (show the merged text). Never choose for them, even when one looks newer or longer. Then Write the agreed text to one of the two; Edit is rejected while they differ, and the Write asks the user to confirm.
 - **One imports or symlinks the other.** That keeps them in step but they are not two copies. Say so and ask whether to convert; if yes, Write the full text to the file that held only the import (for a symlink, the user removes the link first: Write does not go through one).
 
 Finish by confirming each pair is identical.
