@@ -408,7 +408,7 @@ test('gate: a cold pre-tool process stays fast on a real CLAUDE.md', () => {
 
 test('manifest, hooks and skill are consistent', () => {
   const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')) as Manifest;
-  assert.equal(manifest.version, '2.1.1');
+  assert.equal(manifest.version, '2.2.0');
   assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity', 'gate']);
   assert.equal((manifest.userConfig['gate'] as { default?: string }).default, 'report');
   const hooksJson = readFileSync(join(root, 'hooks', 'hooks.json'), 'utf8');

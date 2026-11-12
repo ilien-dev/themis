@@ -17,7 +17,7 @@ Rule files go wrong in two ways.
 
 **They fork.** Claude Code reads `CLAUDE.md`. Codex, Cursor, Copilot and others read `AGENTS.md`. A repository that wants both ends up with two files that someone has to keep in step by hand, and one of them is always a few edits behind.
 
-themis handles both with one skill and three hooks.
+themis handles both with one skill and three hooks, and a gate that checks each new rule before it goes in.
 
 ## Which file Claude Code reads
 
@@ -101,6 +101,64 @@ Limits worth knowing:
 
 Turn parity off with the `parity` option if you want only one of the two files; the cap keeps working.
 
+## The rule gate
+
+The skill used to decide by judgment what belongs in a rule file, so the same rule could be accepted one day and cut the next. The gate decides with fixed checks instead: no model, the same answer every time. It reads the repository's `package.json`, lint and TypeScript configuration, CI and hook files, README and docs, and judges each new rule against them.
+
+A rule is a list item with its continuation lines, a paragraph, a numbered list or a code block with the paragraph that introduces it. Six questions are active:
+
+| # | Question | Verdict |
+|---|---|---|
+| 1 | Does the repo already show it? A project title, a folder tree, "use X" for a dependency that is the only one of its kind, a script with an obvious name and nothing added, a summary of the README. | `cut` |
+| 2 | Does a tool already enforce it? A lint or compiler setting that is configured, run by a script, a pre-commit hook or CI, with the same value; or a `permissions.deny` rule that covers the command. If the setting says the opposite, `conflict`. | `cut` or `conflict` |
+| 3 | Is it generic or filler? "Write clean code", "this file provides guidance", or a phrase a vendor guide for a current model asks to remove. English and Spanish. | `cut` |
+| 5 | Is it an absolute ban on a command or path? "Never run `x`" is better as a hook or a `permissions.deny` rule. | `move` |
+| 6 | Is it a long procedure, or a passage copied from the README or `docs/`? | `move`, to a doc or a skill with a pointer |
+| 7 | Is it shouted, or does it name a command or path that does not exist? | `rewrite` or `fix` |
+
+Everything else is `keep`. A `keep` can carry a note (no evidence found, no anchor in the repo, an absolute without a reason); a note informs and never interrupts. A rule is kept when in doubt: a negation, a condition, a number or a word the tables do not know all count as information.
+
+Negative rules ("don't use X") are never cut by question 1, and "use pnpm, not npm" is kept even with a `pnpm-lock.yaml`, because naming a tool that is not the default changes what the model does.
+
+### Modes
+
+The `gate` option sets what happens when a rule written to `CLAUDE.md` or `AGENTS.md` gets a verdict other than `keep`.
+
+| `gate` | What happens |
+|---|---|
+| `report` (default) | The edit goes through. Claude is shown the verdicts and told to drop or fix those rules unless you asked for them as written. |
+| `ask` | The edit stops and you are asked. The prompt lists each rule with its verdict, reason and evidence; approving writes the rule as given. |
+| `off` | The gate does nothing. |
+
+The default is `report` because the gate has not earned the right to interrupt you: see [RESULTS.md](RESULTS.md) for its measured precision.
+
+The gate never denies an edit. In sessions where nobody can answer a prompt (permission mode `dontAsk` or `bypassPermissions`, subagents), `ask` falls back to `report`. A headless `claude -p` session cannot be recognized from the hook input, so there `ask` is denied by Claude Code and Claude reads the reason.
+
+### Accepted rules
+
+When you approve a rule that the gate had flagged, themis records it in `.claude/themis-accepted.json`, which belongs in version control: the hash of the normalized text, the original verdict and the date. From then on that rule is `keep` with an `accepted` note, in the hook and in `audit`. If its text changes, the hash changes and it is judged again. `gate audit --prune` removes entries that no longer match any rule. Nothing is recorded in `report` mode, because nobody approved anything.
+
+### Command line
+
+The skill calls these; you can too.
+
+```
+node hooks/dist/gate.js check  [--file CLAUDE.md] [--json]   # Markdown on stdin; --file says which repository
+node hooks/dist/gate.js audit  <file> [--json] [--prune]     # a verdict for every rule, and the coverage
+node hooks/dist/gate.js report <corpus.jsonl> [--json]       # precision, false-cut rate and coverage of a labelled corpus
+```
+
+The exit code is 0 for any valid input and 2 for wrong usage or an unreadable file.
+
+### Limits
+
+- **Node, JavaScript and TypeScript repositories only.** The checks read `package.json`; elsewhere they find no evidence and keep the rule.
+- **English and Spanish.** The phrase tables cover those two languages.
+- **The model-default question is not active.** "Do recent models already do this by default?" needs measured data per model; it is planned next, and until then the gate does not cut a rule for that reason.
+- **Monorepos.** A script or path that lives in a sub-package looks missing from the root, so `fix` can flag a reference that is fine. This is the main source of wrong interruptions in the measurement.
+- **Node versions.** The compiled hooks run on Node.js 18. Contributors need Node.js 22.18 or later to run the tests, which execute the TypeScript sources.
+- **Measured on 1,502 rules from 40 public repositories**: of 150 interruptions, 62.0% were right, and 6.3% of the rules labelled keep were interrupted. It flags about one in six of the rules that should go. The labels are not yet reviewed, so those numbers are provisional.
+
 ## Install
 
 Requires [Node.js](https://nodejs.org) 18 or later on `PATH` (the hooks are Node scripts, compiled from TypeScript and shipped in `hooks/dist/`; installing needs no build step).
@@ -124,13 +182,14 @@ Coming from 1.x? Version 2.0.0 removes five skills and the resident rule; see th
 |---|---|---|
 | `claude_md_cap` | `2500` | Maximum estimated tokens for a rule file including its imports. `0` disables the cap. |
 | `parity` | `true` | Copy edits between `CLAUDE.md` and `AGENTS.md` and report pairs that differ. |
+| `gate` | `report` | What to do with a new rule that is inferable, already enforced, generic or badly formed: `ask`, `report` or `off`. |
 
 ## What the hooks do
 
 | Event | Runs on | Does |
 |---|---|---|
-| `PreToolUse` | `Edit`, `Write`, `MultiEdit`; shell commands that mention `CLAUDE` or `AGENTS` | Denies an edit over the cap, a shell write to a rule file, and an edit to a pair that already differs. Asks you to confirm a `Write` to such a pair. |
-| `PostToolUse` | `Edit`, `Write`, `MultiEdit`; shell commands that mention `CLAUDE` or `AGENTS` | Copies the edited file to its twin. After a shell command, reports pairs that differ. |
+| `PreToolUse` | `Edit`, `Write`, `MultiEdit`; shell commands that mention `CLAUDE` or `AGENTS` | Denies an edit over the cap, a shell write to a rule file, and an edit to a pair that already differs. Asks you to confirm a `Write` to such a pair. Runs the rule gate on the new rules of an edit. |
+| `PostToolUse` | `Edit`, `Write`, `MultiEdit`; shell commands that mention `CLAUDE` or `AGENTS` | Copies the edited file to its twin and records the rules you approved. After a shell command, reports pairs that differ. |
 | `SessionStart` | every start, resume, `/clear` and compaction | Reports pairs that differ or are linked instead of copied. Silent otherwise. |
 
 The only file a hook ever writes is the `CLAUDE.md` or `AGENTS.md` next to the one Claude just edited. They make no network calls and fail silent on unexpected input. See [SECURITY.md](SECURITY.md).
@@ -143,7 +202,7 @@ Everything is strict TypeScript. The hooks in `hooks/*.ts` are compiled to `hook
 npm ci
 npm run check                              # typecheck, lint, build and test, in that order
 npm run build                              # hooks/*.ts -> hooks/dist/*.js; commit the result
-npm test                                   # hook tests: cap, shell block, parity
+npm test                                   # hook and gate tests: cap, shell block, parity, rule gate
 claude plugin validate . --strict          # manifest and components
 ```
 

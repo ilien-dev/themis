@@ -1,6 +1,6 @@
 # Filtro de reglas: diseño
 
-Fecha: 2026-11-12 · Estado: aprobado · Versión objetivo: themis 2.2.0 (fase 1)
+Fecha: 2026-11-12 · Estado: implementado (fase 1) · Versión objetivo: themis 2.2.0 (fase 1)
 
 Los veredictos y notas se nombran aquí en español. En el código y en los mensajes del plugin van en inglés (`keep`, `cut`, `move`, `rewrite`, `fix`, `conflict`); la tabla de equivalencias está en el plan de la fase 1.
 

@@ -1,5 +1,27 @@
 # Changelog
 
+## 2.2.0 — 2026-11-12
+
+### Added
+
+- The rule gate. When a rule is written to `CLAUDE.md` or `AGENTS.md`, fixed checks with no model judge whether it is inferable from the repo, already enforced by a tool or a `permissions.deny` rule, generic advice, an absolute ban that belongs in a hook, a long procedure, shouted, or a reference to a command or path that does not exist. The verdicts are `keep`, `cut`, `move`, `fix`, `rewrite` and `conflict`. See *The rule gate* in the README.
+- `gate` option: `report` (default; the edit goes through and Claude is told), `ask` (you confirm each flagged rule) or `off`. Where nobody can answer a prompt, `ask` acts as `report`.
+- `.claude/themis-accepted.json`: rules you approved after a flag are remembered by the hash of their text, so they are not flagged again until they change.
+- `hooks/dist/gate.js` with `check`, `audit` and `report` commands. `report` measures a labelled corpus.
+- A regression corpus of 671 cases on 66 small repositories, and a held-out corpus of 1,502 rules from 40 public repositories. The measurement is in [RESULTS.md](RESULTS.md): precision of interruption 62.0%, false-cut rate 6.3%, coverage 42.4%. That is below the 95% set as the condition for making `ask` the default, so the default is `report`. The labels have not been reviewed yet, so the numbers are provisional.
+- A CI step that runs the gate on Node.js 18.
+
+### Changed
+
+- The skill no longer decides by its own judgment what belongs in a rule file: `edit`, `init` and `audit` run the gate and follow its verdict, and `audit` shows its table.
+
+### Known limits
+
+- Node, JavaScript and TypeScript repositories only; English and Spanish phrase tables.
+- The check on whether recent models already do something by default is not active yet.
+- A script or path in a sub-package of a monorepo can be flagged as missing.
+- The session evals c13 to c15 were not re-run with the gate. The c14 grader still requires removing "double-check" lines, which the gate keeps.
+
 ## 2.1.1 — 2026-10-10
 
 ### Fixed
