@@ -1,4 +1,5 @@
 import { q1 } from './checks/q1.ts';
+import { q2 } from './checks/q2.ts';
 import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentions, ruleHash, spans } from './text.ts';
 import type { Facts } from './facts.ts';
 import type { Answer, Note, Rule, Verdict } from './types.ts';
@@ -16,7 +17,7 @@ export interface RegisteredCheck {
   readonly run: Check;
 }
 
-export const CHECKS: readonly RegisteredCheck[] = [{ question: 1, run: q1 }];
+export const CHECKS: readonly RegisteredCheck[] = [{ question: 1, run: q1 }, { question: 2, run: q2 }];
 
 const OUTSIDE_REPO = new Set<number>([3, 7]);
 
