@@ -129,3 +129,47 @@ test('a long single-line rule is answered quickly', () => {
   ask(`We use ${'word '.repeat(4000)}`, REACT);
   assert.ok(performance.now() - start < 1000);
 });
+
+// Round 1: rules that carry information must not be cut.
+const WIDE = { 'package.json': '{"name":"ledger","scripts":{"test":"node --test","lint":"eslint ."},"dependencies":{"react":"1","zod":"1","vite":"1","zustand":"1","prettier":"3","typescript":"5","@types/node":"22"}}', 'src/a.ts': '' };
+test('a technology rule with extra content is kept', () => {
+  for (const text of [
+    'Use TypeScript strict mode.', 'Use Prettier with tabs.', 'Use Node 20.', 'Use React with Zod.', 'Use Vite and Zustand.',
+    'Use comments to express intent.',
+  ]) assert.equal(ask(text, WIDE), null, text);
+});
+test('an ordinary word is a mention only when capitalised or in a code span', () => {
+  assert.equal(ask('Use react.', REACT), null);
+  assert.equal(ask('Use React.', REACT)?.code, 'inferable-tech');
+  assert.equal(ask('Use `react`.', REACT)?.code, 'inferable-tech');
+});
+test('connectives alone may remain around a technology', () => {
+  assert.equal(ask('Use React for the project.', REACT)?.code, 'inferable-tech');
+  assert.equal(ask('Este proyecto usa React.', REACT)?.code, 'inferable-tech');
+});
+test('a tree list whose descriptions instruct is kept', () => {
+  const files = { 'src/a.ts': '', 'migrations/1.sql': '', 'docs/x.md': '' };
+  assert.equal(ask('1. `src/` - code\n2. `docs/` - notes\n3. `migrations/` - generated, do not edit', files), null);
+  assert.equal(ask('1. `src/` - code\n2. `docs/` - notes\n3. `migrations/` - never touched by hand', files), null);
+});
+test('a title that carries a rule is kept', () => {
+  assert.equal(ask('Ledger must never use floats for money.', { 'package.json': '{"name":"ledger"}' }), null);
+  assert.equal(ask('Ledger stores every amount as integer cents in the database layer always.', { 'package.json': '{"name":"ledger"}' }), null);
+});
+test('a script rule with a condition or a prohibition is kept', () => {
+  assert.equal(ask('Run `npm test` before every commit.', LINT), null);
+  assert.equal(ask('Never commit without running `npm test`.', LINT), null);
+  assert.equal(ask('- Tests, when touching money: `npm test`', LINT), null);
+});
+test('a tree block that is planned, annotated or instructing is kept', () => {
+  const tree = (body: string): string => `\`\`\`\n${body}\n\`\`\``;
+  const files = { 'src/money.js': '', 'tests/money.test.js': '' };
+  assert.equal(ask(tree('app/\n\u251c\u2500\u2500 planned/\n\u2514\u2500\u2500 future.js'), files), null);
+  assert.equal(ask(tree('app/\n\u251c\u2500\u2500 src/\n\u2514\u2500\u2500 tests/ # never edit by hand'), files), null);
+  assert.equal(ask(tree('app/\n\u251c\u2500\u2500 src/\n\u2514\u2500\u2500 tests/'), files)?.code, 'inferable-tree');
+});
+test('the extended negations stop a technology rule', () => {
+  for (const text of ['Use React without Redux.', 'Use React unless told otherwise.', 'Only use React.', 'Dont use React.', 'Usa React salvo en el admin.', 'Usa solo React.']) {
+    assert.equal(ask(text, REACT), null, text);
+  }
+});

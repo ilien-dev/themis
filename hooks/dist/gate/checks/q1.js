@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { read } from "../../lib.js";
 import { isRecord, parseJsonc } from "../read-config.js";
 import { AFFIRM, NEGATION, OBVIOUS_SCRIPTS, TECH } from "../tables/alias.js";
-import { citedPaths, mentions, similarity, spans, words } from "../text.js";
+import { ABSOLUTE, citedPaths, mentions, similarity, spans, words } from "../text.js";
 // Question 1: does the repository already say what this rule says?
 const WB_BEFORE = String.raw `(?<![\p{L}\p{N}_-])`;
 const WB_AFTER = String.raw `(?![\p{L}\p{N}_-])`;
@@ -14,6 +14,17 @@ const IMPERATIVE = new Set([
     'update', 'call', 'follow', 'check', 'read', 'import', 'install', 'remember', 'try', 'put', 'must', 'should',
     'usa', 'usar', 'ejecuta', 'a\u00f1ade', 'evita', 'escribe', 'mant\u00e9n', 'haz', 'crea', 'sigue', 'revisa', 'lee', 'nunca', 'siempre',
 ]);
+// What may remain of a technology rule once the template and the names are removed.
+const STOPWORDS = new Set([
+    'and', 'with', 'the', 'a', 'an', 'for', 'our', 'this', 'project', 'as', 'in', 'of', 'repo', 'app', 'codebase',
+    'y', 'con', 'el', 'la', 'para', 'este', 'proyecto', 'en', 'como',
+]);
+// Words a title may carry besides the package name.
+const FILLER = new Set([
+    'project', 'instructions', 'guide', 'guidelines', 'claude', 'agents', 'for', 'the', 'repo', 'repository',
+    'proyecto', 'instrucciones', 'guía', 'guia', 'guías', 'para', 'el', 'la', 'de', 'repositorio',
+]);
+const TIMING = new Set(['before', 'after', 'always', 'when', 'until', 'once', 'every', 'antes', 'después', 'siempre', 'cuando', 'hasta', 'cada']);
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const answer = (code, evidence) => ({ verdict: 'cut', code, question: 1, evidence });
 const isReadme = (file) => file.split('/').pop() === 'README.md';
@@ -28,8 +39,12 @@ function inferableTitle(rule, facts) {
     const name = facts.pkg?.name;
     if (name !== null && name !== undefined && name !== '') {
         const last = name.split('/').pop() ?? name;
-        if (mentions(rule.text, name) || mentions(rule.text, last))
-            return answer('inferable-title', `${facts.pkg?.path ?? 'package.json'}: name`);
+        if (mentions(rule.text, name) || mentions(rule.text, last)) {
+            const own = new Set([...words(name), ...words(last)]);
+            const others = words(rule.text).filter((w) => !own.has(w) && !FILLER.has(w));
+            if (others.length <= 4 && !ABSOLUTE.test(rule.text) && !NEGATION.test(rule.text))
+                return answer('inferable-title', `${facts.pkg?.path ?? 'package.json'}: name`);
+        }
     }
     const readme = facts.docs.find((d) => isReadme(d.file));
     if (readme !== undefined && similarity(rule.text, readme.text) > 0.8)
@@ -40,9 +55,28 @@ function inferableTitle(rule, facts) {
 function pathExists(p, facts, dirs) {
     return facts.files.has(p) || dirs().has(p);
 }
+const instructs = (text) => words(text).some((w) => IMPERATIVE.has(w)) || NEGATION.test(text) || ABSOLUTE.test(text);
+// A drawn tree whose entries exist in the repository and that carries no instruction.
+function treeIsReal(text, facts) {
+    const names = new Set();
+    for (const f of facts.files)
+        for (const seg of f.split('/'))
+            names.add(seg);
+    let hits = 0;
+    for (const line of text.split('\n')) {
+        if (line.startsWith('```') || line.startsWith('~~~'))
+            continue;
+        if (instructs(line))
+            return false;
+        const entry = line.replace(/^[\s│├└─|+\\`-]+/, '').split(/\s/)[0]?.replace(/[/:]+$/, '') ?? '';
+        if (entry !== '' && names.has(entry))
+            hits++;
+    }
+    return hits >= 2;
+}
 function inferableTree(rule, facts) {
-    if (rule.kind === 'code' && (rule.text.includes('\u251c') || rule.text.includes('\u2514')))
-        return answer('inferable-tree', 'repository file tree');
+    if (rule.kind === 'code')
+        return (rule.text.includes('\u251c') || rule.text.includes('\u2514')) && treeIsReal(rule.text, facts) ? answer('inferable-tree', 'repository file tree') : null;
     if (rule.kind !== 'item' && rule.kind !== 'steps')
         return null;
     let dirSet = null;
@@ -65,8 +99,7 @@ function inferableTree(rule, facts) {
             continue;
         const path = body.slice(0, cut).replace(/^`|[`:,]+$/g, '').replaceAll('\\', '/').replace(/^\.\//, '').replace(/\/+$/, '');
         const rest = body.slice(cut).replace(/^[\s:\u2013\u2014-]+/, '');
-        const first = words(rest)[0];
-        if (path === '' || first === undefined || IMPERATIVE.has(first))
+        if (path === '' || words(rest).length === 0 || instructs(rest))
             continue;
         if (pathExists(path, facts, dirs))
             found.push(path);
@@ -87,7 +120,9 @@ function inferableScript(rule, facts) {
         return null; // `npm lint` is not a command
     if (!Object.hasOwn(facts.pkg.scripts, script))
         return null;
-    if (words(rule.text.replace(`\`${span}\``, ' ')).length > 4)
+    const outside = rule.text.replace(`\`${span}\``, ' ');
+    const around = words(outside);
+    if (around.length > 4 || around.some((w) => TIMING.has(w)) || ABSOLUTE.test(outside) || NEGATION.test(outside))
         return null;
     return answer('inferable-script', `${facts.pkg.path}: scripts.${script}`);
 }
@@ -125,7 +160,9 @@ function inferableTech(rule, facts) {
     const text = rule.text;
     if (!AFFIRM.some((r) => r.test(text)) || NEGATION.test(text))
         return null;
-    const mentioned = TECH.filter((t) => has(text, MENTION.get(t) ?? /$^/u));
+    // Inside a code span a name counts whatever its case: capitalise it so the table's spellings match.
+    const plain = text.replace(/`([^`\n]+)`/g, (_, s) => s.charAt(0).toUpperCase() + s.slice(1));
+    const mentioned = TECH.filter((t) => has(plain, MENTION.get(t) ?? /$^/u));
     if (mentioned.length === 0)
         return null;
     const present = new Map();
@@ -143,12 +180,12 @@ function inferableTech(rule, facts) {
             return null;
         evidence.push(e);
     }
-    let rest = text;
+    let rest = plain;
     for (const r of AFFIRM_G)
         rest = rest.replace(r, ' ');
     for (const t of mentioned)
         rest = rest.replace(MENTION.get(t) ?? /$^/u, ' ');
-    return words(rest).length <= 3 ? answer('inferable-tech', evidence.join('; ')) : null;
+    return !/\d/.test(rest) && words(rest).every((w) => STOPWORDS.has(w)) ? answer('inferable-tech', evidence.join('; ')) : null;
 }
 function inferableOverview(rule, facts) {
     if (rule.kind !== 'paragraph')
