@@ -23,6 +23,7 @@ export interface Verdict {
   readonly code: string | null;
   readonly question: number | null;
   readonly evidence: string;
+  readonly target?: string; // where a move should go, copied from the answer
   readonly notes: readonly Note[];
   readonly original?: Answer; // present with the accepted note
 }

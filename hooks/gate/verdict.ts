@@ -1,6 +1,9 @@
 import { q1 } from './checks/q1.ts';
 import { q2 } from './checks/q2.ts';
 import { q3 } from './checks/q3.ts';
+import { q5 } from './checks/q5.ts';
+import { q6 } from './checks/q6.ts';
+import { q7 } from './checks/q7.ts';
 import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentions, ruleHash, spans } from './text.ts';
 import type { Facts } from './facts.ts';
 import type { Answer, Note, Rule, Verdict } from './types.ts';
@@ -18,7 +21,8 @@ export interface RegisteredCheck {
   readonly run: Check;
 }
 
-export const CHECKS: readonly RegisteredCheck[] = [{ question: 1, run: q1 }, { question: 2, run: q2 }, { question: 3, run: q3 }];
+export const CHECKS: readonly RegisteredCheck[] = [{ question: 1, run: q1 }, { question: 2, run: q2 }, { question: 3, run: q3 },
+  { question: 5, run: q5 }, { question: 6, run: q6 }, { question: 7, run: q7 }];
 
 const OUTSIDE_REPO = new Set<number>([3, 7]);
 
@@ -46,7 +50,10 @@ export function judge(rule: Rule, facts: Facts, ctx: Context, checks: readonly R
   for (const check of checks) {
     if (!facts.inRepo && !OUTSIDE_REPO.has(check.question)) continue;
     const a = check.run(rule, facts);
-    if (a !== null) return { rule, verdict: a.verdict, code: a.code, question: a.question, evidence: a.evidence, notes: [] };
+    if (a !== null) {
+      const v: Verdict = { rule, verdict: a.verdict, code: a.code, question: a.question, evidence: a.evidence, notes: [] };
+      return a.target === undefined ? v : { ...v, target: a.target };
+    }
   }
   return { rule, verdict: 'keep', code: null, question: null, evidence: '', notes: notesFor(rule, facts, ctx) };
 }

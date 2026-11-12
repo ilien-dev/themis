@@ -1,8 +1,12 @@
 import { q1 } from "./checks/q1.js";
 import { q2 } from "./checks/q2.js";
 import { q3 } from "./checks/q3.js";
+import { q5 } from "./checks/q5.js";
+import { q6 } from "./checks/q6.js";
+import { q7 } from "./checks/q7.js";
 import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentions, ruleHash, spans } from "./text.js";
-export const CHECKS = [{ question: 1, run: q1 }, { question: 2, run: q2 }, { question: 3, run: q3 }];
+export const CHECKS = [{ question: 1, run: q1 }, { question: 2, run: q2 }, { question: 3, run: q3 },
+    { question: 5, run: q5 }, { question: 6, run: q6 }, { question: 7, run: q7 }];
 const OUTSIDE_REPO = new Set([3, 7]);
 function mentionsKnownThing(rule, facts, ctx) {
     const text = rule.text;
@@ -33,8 +37,10 @@ export function judge(rule, facts, ctx, checks = CHECKS) {
         if (!facts.inRepo && !OUTSIDE_REPO.has(check.question))
             continue;
         const a = check.run(rule, facts);
-        if (a !== null)
-            return { rule, verdict: a.verdict, code: a.code, question: a.question, evidence: a.evidence, notes: [] };
+        if (a !== null) {
+            const v = { rule, verdict: a.verdict, code: a.code, question: a.question, evidence: a.evidence, notes: [] };
+            return a.target === undefined ? v : { ...v, target: a.target };
+        }
     }
     return { rule, verdict: 'keep', code: null, question: null, evidence: '', notes: notesFor(rule, facts, ctx) };
 }
