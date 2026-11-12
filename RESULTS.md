@@ -25,7 +25,11 @@ What was measured about the parts that themis 2.0.0 keeps, and the rule gate add
 
 ## Rule gate
 
-The gate (`hooks/dist/gate.js`, new in 2.2.0) judges each rule with fixed checks and no model. It was measured on a corpus it had never seen.
+The gate (`hooks/dist/gate.js`, new in 2.2.0) judges each rule with fixed checks and no model. It was measured on two corpora it had never seen: the first for the checks of the first version, the second for the detectors added after it.
+
+The snapshots of third-party repositories that both corpora run against are not stored in this repository (see `tests/gate/.gitignore`). The rules, labels, commits and licences are stored; `collect.mjs` and `fetch-cited.mjs` in `tests/gate/holdout/` rebuild the snapshots from GitHub at the recorded commits.
+
+### First held-out corpus
 
 **The corpus.** `tests/gate/holdout.jsonl`: 1,502 rules from 40 public repositories when measured (1,499 now: three bare `---` lines were removed once the parser stopped treating them as rules), all of them the root `CLAUDE.md` of a Node, JavaScript or TypeScript project. The repositories are listed in `tests/gate/holdout/SOURCES.md`, with the commit and licence of each. No repository that has only an `AGENTS.md` made it in, because the code search that finds candidates hit a rate limit.
 
@@ -97,12 +101,106 @@ A review of the blind run found checks that flagged rules carrying information, 
 
 The 95% condition is still not met: precision is 87.7%, and 65 interruptions are fewer than the 100 it requires. The default stays `report`.
 
+**This corpus is now development data.** The detectors described below were designed and reviewed on it, and one label was changed after a reviewer checked the cited file (`mateenagy__vue-formify-16`, keep to cut), so it has 908 keep labels instead of 909. Its current numbers are an upper bound, not a validation, and were taken while the source files its rules cite were only partly stored:
+
+| | at d176786 | after demoting dead-reference |
+|---|---|---|
+| interrupted | 128 | 112 |
+| precision of interruption, some interruption deserved | 93.8% | 100.0% (112 of 112) |
+| recall | 20.3% | 19.0% (112 of 591) |
+| with `--paths`: interrupted, precision, recall | 140, 94.3%, 22.3% | 124, 100.0%, 21.0% |
+
+### Second held-out corpus
+
+This corpus measures the detectors added after the first measurement: the `/init` heading and sentence (`file-filler`), described paths (`inferable-path`), stack lists (`inferable-stack`, and `stale-version` when a version disagrees with the manifest), described scripts (`inferable-script`) and project summaries (`inferable-overview`). Before measuring, they were estimated to bring recall from 16% to about 50%. That estimate came from counting patterns among the rules the gate missed on the first corpus; it was not a measurement.
+
+**The corpus.** `tests/gate/holdout2.jsonl`: 1,223 rules from 40 public repositories not used before, 22 of them taken from `AGENTS.md` and 18 from `CLAUDE.md`, at most 40 rules per file. The repositories, commits and licences are in `tests/gate/holdout2/SOURCES.md`. Each snapshot also holds the source files the rules cite (up to 64 KB each), every `package.json` of the repository (up to 30) and `.gitignore`, which the first corpus's snapshots lacked.
+
+**The labels.** Each rule was labelled once, by one of four labelling agents; each agent was given a quarter of the repositories and was instructed not to read the gate's code, tables, corpora or output. The instructions were the first corpus's plus three clarifications fixed before any of this data was seen: a path found under a deeper directory exists; a script defined in any `package.json` of the repository exists; a path with a plain description is inferable unless it adds a warning. So the labels are not strictly comparable with the first corpus. Labels: 849 keep, 305 cut, 36 move, 22 rewrite, 7 conflict, 4 fix.
+
+**The measurement was blind.** The detectors were frozen at commit d176786 before the gate was run on this corpus. The collection did not read the detectors, and the two review rounds that reshaped the detectors did not read this corpus.
+
+```
+node hooks/dist/gate.js report tests/gate/holdout2.jsonl
+node hooks/dist/gate.js report tests/gate/holdout2.jsonl --paths
+```
+
+| | default (`gate_paths` off) | with `--paths` |
+|---|---|---|
+| rules | 1,223 | 1,223 |
+| interrupted | 99 | 103 |
+| **precision of interruption** | **73.7%**: 73 of 99 deserved some interruption; 61 of 99 got the same verdict as the label | **74.8%**: 77 of 103; 65 of 103 the same verdict |
+| **false-cut rate** | **3.1%**: 26 of the 849 rules labelled keep | 3.1%: the same 26 |
+| coverage | 38.5% | 38.6% |
+| recall: rules labelled other than keep that were interrupted | 19.5% (73 of 374) | 20.6% (77 of 374) |
+
+By the gate's verdict, in the default configuration:
+
+| gate said | rules | same as label |
+|---|---:|---:|
+| cut | 29 | 18 |
+| fix | 18 | 1 |
+| move | 43 | 33 |
+| rewrite | 9 | 9 |
+| keep | 1,124 | 823 |
+
+By reason code, in the default configuration. "Deserved" counts the rules whose label is anything other than keep; "same" those whose label is the gate's verdict. The counts come from a dump of every verdict of the run.
+
+| code | verdict | fired | deserved | same |
+|---|---|---:|---:|---:|
+| `long-procedure` | move | 40 | 38 | 30 |
+| `dead-reference` | fix | 18 | 5 | 1 |
+| `file-filler` | cut | 16 | 9 | 9 |
+| `emphasis` | rewrite | 9 | 9 | 9 |
+| `inferable-title` | cut | 6 | 4 | 4 |
+| `duplicated-passage` | move | 3 | 3 | 3 |
+| `inferable-script` | cut | 3 | 3 | 3 |
+| `inferable-overview` | cut | 2 | 1 | 1 |
+| `inferable-stack` | cut | 1 | 1 | 1 |
+| `inferable-tree` | cut | 1 | 0 | 0 |
+
+No other code fired; `stale-version`, `generic-advice` and `absolute-command` among them. With `--paths` the table is the same plus `inferable-path`: it fired 4 times, and all 4 were labelled cut. Four is too few to say anything about that detector's precision. It stays off by default, because an adversarial review showed that a description built from words that are in the cited file is not proof that the file says it.
+
+The 26 false interruptions (rules labelled keep that the gate interrupted), by cause:
+
+| cause | rules |
+|---|---:|
+| `fix dead-reference`: a bare extension such as `.json` or `.svelte.test.ts` (5), a placeholder or pattern such as `integrations/...` or `batch[1-4]` (2), a path absent from the snapshot such as `config/labby.db` (6) | 13 |
+| a bare level-1 title: `# CLAUDE.md`, `# AGENTS.md`, `# Agent Guidance`, a title that is only the package name (7 as `file-filler`, 2 as `inferable-title`) | 9 |
+| `move long-procedure` | 2 |
+| `inferable-overview` on a licence header comment that the repository's CI checks | 1 |
+| `inferable-tree` on a numbered description of a flow | 1 |
+
+The nine titles are a disagreement between labellers, not clearly a fault of the gate: the labellers of this corpus kept titles as structure, those of the first corpus cut them. The owner has to settle which is right. Counting those nine as correct would give a precision of 82.8% (82 of 99).
+
+**The condition for `ask` as the default is not met.** It is a precision of interruption of at least 95% on at least 100 interrupted rules; this run reached 73.7% on 99. The default of `gate` stays `report`, and `gate_paths` stays `false`.
+
+**What this means.** In report mode the gate flags about one redundant rule in five (19.5%), and about one in four of its flags (26 of 99) is wrong. The new detectors moved recall from 16% on the first blind run to 19.5% here, far from the estimated 50%. The largest family, a path with a description, could not be made safe by script and is off by default. The detectors that held up are the `/init` boilerplate, described scripts and plain stack lists. The gate's verdicts are a floor for what can go, not a full audit of a file.
+
+### After demoting dead-reference to a note (not blind)
+
+Both blind runs found that `dead-reference` is the main source of false interruptions: 27 of its 73 firings matched the label on the first corpus, 1 of 18 on the second. So a reference that does not resolve no longer interrupts. The rule is kept with the note `unresolved-reference`, which names the path or script that was not found. **This single change was decided from the two measurements, so the numbers below are not blind.** Nothing else was changed or tuned against the second corpus.
+
+| second corpus | blind, at d176786 | after the demotion |
+|---|---|---|
+| interrupted | 99 | 81 |
+| precision of interruption, some interruption deserved | 73.7% (73 of 99) | 84.0% (68 of 81) |
+| precision of interruption, same verdict as the label | 61.6% (61 of 99) | 74.1% (60 of 81) |
+| false-cut rate | 3.1% (26 of 849) | 1.5% (13 of 849) |
+| coverage | 38.5% | 38.5% |
+| recall | 19.5% (73 of 374) | 18.2% (68 of 374) |
+| with `--paths`: interrupted, precision, false-cut rate, recall | 103, 74.8%, 3.1%, 20.6% | 85, 84.7%, 1.5%, 19.3% |
+
+Of the 18 rules that carry the note now, 13 were labelled keep, 3 cut, 1 rewrite and 1 fix. The 13 false interruptions left are the nine titles, two long procedures, the licence header and the flow description. Counting the nine titles as correct would give 95.1% (77 of 81), on fewer than the 100 interruptions the condition asks for and not blind, so the condition is not met either way.
+
 ### What the gate numbers do not cover
 
-- **The labels have not been reviewed by the user.** The plan has a review step: a sample of 30 labels, plus every case where the gate interrupts and the label says keep. It has not been done, so every number above is provisional until it is.
-- **The 1.x session evals c13 to c15 were not re-run with the gate.** One mismatch is known. The c14 grader (`evals/cases/c14-themis-audit/grade.ts`) requires "double-check" lines to be removed, while the gate keeps "Double-check your work" and "Be thorough", because no vendor guide for a model in the two-month window asks to remove them. c14 as graded today would fail on that line.
-- **The regression corpus is not a measurement.** `tests/gate/corpus.jsonl` has 681 cases on 66 small repositories, with 32 recorded gaps. It pins the gate's behaviour so a change is noticed, but its labels were written alongside the checks.
-- **Root `CLAUDE.md` files of Node projects only.** No `AGENTS.md`-only repository, no other language, and a file of more than 60 rules contributes its first 60.
+- **The labels have not been reviewed by the user.** The plan has a review step: a sample of 30 labels, plus every case where the gate interrupts and the label says keep. It has not been done for either corpus, so every number above is provisional until it is. The disagreement on bare titles has to be settled there.
+- **One label per rule.** No rule was labelled twice, so the agreement between labellers is unknown; the tail-of-path cases of the first corpus and the titles of the second show it is not perfect.
+- **The 1.x session evals c13 to c15 were not re-run with the gate.** One mismatch is known. The c14 grader (`evals/cases/c14-themis-audit/grade.ts`) requires "double-check" lines to be removed, while the gate keeps "Double-check your work" and "Be thorough", because no vendor guide for a model in the two-month window asks to remove them. c14 as graded today would fail on that line. The grader also requires the stale `npm run test:unit` to be gone: since the demotion the gate keeps that line with an `unresolved-reference` note, and the skill tells Claude to check the reference and repair it, as it did for `fix`. That path has not been run in a session.
+- **The regression corpus is not a measurement.** `tests/gate/corpus.jsonl` has 794 cases on 68 small repositories, with 50 recorded gaps. It pins the gate's behaviour so a change is noticed, but its labels were written alongside the checks.
+- **Root rule files of Node projects only.** No other language. The first corpus has only `CLAUDE.md` files and takes the first 60 rules of a file; the second takes 22 `AGENTS.md` and 18 `CLAUDE.md` files and the first 40 rules.
+- **Small counts per code.** Most reason codes fired fewer than ten times on the second corpus, and several not at all, so their precision is not known.
 - **No model-behaviour check.** The question "do recent models already do this by default?" is not active, so nothing here measures it.
 
 ## Re-running
@@ -110,7 +208,8 @@ The 95% condition is still not met: precision is 87.7%, and 65 interruptions are
 ```
 node evals/run.ts --case "c1*,c20*" --arms base,themis --runs 3 --tag mytag   # billed sessions
 node evals/report.ts base=mytag themis=mytag
-node hooks/dist/gate.js report tests/gate/holdout.jsonl   # the gate, no billing
+node hooks/dist/gate.js report tests/gate/holdout.jsonl    # the gate, no billing
+node hooks/dist/gate.js report tests/gate/holdout2.jsonl   # add --paths for the described-path detector
 ```
 
-Each case's fixture, prompt and grader are in `evals/cases/`. The cases and results for the parts removed in 2.0.0 are in the git history before that release.
+The held-out reports need the snapshots, which are not stored here: rebuild them as `tests/gate/holdout/SOURCES.md` and `tests/gate/holdout2/SOURCES.md` describe. Each case's fixture, prompt and grader are in `evals/cases/`. The cases and results for the parts removed in 2.0.0 are in the git history before that release.

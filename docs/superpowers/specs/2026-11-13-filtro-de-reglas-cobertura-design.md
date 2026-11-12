@@ -1,6 +1,6 @@
 # Filtro de reglas, fase 1.1: cobertura
 
-Fecha: 2026-11-13 · Estado: aprobado para implementar (el usuario pidió escribir e implementar sin ronda de aprobación) · Versión: entra en themis 2.2.0
+Fecha: 2026-11-13 · Estado: implementado · Versión: entra en themis 2.2.0
 
 Continúa `2026-11-12-filtro-de-reglas-design.md`. Todo lo que ese documento fija sigue vigente; este solo añade detectores.
 
@@ -64,3 +64,12 @@ Precisiones:
 - La estimación de «10 % → alrededor de 50 %» sale de clasificar por patrones las reglas no detectadas del primer corpus; no es una medición.
 - El primer corpus pasa a ser de desarrollo: sus números tras esta fase son un techo.
 - Más detectores en la pregunta 1 alargan la evaluación; se mantiene el presupuesto de 200 ms en proceso.
+
+## Resultado
+
+- **Medición a ciegas** en el segundo corpus (`tests/gate/holdout2.jsonl`: 1 223 reglas de 40 repos, 22 `AGENTS.md` y 18 `CLAUDE.md`), con los detectores congelados en d176786. Por defecto: 99 reglas interrumpidas, precisión de interrupción 73,7 % (73 de 99), falsos cortes 3,1 % (26 de 849), detección 19,5 % (73 de 374). Con `--paths`: 103 interrumpidas, 74,8 %, detección 20,6 %; `inferable-path` actuó 4 veces y acertó las 4, demasiado pocas para medir su precisión. La estimación de alrededor del 50 % no se cumplió.
+- **Rutas descritas desactivadas por defecto.** Una revisión adversarial mostró que una descripción hecha con palabras del archivo no prueba que el archivo lo diga. El detector 2 se entrega tras `gate_paths` (por defecto `false`) y `--paths`.
+- **Se quitó la forma A** del detector 3: «**dependencia**: descripción» ya no se juzga, porque nada en el repo comprueba la descripción. Una lista de stack necesita al menos dos segmentos.
+- **`dead-reference` pasa a ser una nota.** Fue la mayor fuente de interrupciones falsas en las dos mediciones (27 de 73 aciertos en el primer corpus, 1 de 18 en el segundo). Una referencia que no se resuelve deja la regla en `keep` con la nota `unresolved-reference`, que dice qué no se encontró. Tras este cambio, que se decidió viendo las dos mediciones y por tanto no es a ciegas: 81 interrumpidas, 84,0 %, falsos cortes 1,5 %, detección 18,2 %.
+- **No se cumple la condición para `ask`** (95 % sobre al menos 100 interrupciones). `gate` sigue en `report`. Nueve de las interrupciones falsas que quedan son títulos de nivel 1 que estos etiquetadores mantuvieron y los del primer corpus cortaron; el usuario tiene que decidir cuál es el criterio.
+- Los números completos y su desglose por código están en `RESULTS.md`.
