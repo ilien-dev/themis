@@ -4,7 +4,25 @@
 // SessionStart, and PostToolUse on a shell command that names a rule file: report pairs that differ.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
-import { run, emit, RULE_FILE, SHELL_RULE_FILE, twinOf, pairState, parityProblems, parityNotice } from './lib.ts';
+import type { HookInput } from './lib.ts';
+import { run, emit, gatePaths, read, RULE_FILE, SHELL_RULE_FILE, twinOf, pairState, parityProblems, parityNotice } from './lib.ts';
+import { pendingKey, recordAccepted, takePending } from './gate/accepted.ts';
+import { parseRules } from './gate/extract.ts';
+import { readFacts } from './gate/facts.ts';
+import { ruleHash } from './gate/text.ts';
+import { contextFor, judgeAll } from './gate/verdict.ts';
+
+// The user approved an edit that the gate asked about: remember those rules so they are not asked again.
+// Only the pending rules that are in the file now count, and only in a repository: outside one there is
+// no project to keep `.claude/themis-accepted.json` in.
+function recordApproved(input: HookInput, file: string): void {
+  const hashes = takePending(pendingKey(input.session_id ?? '', file));
+  if (hashes === null) return;
+  const facts = readFacts(file);
+  if (!facts.inRepo) return;
+  const verdicts = judgeAll(parseRules(read(file) ?? ''), facts, contextFor(facts, { paths: gatePaths() })).filter((v) => hashes.includes(ruleHash(v.rule.text)));
+  recordAccepted(facts.root, verdicts, new Date().toISOString().slice(0, 10));
+}
 
 await run((input) => {
   const event = input.hook_event_name;
@@ -15,6 +33,7 @@ await run((input) => {
   if (event === 'PostToolUse' && ti.file_path) {
     if (!RULE_FILE.test(basename(ti.file_path))) return;
     const file = resolve(cwd, ti.file_path);
+    try { recordApproved(input, file); } catch (e) { if (process.env['THEMIS_DEBUG']) console.error(e); }
     const twin = twinOf(file);
     if (!twin || !existsSync(file) || !['differ', 'missing'].includes(pairState(file, twin))) return;
     writeFileSync(twin, readFileSync(file));

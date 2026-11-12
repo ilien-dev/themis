@@ -1,0 +1,19 @@
+{
+  "name": "facturas-es",
+  "description": "Servicio de facturación para autónomos que genera informes mensuales",
+  "scripts": {
+    "test:integration": "vitest run --coverage tests/integration",
+    "db:backup": "node database/backup.mjs",
+    "lint": "eslint .",
+    "publicar": "node scripts/publish.js"
+  },
+  "dependencies": {
+    "zod": "^3.23.8",
+    "express": "^4.21.0",
+    "pino": "^9.4.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "prettier": "^3.3.3"
+  }
+}

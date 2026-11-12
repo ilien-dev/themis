@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(uv publish:*)",
+      "Bash(git push --force:*)"
+    ]
+  }
+}

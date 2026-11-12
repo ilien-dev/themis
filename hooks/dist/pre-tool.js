@@ -2,7 +2,13 @@
 // and refuse an edit that would hide a difference between CLAUDE.md and AGENTS.md.
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
-import { run, emit, option, estimateTokens, read, imports, RULE_FILE, writesRuleFile, twinOf, pairState } from "./lib.js";
+import { run, emit, option, gatePaths, estimateTokens, read, imports, RULE_FILE, writesRuleFile, twinOf, pairState } from "./lib.js";
+import { newRules } from "./gate/extract.js";
+import { readFacts } from "./gate/facts.js";
+import { formatAsk, formatNotes } from "./gate/format.js";
+import { clearPending, pendingKey, writePending } from "./gate/accepted.js";
+import { ruleHash } from "./gate/text.js";
+import { contextFor, interrupts, judgeAll } from "./gate/verdict.js";
 function decide(permissionDecision, reason) {
     emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision, permissionDecisionReason: reason } });
     return true;
@@ -66,6 +72,48 @@ function checkParity(file, tool, toolInput) {
     return deny(`${differ} Do not pick a version yourself: show the user how they differ and ask which text is right ` +
         '(load the themis:themis skill, sync section). Then Write the agreed full text to one of them; themis copies it to the other.');
 }
+// Hook input fields checked against https://code.claude.com/docs/en/hooks on 2026-11-12: `session_id` and
+// `permission_mode` are common to every event; `agent_id` is present when the hook fires inside a subagent.
+// Nothing marks a headless (-p) session; there Claude Code denies an `ask` nobody can answer and Claude reads
+// the reason, which is why the modes below that cannot prompt fall back to reporting.
+function effectiveMode(input) {
+    const mode = option('gate', 'report').toLowerCase();
+    if (mode === 'off')
+        return 'off';
+    const cannotPrompt = input.permission_mode === 'dontAsk' || input.permission_mode === 'bypassPermissions' || input.agent_id !== undefined;
+    return mode === 'ask' && !cannotPrompt ? 'ask' : 'report';
+}
+function checkGate(input, file) {
+    const mode = effectiveMode(input);
+    if (mode === 'off')
+        return;
+    const added = newRules(read(file), applyEdits(file, input.tool_input));
+    if (added.length === 0)
+        return;
+    const facts = readFacts(file);
+    const verdicts = judgeAll(added, facts, contextFor(facts, { paths: gatePaths() }));
+    const name = basename(file);
+    const flagged = verdicts.filter(interrupts);
+    const notes = formatNotes(verdicts);
+    if (flagged.length === 0) {
+        if (notes)
+            emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: notes } });
+        return;
+    }
+    if (mode === 'ask') {
+        // Only an ask of the gate leaves something for PostToolUse to record. The message is built first, so
+        // nothing is left pending if building it fails and no prompt is shown. The user reads the ask; the notes
+        // on kept rules are for Claude, which receives additionalContext with any decision but defer.
+        const message = formatAsk(verdicts, name, 'ask');
+        writePending(pendingKey(input.session_id ?? '', file), flagged.map((v) => ruleHash(v.rule.text)));
+        emit({ hookSpecificOutput: {
+                hookEventName: 'PreToolUse', permissionDecision: 'ask', permissionDecisionReason: message, ...(notes ? { additionalContext: notes } : {}),
+            } });
+        return;
+    }
+    const report = formatAsk(verdicts, name, 'report');
+    emit({ hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: notes ? `${report}\n\n${notes}` : report } });
+}
 await run((input) => {
     const ti = input.tool_input;
     const cwd = input.cwd;
@@ -78,6 +126,16 @@ await run((input) => {
     if (!ti.file_path || !RULE_FILE.test(basename(ti.file_path)))
         return;
     const file = resolve(cwd, ti.file_path);
-    if (!checkCap(file, ti))
-        checkParity(file, input.tool_name, ti);
+    // An approval pending from an earlier call (a denied ask) must not be recorded for this one, whatever
+    // decides it: the cap, parity, the gate off or in report mode, or no new rule at all.
+    clearPending(pendingKey(input.session_id ?? '', file));
+    if (checkCap(file, ti) || checkParity(file, input.tool_name, ti))
+        return;
+    try {
+        checkGate(input, file);
+    }
+    catch (e) {
+        if (process.env['THEMIS_DEBUG'])
+            console.error(e);
+    } // the gate never gets in the way
 });

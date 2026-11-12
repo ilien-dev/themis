@@ -22,6 +22,9 @@ export interface HookInput {
   readonly hook_event_name: string | undefined;
   readonly tool_name: string | undefined;
   readonly cwd: string;
+  readonly session_id: string | undefined;
+  readonly permission_mode: string | undefined;
+  readonly agent_id: string | undefined; // set when the hook fires inside a subagent
   readonly tool_input: ToolInput;
 }
 
@@ -41,6 +44,9 @@ export function parseInput(raw: unknown): HookInput {
     hook_event_name: filled(input['hook_event_name']),
     tool_name: filled(input['tool_name']),
     cwd: filled(input['cwd']) ?? process.cwd(),
+    session_id: filled(input['session_id']),
+    permission_mode: filled(input['permission_mode']),
+    agent_id: filled(input['agent_id']),
     tool_input: {
       ...editInput(ti),
       file_path: filled(ti['file_path']),
@@ -79,6 +85,9 @@ export function option(key: string, fallback: string): string {
   const v = process.env[`CLAUDE_PLUGIN_OPTION_${key.toUpperCase()}`];
   return v === undefined || v === '' ? fallback : v;
 }
+
+// gate_paths: flag described paths. Off unless set to a true value.
+export const gatePaths = (): boolean => /^(true|1|yes|on)$/i.test(option('gate_paths', 'false'));
 
 // Token estimate for English-heavy markdown; no tokenizer is available offline.
 export function estimateTokens(text: string): number {
@@ -144,8 +153,8 @@ export function pairState(a: string, b: string): PairState {
   return pulls(a, ba, b) || pulls(b, bb, a) ? 'import' : 'differ';
 }
 
-function gitLines(cwd: string, args: readonly string[]): string[] | null {
-  const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, windowsHide: true });
+export function gitLines(cwd: string, args: readonly string[]): string[] | null {
+  const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, maxBuffer: 64 * 1024 * 1024, windowsHide: true });
   return r.status === 0 ? r.stdout.split(/[\0\n]/).filter(Boolean) : null;
 }
 

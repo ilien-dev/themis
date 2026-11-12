@@ -53,3 +53,8 @@ jobs:
           echo two > "$dir/CLAUDE.md"
           node -e 'console.log(JSON.stringify({ hook_event_name: "SessionStart", cwd: process.argv[1] }))' "$dir" \
             | node hooks/dist/parity.js | grep -q 'differ: '
+      - name: The rule gate cuts generic advice outside a repository
+        run: |
+          dir="$(mktemp -d)"
+          cd "$dir"
+          printf -- '- Write clean code.\n' | node "$GITHUB_WORKSPACE/hooks/dist/gate.js" check --json | grep -q '"verdict": "cut"'

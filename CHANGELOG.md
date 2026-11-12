@@ -1,5 +1,33 @@
 # Changelog
 
+## 2.2.0 — 2026-11-12
+
+### Added
+
+- The rule gate. When a rule is written to `CLAUDE.md` or `AGENTS.md`, fixed checks with no model judge whether it is inferable from the repo, already enforced by a tool or a `permissions.deny` rule, generic advice, an absolute ban that belongs in a hook, a long procedure, or shouted. The verdicts are `keep`, `cut`, `move`, `rewrite` and `conflict`. A rule that names a path or script the repository does not have is kept with the note `unresolved-reference`, which says what did not resolve; the skill checks it and repairs it if it moved. See *The rule gate* in the README.
+- Detectors that use the repository as their dictionary: the heading and sentence `/init` writes (`file-filler`), a list of the manifest's dependencies with nothing but names and versions (`inferable-stack`, or `conflict` · `stale-version` when a version disagrees with `package.json`), a script described only by its own name and command (`inferable-script`), a summary made of the manifest's description and the README (`inferable-overview`), and an existing path with a short description in words of that file (`inferable-path`).
+- `gate_paths` option, `false` by default, and `--paths` on the command line: turn on the described-path check. It is off because a description built from words of the file is not proof the file says it.
+- `gate` option: `report` (default; the edit goes through and Claude is told), `ask` (you confirm each flagged rule) or `off`. Where nobody can answer a prompt, `ask` acts as `report`.
+- `.claude/themis-accepted.json`: rules you approved after a flag are remembered by the hash of their text, so they are not flagged again until they change. Entries under `fix` · `dead-reference`, which no check gives any more, still load.
+- `hooks/dist/gate.js` with `check`, `audit` and `report` commands. `report` measures a labelled corpus.
+- A regression corpus of 794 cases on 68 small repositories. A case can name a note the kept rule must carry.
+- Two held-out corpora, measured blind; the numbers are in [RESULTS.md](RESULTS.md). The first, 1,502 rules from 40 public repositories (1,499 once three bare `---` lines stopped counting as rules), measured the first checks: precision of interruption 62.0%, false-cut rate 6.3%, recall 16%. The checks it showed to flag informative rules were fixed and the new detectors were built on it, so it is now development data. The second, 1,223 rules from 40 other repositories (22 `AGENTS.md`, 18 `CLAUDE.md`), measured the frozen detectors: 99 interruptions, precision 73.7%, false-cut rate 3.1%, recall 19.5%, against an estimate of about 50%. With `--paths`, 103 interruptions, precision 74.8%. Both runs found that a reference that does not resolve was the main source of false interruptions (27 of 73 firings correct on the first corpus, 1 of 18 on the second), so it became the note `unresolved-reference` instead of the verdict `fix` · `dead-reference`, and such a rule is still checked for emphasis; on the second corpus, not blind since this change was decided from it, the gate interrupts 81 rules with precision 84.0%, false-cut rate 1.5% and recall 18.2%. The condition for making `ask` the default, a precision of 95% on at least 100 interruptions, was not met, so the default is `report`. The labels of neither corpus have been reviewed, so the numbers are provisional.
+- The snapshots of third-party repositories are not stored in the repository; `tests/gate/holdout/collect.mjs` and `fetch-cited.mjs` rebuild them from the commits in `sources.json`, with the commands in each corpus's `SOURCES.md`. The unlabelled copies of the cases are not stored either; `unlabel.mjs` writes them.
+- A CI step that runs the gate on Node.js 18.
+
+### Changed
+
+- The skill no longer decides by its own judgment what belongs in a rule file: `edit`, `init` and `audit` run the gate and follow its verdict, and `audit` shows its table.
+
+### Known limits
+
+- Node, JavaScript and TypeScript repositories only; English and Spanish phrase tables.
+- The check on whether recent models already do something by default is not active yet.
+- In a repository with more than one `package.json` a missing script gets no note, and a path counts as present when a tracked path ends with it, so a dead reference there can go unnoticed.
+- The gate flags about one redundant rule in five. Its verdicts are a floor for what can go, not a full audit.
+- Bare level-1 titles (`# CLAUDE.md`, a title that is only the package name) are cut, while the labellers of the second corpus kept them: 9 of its 13 remaining false interruptions. Which is right is not settled.
+- The session evals c13 to c15 were not re-run with the gate. The c14 grader still requires removing "double-check" lines, which the gate keeps.
+
 ## 2.1.1 — 2026-10-10
 
 ### Fixed

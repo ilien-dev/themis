@@ -1,7 +1,7 @@
 {
   "name": "themis",
   "displayName": "themis",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Manages CLAUDE.md and AGENTS.md: one skill to create, prune and edit them, and hooks that cap their size and keep the two files identical.",
   "author": {
     "name": "jjimenezc",
@@ -29,6 +29,18 @@
       "title": "Keep CLAUDE.md and AGENTS.md identical",
       "description": "Copy every edit of CLAUDE.md or AGENTS.md to the other file in the same directory, and report pairs that differ. Turn off to manage only one of the two.",
       "default": true
+    },
+    "gate": {
+      "type": "string",
+      "title": "Rule gate",
+      "description": "What themis does when a new rule in CLAUDE.md or AGENTS.md is inferable from the repo, already enforced, generic or badly formed: ask (confirm with you), report (tell Claude, do not interrupt) or off.",
+      "default": "report"
+    },
+    "gate_paths": {
+      "type": "boolean",
+      "title": "Flag described paths",
+      "description": "Let the rule gate also flag a line that describes an existing path in words of that file (\"src/x.ts — parses the CSV output\"). Off by default: a description built from words of the file is not proof that the file says it.",
+      "default": false
     }
   }
 }

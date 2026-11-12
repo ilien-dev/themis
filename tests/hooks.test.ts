@@ -22,7 +22,7 @@ interface HookOutput {
 function hook(name: string, input: string | Fields, env: Env = {}): HookOutput | null {
   const r = spawnSync(process.execPath, [join(hooks, name)], {
     input: typeof input === 'string' ? input : JSON.stringify(input),
-    env: { ...process.env, ...env },
+    env: { ...process.env, CLAUDE_PLUGIN_OPTION_GATE: 'off', ...env }, // the gate is off unless a test turns it on
     encoding: 'utf8',
   });
   assert.equal(r.status, 0, r.stderr);
@@ -318,10 +318,199 @@ test('parity: can be turned off', () => {
   assert.equal(decision(write(dir, 'x'.repeat(10000), 'AGENTS.md', env)), 'deny'); // the cap still applies
 });
 
+// The gate. "- Write clean code." is generic advice (question 3), which needs no repository facts.
+const GENERIC = '- Write clean code.\n';
+const GOTCHA = '- Run `make seed` before the first test run: the fixtures database is not created by the test command.\n';
+const ASK = { CLAUDE_PLUGIN_OPTION_GATE: 'ask' };
+const accepted = (dir: string): string => join(dir, '.claude', 'themis-accepted.json');
+const REPORT = { CLAUDE_PLUGIN_OPTION_GATE: 'report' };
+const OFF = { CLAUDE_PLUGIN_OPTION_GATE: 'off' };
+// Approvals are remembered only in a git repository, so the tests that check nothing is recorded use one:
+// outside a repository they would pass for the wrong reason.
+function repoProject(files: Record<string, string> = {}): string {
+  const dir = project(files);
+  assert.equal(git(dir, 'init', '-q').status, 0);
+  return dir;
+}
+const sessionId = (): string => `s-${Date.now()}-${Math.random()}`;
+const preIn = (dir: string, session_id: string, tool_name: string, tool_input: Fields, env: Env): HookOutput | null =>
+  hook('pre-tool.js', { session_id, tool_name, tool_input, cwd: dir }, env);
+const postIn = (dir: string, session_id: string, tool_name: string, tool_input: Fields, env: Env): HookOutput | null =>
+  hook('parity.js', { session_id, hook_event_name: 'PostToolUse', tool_name, tool_input, cwd: dir }, env);
+
+test('gate=ask: a generic rule asks, a valid gotcha passes', () => {
+  const dir = project();
+  const out = write(dir, GENERIC, 'CLAUDE.md', ASK);
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /generic-advice/);
+  assert.equal(decision(write(project(), GOTCHA, 'CLAUDE.md', ASK)), null); // at most a note for Claude
+});
+
+test('gate defaults to report: tells Claude without interrupting', () => {
+  const out = write(project(), GENERIC, 'CLAUDE.md', { CLAUDE_PLUGIN_OPTION_GATE: '' }); // empty = the default
+  assert.equal(decision(out), null);
+  assert.match(context(out), /generic-advice/);
+  assert.match(context(out), /themis did not block this edit\. Tell the user which of these rules were flagged and why\./);
+  assert.doesNotMatch(context(out), /Approve|Deny|Drop or fix/);
+});
+
+test('gate=ask: an unresolved reference does not ask; Claude gets a note naming it', () => {
+  const dir = repoProject({ 'package.json': '{"name":"ledger"}', 'docs/guide.md': '' });
+  const out = write(dir, '- See `docs/missing.md` for the layers.\n', 'CLAUDE.md', ASK);
+  assert.equal(decision(out), null);
+  assert.ok(out !== null);
+  assert.match(context(out), /unresolved-reference \(`docs\/missing\.md` not found\)/);
+  assert.doesNotMatch(context(out), /may not be needed/);
+});
+
+// A flagged rule and a kept rule with a note in one edit: the note must reach Claude too.
+const MIXED = '- Write clean code.\n- See `docs/missing.md` for the layers.\n';
+const LEDGER_DOCS = { 'package.json': '{"name":"ledger"}', 'docs/guide.md': '' };
+test('gate=report: the notes of kept rules go with the flags of an edit', () => {
+  const out = write(repoProject(LEDGER_DOCS), MIXED, 'CLAUDE.md', REPORT);
+  assert.equal(decision(out), null);
+  assert.match(context(out), /generic-advice/);
+  assert.match(context(out), /themis did not block this edit[^\n]*\n\nthemis: notes on rules kept as written:\n.*unresolved-reference \(`docs\/missing\.md` not found\)/s);
+});
+test('gate=ask: the notes of kept rules go to Claude beside the ask', () => {
+  const out = write(repoProject(LEDGER_DOCS), MIXED, 'CLAUDE.md', ASK);
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /generic-advice/);
+  assert.doesNotMatch(reason(out), /unresolved-reference/);
+  assert.match(context(out), /unresolved-reference \(`docs\/missing\.md` not found\)/);
+});
+
+test('gate_paths turns on the described-path check; it is off by default', () => {
+  const files = { 'package.json': '{"name":"gpu"}', 'lib/nvidia.js': '// Executes nvidia-smi and parses the CSV output.\n' };
+  const rule = '- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output\n';
+  const off = write(repoProject(files), rule, 'CLAUDE.md', REPORT);
+  assert.doesNotMatch(off === null ? '' : context(off), /inferable-path/);
+  const on = write(repoProject(files), rule, 'CLAUDE.md', { ...REPORT, CLAUDE_PLUGIN_OPTION_GATE_PATHS: 'true' });
+  assert.ok(on !== null);
+  assert.match(context(on), /inferable-path/);
+});
+
+test('gate=off is silent; ask falls back to report when no prompt can be answered', () => {
+  assert.equal(write(project(), GENERIC, 'CLAUDE.md', { CLAUDE_PLUGIN_OPTION_GATE: 'off' }), null);
+  for (const extra of [{ permission_mode: 'dontAsk' }, { permission_mode: 'bypassPermissions' }, { agent_id: 'agent-1' }]) {
+    const out = hook('pre-tool.js', { tool_name: 'Write', tool_input: { file_path: 'CLAUDE.md', content: GENERIC }, cwd: project(), ...extra }, ASK);
+    assert.equal(decision(out), null);
+    assert.match(context(out), /generic-advice/);
+  }
+});
+
+test('gate: an Edit is judged on the rules it adds, not the ones already there', () => {
+  const dir = project({ 'CLAUDE.md': `${GENERIC}${GOTCHA}` });
+  const out = pre(dir, 'Edit', { file_path: 'CLAUDE.md', old_string: GOTCHA, new_string: `${GOTCHA}- Keep functions small.\n` }, ASK);
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /1 of 1/);
+  assert.doesNotMatch(reason(out), /Write clean code/);
+  assert.equal(pre(dir, 'Edit', { file_path: 'CLAUDE.md', old_string: GOTCHA, new_string: '' }, ASK), null); // removing adds nothing
+});
+
+test('gate: the cap decides before the gate speaks', () => {
+  const out = write(project(), `${GENERIC}${'x'.repeat(10000)}`, 'CLAUDE.md', ASK);
+  assert.equal(decision(out), 'deny');
+  assert.doesNotMatch(reason(out), /themis: \d+ of/);
+});
+
+test('gate: an approved ask is remembered by the PostToolUse that follows', () => {
+  const dir = repoProject();
+  const session_id = `s-${Date.now()}-${Math.random()}`;
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(hook('pre-tool.js', { session_id, tool_name: 'Write', tool_input: input, cwd: dir }, ASK)), 'ask');
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC); // what the approved Write does
+  hook('parity.js', { session_id, hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: input, cwd: dir }, ASK);
+  assert.match(readFileSync(accepted(dir), 'utf8'), /"code": "generic-advice"/);
+  assert.equal(readFileSync(join(dir, 'AGENTS.md'), 'utf8'), GENERIC); // the copy to the twin still happens
+  assert.equal(decision(hook('pre-tool.js', { session_id, tool_name: 'Write', tool_input: { file_path: 'CLAUDE.md', content: `${GENERIC}\n` }, cwd: dir }, ASK)), null);
+});
+
+test('gate: nothing is recorded without a pending ask, nor in report mode', () => {
+  const dir = repoProject();
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC);
+  post(dir, 'Write', { file_path: 'CLAUDE.md', content: GENERIC }, ASK);
+  assert.ok(!existsSync(accepted(dir)));
+  const session_id = `r-${Date.now()}-${Math.random()}`;
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  hook('pre-tool.js', { session_id, tool_name: 'Write', tool_input: input, cwd: dir }, { CLAUDE_PLUGIN_OPTION_GATE: 'report' });
+  hook('parity.js', { session_id, hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: input, cwd: dir }, { CLAUDE_PLUGIN_OPTION_GATE: 'report' });
+  assert.ok(!existsSync(accepted(dir)));
+});
+
+test('gate: a denied ask leaves nothing to record for the same edit in report mode', () => {
+  const dir = repoProject();
+  const s = sessionId();
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(preIn(dir, s, 'Write', input, ASK)), 'ask'); // denied: the file is not written, no PostToolUse
+  assert.equal(decision(preIn(dir, s, 'Write', input, REPORT)), null);
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC);
+  postIn(dir, s, 'Write', input, REPORT);
+  assert.ok(!existsSync(accepted(dir)));
+});
+
+test('gate: an ask followed by the same edit with the gate off records nothing', () => {
+  const dir = repoProject();
+  const s = sessionId();
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(preIn(dir, s, 'Write', input, ASK)), 'ask');
+  assert.equal(preIn(dir, s, 'Write', input, OFF), null);
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC);
+  postIn(dir, s, 'Write', input, OFF);
+  assert.ok(!existsSync(accepted(dir)));
+});
+
+test('gate: a write approved at the parity prompt is not recorded as a gate approval', () => {
+  const dir = repoProject({ 'CLAUDE.md': 'a\n', 'AGENTS.md': 'a\n' });
+  const s = sessionId();
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(preIn(dir, s, 'Write', input, ASK)), 'ask'); // the gate asks; denied
+  writeFileSync(join(dir, 'AGENTS.md'), 'changed by hand\n');
+  const out = preIn(dir, s, 'Write', input, ASK); // now parity asks, and the gate is not consulted
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /differ/);
+  assert.doesNotMatch(reason(out), /generic-advice/);
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC); // approved
+  postIn(dir, s, 'Write', input, ASK);
+  assert.ok(!existsSync(accepted(dir)));
+});
+
+test('gate: when parity denies or asks, parity decides and the gate says nothing', () => {
+  const dir = repoProject({ 'CLAUDE.md': GOTCHA, 'AGENTS.md': 'theirs\n' });
+  const edit = pre(dir, 'Edit', { file_path: 'CLAUDE.md', old_string: GOTCHA, new_string: `${GOTCHA}${GENERIC}` }, ASK);
+  assert.equal(decision(edit), 'deny');
+  assert.doesNotMatch(reason(edit), /themis: \d+ of|generic-advice/);
+  const written = write(dir, `${GOTCHA}${GENERIC}`, 'CLAUDE.md', ASK);
+  assert.equal(decision(written), 'ask');
+  assert.match(reason(written), /differ/);
+  assert.doesNotMatch(reason(written), /themis: \d+ of|generic-advice/);
+});
+
+test('gate: a MultiEdit is judged on the rules its edits add', () => {
+  const dir = repoProject({ 'CLAUDE.md': GOTCHA });
+  const out = pre(dir, 'MultiEdit', { file_path: 'CLAUDE.md', edits: [{ old_string: GOTCHA, new_string: `${GOTCHA}${GENERIC}` }] }, ASK);
+  assert.equal(decision(out), 'ask');
+  assert.match(reason(out), /1 of 1 new rules/);
+  assert.match(reason(out), /generic-advice/);
+});
+
+test('gate: outside a git repository an approval is not remembered', () => {
+  const dir = project();
+  const s = sessionId();
+  const input = { file_path: 'CLAUDE.md', content: GENERIC };
+  assert.equal(decision(preIn(dir, s, 'Write', input, ASK)), 'ask');
+  writeFileSync(join(dir, 'CLAUDE.md'), GENERIC);
+  postIn(dir, s, 'Write', input, ASK);
+  assert.ok(!existsSync(accepted(dir)));
+  assert.ok(!existsSync(join(dir, '.claude')));
+});
+
 test('manifest, hooks and skill are consistent', () => {
   const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8')) as Manifest;
-  assert.equal(manifest.version, '2.1.1');
-  assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity']);
+  assert.equal(manifest.version, '2.2.0');
+  assert.deepEqual(Object.keys(manifest.userConfig), ['claude_md_cap', 'parity', 'gate', 'gate_paths']);
+  assert.equal((manifest.userConfig['gate_paths'] as { default?: boolean }).default, false);
+  assert.equal((manifest.userConfig['gate'] as { default?: string }).default, 'report');
   const hooksJson = readFileSync(join(root, 'hooks', 'hooks.json'), 'utf8');
   const handlers = (JSON.parse(hooksJson) as HooksJson).hooks;
   const scripts = hooksJson.match(/hooks\/dist\/[\w-]+\.js/g) ?? [];
@@ -336,4 +525,12 @@ test('manifest, hooks and skill are consistent', () => {
   const md = readFileSync(join(root, 'skills', 'themis', 'SKILL.md'), 'utf8').replace(/\r/g, '');
   assert.match(md, /^---\nname: themis\ndescription: "[^"]+"\nwhen_to_use: "[^"]+"/);
   assert.match(md, /AGENTS\.md/);
+});
+
+test('the skill tells every mode to run the gate', () => {
+  const md = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'skills', 'themis', 'SKILL.md'), 'utf8').replace(/\r/g, '');
+  assert.match(md, /gate\.js check/);
+  assert.match(md, /gate\.js audit/);
+  assert.ok(!md.includes('## What does not belong'));
+  assert.ok(md.length <= 7000, `${md.length} characters`);
 });

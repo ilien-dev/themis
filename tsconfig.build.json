@@ -5,5 +5,5 @@
     "rootDir": "hooks",
     "outDir": "hooks/dist"
   },
-  "include": ["hooks/*.ts"]
+  "include": ["hooks/**/*.ts"]
 }

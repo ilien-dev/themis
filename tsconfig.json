@@ -25,12 +25,13 @@
     "noEmit": true
   },
   "include": [
-    "hooks/*.ts",
-    "tests/*.ts",
+    "hooks/**/*.ts",
+    "tests/**/*.ts",
     "evals/*.ts",
     "evals/cases/*/grade.ts",
     "assets/source/*.ts",
     "assets/motion/source/*.ts",
     "eslint.config.ts"
-  ]
+  ],
+  "exclude": ["tests/gate/repos/", "tests/gate/holdout/", "tests/gate/holdout2/"]
 }
