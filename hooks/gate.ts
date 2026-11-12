@@ -29,7 +29,7 @@ function parseArgs(argv: readonly string[], allowed: readonly string[], withFile
     const a = argv[i] ?? '';
     if (withFile && a === '--file') {
       file = argv[++i];
-      if (file === undefined || file === '') throw new UsageError('--file needs a path');
+      if (file === undefined || file === '' || file.startsWith('--')) throw new UsageError('--file needs a path');
     } else if (a.startsWith('--')) {
       if (!allowed.includes(a)) throw new UsageError(`unknown option ${a}`);
       flags.add(a);
@@ -89,15 +89,19 @@ function audit(argv: readonly string[]): void {
   const text = read(file);
   if (text === null) throw new UsageError(`cannot read ${target}`);
   const facts = readFacts(file);
-  // Prune first, so a stale entry cannot shield a rule that changed.
-  const pruned = args.flags.has('--prune') ? pruneAccepted(facts.root, liveHashes(file, facts)) : null;
+  // Prune first, so a stale entry cannot shield a rule that changed. Without the file listing the other
+  // rule files sharing the store are unknown, and their entries would look stale: then nothing is pruned.
+  const prune = args.flags.has('--prune');
+  const canPrune = facts.inRepo && facts.filesKnown;
+  const pruned = prune && canPrune ? pruneAccepted(facts.root, liveHashes(file, facts)) : null;
   const verdicts = judgeText(text, facts);
   if (args.flags.has('--json')) {
-    out(JSON.stringify({ verdicts: verdicts.map(toJson), coverage: coverage(verdicts), ...(pruned === null ? {} : { pruned }) }, null, 2));
+    out(JSON.stringify({ verdicts: verdicts.map(toJson), coverage: coverage(verdicts), ...(prune ? { pruned } : {}) }, null, 2));
     return;
   }
   const lines = [formatAudit(verdicts)];
   if (pruned !== null) lines.push(`Pruned ${pruned} stale accepted ${pruned === 1 ? 'entry' : 'entries'}.`);
+  else if (prune) lines.push('Not pruned: the rule files of this repository are unknown outside a git repository.');
   const notes = formatNotes(verdicts);
   if (notes !== '') lines.push('', notes);
   out(lines.join('\n'));
@@ -125,7 +129,7 @@ function report(argv: readonly string[]): void {
   const runner = new CorpusRunner(base);
   try {
     const results = cases.map((c) => ({ c, got: runner.run(c) }));
-    const m = metrics(results.map((r) => ({ expect: r.c.expect, got: r.got })));
+    const m = metrics(results.map((r) => ({ expect: r.c.expect, got: r.got, gap: r.c.gap !== undefined })));
     const wrong = results.filter((r) => !matches(r.c, r.got));
     const gaps = cases.filter((c) => c.gap !== undefined).length;
     if (args.flags.has('--json')) {

@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ACCEPTED_FILE } from '../../hooks/gate/accepted.ts';
@@ -124,4 +125,26 @@ test('unknown subcommand exits 2', () => {
     assert.match(r.stderr, /usage: gate/);
     assert.equal(r.stdout, '');
   }
+});
+
+test('--file takes a path, not the next option', () => {
+  const r = gate(['check', '--file', '--json'], '- a\n');
+  assert.equal(r.status, 2);
+  assert.match(r.stderr, /--file needs a path/);
+});
+
+test('--prune does nothing outside a git repository, where sibling rule files cannot be seen', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'themis-noprune-'));
+  const stale = ruleHash('- A rule that was deleted.');
+  const entry = { verdict: 'cut', code: 'generic-advice', question: 3, evidence: 'e', date: '2026-11-12' };
+  mkdirSync(join(dir, '.claude'));
+  writeFileSync(join(dir, ACCEPTED_FILE), JSON.stringify({ version: 1, rules: { [stale]: entry } }));
+  writeFileSync(join(dir, 'CLAUDE.md'), '- Write clean code.\n');
+  const r = gate(['audit', join(dir, 'CLAUDE.md'), '--prune']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^Not pruned: the rule files of this repository are unknown outside a git repository\.$/m);
+  const left = JSON.parse(readFileSync(join(dir, ACCEPTED_FILE), 'utf8')) as { rules: Record<string, unknown> };
+  assert.deepEqual(Object.keys(left.rules), [stale]);
+  const json = JSON.parse(gate(['audit', join(dir, 'CLAUDE.md'), '--prune', '--json']).stdout) as Record<string, unknown>;
+  assert.equal(json['pruned'], null);
 });

@@ -76,3 +76,23 @@ test('metrics: precision over interrupted rules, false cuts over rules to keep, 
   assert.equal(none.precision, null);
   assert.equal(none.falseCut, null);
 });
+
+test('metrics: a gap is not a rule to keep, and closing one is a correct interruption', () => {
+  const m = metrics([
+    { expect: 'keep', got: keep('- a', []) },
+    { expect: 'keep', gap: true, got: keep('- b', []) }, // a known gap, still open
+    { expect: 'keep', gap: true, got: CUT }, // a gap the gate now closes
+  ]);
+  assert.equal(m.falseCut, 0); // only "- a" had to enter as written
+  assert.equal(m.precision, 1);
+  assert.equal(m.interrupted, 1);
+  assert.deepEqual(m.byVerdict['cut'], { n: 1, correct: 1 });
+  assert.equal(metrics([{ expect: 'keep', gap: true, got: keep('- b', []) }]).falseCut, null);
+});
+
+test('formatAsk counts headings among the new rules only when one is interrupted', () => {
+  const heading = keep('# Notes', [], 'heading');
+  assert.match(formatAsk([heading, CUT, keep('- Amounts are cents.')], 'CLAUDE.md'), /^themis: 1 of 2 new rules in CLAUDE\.md/);
+  const title: Verdict = { rule: rule('# Ledger', 'heading'), verdict: 'cut', code: 'inferable-title', question: 1, evidence: 'package.json: name', notes: [] };
+  assert.match(formatAsk([title, heading, CUT], 'CLAUDE.md'), /^themis: 2 of 2 new rules in CLAUDE\.md/);
+});

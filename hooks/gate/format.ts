@@ -28,13 +28,15 @@ const withTarget = (v: Verdict): string => (v.target === undefined ? v.evidence 
 export function formatAsk(verdicts: readonly Verdict[], fileName: string): string {
   const flagged = verdicts.filter(interrupts);
   if (flagged.length === 0) return '';
+  // A heading counts as a rule here only when it is itself interrupted (a title the repository already gives).
+  const counted = verdicts.filter((v) => v.rule.kind !== 'heading' || interrupts(v)).length;
   const blocks = flagged.map((v) => [
     `  "${firstLine(v.rule.text)}"`,
     `  ${v.verdict} · ${v.code ?? ''} · question ${v.question ?? ''}`,
     `  ${withTarget(v)}`,
   ].join('\n'));
   return [
-    `themis: ${flagged.length} of ${verdicts.length} new rules in ${fileName} may not be needed.`,
+    `themis: ${flagged.length} of ${counted} new rules in ${fileName} may not be needed.`,
     ...blocks,
     'Approve to add them as written; themis will remember the choice. Deny to drop the edit.',
   ].join('\n\n');
@@ -92,20 +94,22 @@ export interface Metrics {
   byVerdict: Record<string, { n: number; correct: number }>; // by the verdict the gate gave
 }
 
-export function metrics(cases: readonly { expect: VerdictKind; got: Verdict }[]): Metrics {
+// A gap is a redundant rule the gate is known to keep: it is not a rule that must enter as written, and an
+// interruption of it is deserved.
+export function metrics(cases: readonly { expect: VerdictKind; got: Verdict; gap?: boolean }[]): Metrics {
   const hit = cases.filter((c) => interrupts(c.got));
-  const shouldKeep = cases.filter((c) => c.expect === 'keep');
+  const shouldKeep = cases.filter((c) => c.expect === 'keep' && c.gap !== true);
   const byVerdict: Record<string, { n: number; correct: number }> = {};
   for (const c of cases) {
     const entry = byVerdict[c.got.verdict] ?? { n: 0, correct: 0 };
     entry.n++;
-    if (c.expect === c.got.verdict) entry.correct++;
+    if (c.expect === c.got.verdict || (c.gap === true && interrupts(c.got))) entry.correct++;
     byVerdict[c.got.verdict] = entry;
   }
   const { covered, total } = coverage(cases.map((c) => c.got));
   return {
     interrupted: hit.length,
-    precision: hit.length === 0 ? null : hit.filter((c) => c.expect !== 'keep').length / hit.length,
+    precision: hit.length === 0 ? null : hit.filter((c) => c.expect !== 'keep' || c.gap === true).length / hit.length,
     falseCut: shouldKeep.length === 0 ? null : shouldKeep.filter((c) => interrupts(c.got)).length / shouldKeep.length,
     coverage: ratio(covered, total),
     byVerdict,

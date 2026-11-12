@@ -34,12 +34,15 @@ test('the table is registered after question 2 and every vendor entry names a da
   for (const p of PHRASES) assert.ok(p.group === 'vendor' || p.source === undefined);
 });
 
-test('every line of "General guidelines" in c14 is cut; "Think step by step" is vendor-declared, the rest generic', () => {
+// The two behaviour lines (double-check, be thorough) stay: no vendor in the window asks to remove them.
+const BEHAVIOUR = new Set(['- Double-check your work before finishing.', '- Be thorough and careful.']);
+test('"General guidelines" in c14: "Think step by step" is vendor-declared, the advice generic, the behaviour lines kept', () => {
   const rules = parseRules(readFileSync(join(FIXTURE, 'CLAUDE.md'), 'utf8'));
   const lines = rules.filter((r) => r.line >= 23 && r.line <= 32); // the items under "## General guidelines"
   assert.equal(lines.length, 10);
   for (const rule of lines) {
     const a = q3(rule, facts);
+    if (BEHAVIOUR.has(rule.text)) { assert.equal(a, null, rule.text); continue; }
     assert.equal(a?.verdict, 'cut', rule.text);
     assert.equal(a.question, 3);
     assert.equal(a.code, rule.text.startsWith('- Think step by step') ? 'vendor-declared' : 'generic-advice', rule.text);
@@ -72,18 +75,18 @@ test('the repeated generic sentence of the Notes section is cut', () => {
 });
 
 test('several generic phrases in one rule are all removed', () => {
-  assert.equal(ask('Write clean code. Handle errors properly. Be thorough.')?.code, 'generic-advice');
+  assert.equal(ask('Write clean code. Handle errors properly. Write tests for your code.')?.code, 'generic-advice');
 });
 
 test('Spanish forms are cut', () => {
   assert.equal(ask('Escribe c\u00f3digo limpio y maneja los errores.')?.code, 'generic-advice');
   assert.equal(ask('Piensa paso a paso antes de responder.')?.code, 'vendor-declared');
   assert.equal(ask('Piensa con cuidado.')?.code, 'vendor-declared');
-  assert.equal(ask('Siempre revisa tu trabajo antes de terminar.')?.code, 'generic-advice');
+  assert.equal(ask('Siempre escribe código limpio.')?.code, 'generic-advice');
 });
 
 test('the lists of "What does not belong" are cut', () => {
-  for (const t of ['Write clean code.', 'Handle errors.', 'Use TypeScript types.', 'Stay in scope.', 'Read files before editing.', 'Reuse existing code.', 'Double-check your work.', 'Be thorough.', 'Think carefully before answering.']) {
+  for (const t of ['Write clean code.', 'Handle errors.', 'Use TypeScript types.', 'Think carefully before answering.']) {
     assert.equal(ask(t)?.verdict, 'cut', t);
   }
 });
@@ -138,4 +141,17 @@ test('patterns stay linear on adversarial input', () => {
     `handle ${'errors '.repeat(20000)}`,
   ]) ask(t);
   assert.ok(Date.now() - started < 2000);
+});
+
+// Controller ruling after task 9: a claim about what the model already does is cut only when a vendor
+// says so (group vendor) or it is measured. Behaviour instructions to the agent stay until then.
+test('a behaviour instruction to the agent is not generic advice', () => {
+  for (const t of [
+    'Double-check your work before finishing.', 'Double-check your work.', 'Be thorough and careful.', 'Be thorough.', 'Be careful.',
+    'Stay in scope.', 'Read files before editing.', 'Read the file before modifying it.', 'Reuse existing code.',
+    'Never edit tests to make them pass.', "Don't edit the tests to make them pass.", 'Reply in the configured language.',
+    "Answer in the user's language.", 'Siempre revisa tu trabajo antes de terminar.', 'Comprueba dos veces tu código.',
+    'Sé minucioso.', 'Sé cuidadoso y minucioso.',
+  ]) assert.equal(ask(t), null, t);
+  assert.equal(ask('Write clean code. Handle errors properly. Be thorough.'), null); // "Be thorough" is left over
 });

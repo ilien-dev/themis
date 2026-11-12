@@ -8,7 +8,6 @@ const filler = (src) => ({ pattern: make(src), group: 'filler' });
 const vendor = (src, url, models) => ({
     pattern: make(src), group: 'vendor', source: { url, models, retrieved: '2026-11-12' },
 });
-const APOS = "['’]";
 const ADJ = 'clean|readable|maintainable|simple|good|high[- ]quality|well[- ]structured|elegant';
 const ADJ_ES = 'limpio|legible|mantenible|simple|bueno|de (?:alta )?calidad|elegante';
 // "clean, readable and maintainable": each repetition starts with its own separator.
@@ -30,29 +29,23 @@ export const PHRASES = [
     generic(String.raw `(?:always\s+)?write\s+(?:${ADJ_LIST})\s+code`),
     generic(String.raw `(?:always\s+)?(?:handle|catch)\s+(?:all\s+)?errors?(?:\s+(?:properly|correctly|gracefully|appropriately))?`),
     generic(String.raw `(?:always\s+)?use\s+(?:meaningful|descriptive|clear|good)\s+(?:variable\s+|function\s+)?names`),
-    generic(String.raw `(?:always\s+)?double[- ]check\s+your\s+(?:work|changes|code)(?:\s+before\s+(?:finishing|you\s+finish|committing|submitting|you\s+submit))?`),
     generic(String.raw `(?:always\s+)?follow\s+(?:the\s+)?(?:best|standard|common|industry)\s+(?:practices?|conventions)(?:\s+(?:for|in)\s+${LANG_WORD})?`),
     generic(String.raw `(?:always\s+)?keep\s+(?:your\s+)?(?:functions|methods|classes|files)\s+(?:small|short)(?:\s+and\s+focused)?`),
     generic(String.raw `(?:always\s+)?write\s+(?:unit\s+)?tests\s+for\s+(?:your|all|the)\s+(?:code|changes)`),
-    generic(String.raw `(?:always\s+)?be\s+(?:thorough|careful)(?:\s+and\s+(?:thorough|careful))?`),
     generic(String.raw `(?:always\s+)?use\s+(?:modern|latest|recent)\s+${LANG_WORD}\s+(?:features|syntax)`),
     generic(String.raw `(?:always\s+)?use\s+(?:proper\s+)?(?:${LANG_WORD}\s+)?types`),
     generic(String.raw `(?:always\s+)?(?:remember\s+to\s+)?keep\s+(?:the\s+)?(?:code\s+quality|quality\s+of\s+the\s+code)\s+high`),
     generic(String.raw `(?:always\s+)?(?:remember\s+to\s+)?communicate\s+(?:clearly|well)(?:\s+(?:about|on)\s+(?:your\s+|the\s+)?changes)?`),
-    generic(String.raw `(?:always\s+)?stay\s+(?:in|within)\s+scope`),
-    generic(String.raw `(?:always\s+)?read\s+(?:a\s+|the\s+)?files?\s+before\s+(?:editing|modifying|changing)(?:\s+(?:it|them))?`),
-    generic(String.raw `(?:always\s+)?reuse\s+existing\s+code`),
-    generic(String.raw `(?:never|do\s+not|don${APOS}t)\s+edit\s+(?:the\s+)?tests\s+to\s+(?:make\s+(?:them|it)\s+)?pass`),
-    generic(String.raw `(?:always\s+)?(?:reply|respond|answer)\s+in\s+the\s+(?:configured|user${APOS}s)\s+language`),
+    // Not here: instructions about how the agent works (verify your work, be thorough, stay in scope, read
+    // before editing, reuse code, do not edit tests to pass, reply in a language, ask first). A claim
+    // about what the model already does is cut only when a vendor says so (group vendor) or it is measured.
     // Generic advice, Spanish.
     generic(String.raw `(?:siempre\s+)?escribe\s+(?:un\s+)?c\u00f3digo\s+(?:${ADJ_LIST_ES})`),
     generic(String.raw `(?:siempre\s+)?(?:maneja|gestiona)\s+(?:bien\s+)?(?:todos\s+)?(?:los\s+)?errores(?:\s+(?:correctamente|adecuadamente|bien))?`),
     generic(String.raw `(?:siempre\s+)?usa\s+nombres\s+(?:de\s+variables?\s+)?(?:significativos|descriptivos|claros)`),
-    generic(String.raw `(?:siempre\s+)?(?:revisa|comprueba)\s+(?:dos\s+veces\s+)?tu\s+(?:trabajo|c\u00f3digo)(?:\s+antes\s+de\s+(?:terminar|entregar))?`),
     generic(String.raw `(?:siempre\s+)?sigue\s+las\s+mejores\s+pr\u00e1cticas(?:\s+(?:de|en)\s+${LANG_WORD})?`),
     generic(String.raw `(?:siempre\s+)?mant\u00e9n\s+las\s+funciones\s+(?:peque\u00f1as|cortas)(?:\s+y\s+enfocadas)?`),
     generic(String.raw `(?:siempre\s+)?escribe\s+(?:pruebas|tests)\s+para\s+tu\s+c\u00f3digo`),
-    generic(String.raw `(?:siempre\s+)?s\u00e9\s+(?:minucioso|cuidadoso)(?:\s+y\s+(?:minucioso|cuidadoso))?`),
     generic(String.raw `(?:siempre\s+)?(?:recuerda\s+)?mant\u00e9n\s+(?:alta\s+)?la\s+calidad\s+del\s+c\u00f3digo(?:\s+alta)?`),
     generic(String.raw `(?:siempre\s+)?(?:recuerda\s+)?comun\u00edcate\s+(?:claramente|bien)(?:\s+sobre\s+(?:tus|los)\s+cambios)?`),
     // File filler: sentences about the file itself.

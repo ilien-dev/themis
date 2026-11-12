@@ -6,11 +6,11 @@
 {"id":"c14-24","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Always handle errors properly.","expect":"cut","code":"generic-advice","line":24}
 {"id":"c14-25","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Use meaningful variable names.","expect":"cut","code":"generic-advice","line":25}
 {"id":"c14-26","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Think step by step before making changes.","expect":"cut","code":"vendor-declared","line":26}
-{"id":"c14-27","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Double-check your work before finishing.","expect":"cut","code":"generic-advice","line":27}
+{"id":"c14-27","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Double-check your work before finishing.","expect":"keep","line":27,"gap":"a behaviour instruction to the agent, likely redundant for current models; no vendor statement about a model released between 2026-09-12 and 2026-11-12 asks to remove it, so it stays until measured. The only removal statement is about Opus 5 (over-verification), outside the window, and Sonnet 5.5 and Haiku 5.5 are documented to skip checks at low effort. The c14 grader still requires it gone (its generic regex matches \"double-check\")"}
 {"id":"c14-28","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Follow best practices for JavaScript.","expect":"cut","code":"generic-advice","line":28}
 {"id":"c14-29","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Keep functions small and focused.","expect":"cut","code":"generic-advice","line":29}
 {"id":"c14-30","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Write tests for your code.","expect":"cut","code":"generic-advice","line":30}
-{"id":"c14-31","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Be thorough and careful.","expect":"cut","code":"generic-advice","line":31}
+{"id":"c14-31","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Be thorough and careful.","expect":"keep","line":31,"gap":"a behaviour instruction to the agent, likely redundant for current models; no vendor statement about a model released between 2026-09-12 and 2026-11-12 asks to remove it, so it stays until measured. The anti-laziness statement (\"reduce that guidance\") is about Claude 4.6, outside the window. The c14 grader does not look for it"}
 {"id":"c14-32","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Use modern ES features.","expect":"cut","code":"generic-advice","line":32}
 {"id":"c14-35","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Run unit tests: `npm run test:unit`","expect":"fix","code":"dead-reference","line":35}
 {"id":"c14-36","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Generate schema: `npm run gen`","expect":"keep","line":36}
@@ -204,12 +204,12 @@
 {"id":"facturas-07","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Nunca ejecutes `git push` sin pasar las pruebas.","expect":"keep"}
 {"id":"api-30","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Do not run `npm run migrate` against production; use the staging copy.","expect":"keep"}
 {"id":"shop-57","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use descriptive names.","expect":"cut","code":"generic-advice"}
-{"id":"shop-58","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Reuse existing code.","expect":"cut","code":"generic-advice"}
-{"id":"shop-59","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Stay in scope.","expect":"cut","code":"generic-advice"}
-{"id":"api-31","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Read files before editing.","expect":"cut","code":"generic-advice"}
-{"id":"api-32","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never edit tests to make them pass.","expect":"cut","code":"generic-advice"}
+{"id":"shop-58","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Reuse existing code.","expect":"keep"}
+{"id":"shop-59","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Stay in scope.","expect":"keep"}
+{"id":"api-31","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Read files before editing.","expect":"keep"}
+{"id":"api-32","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never edit tests to make them pass.","expect":"keep"}
 {"id":"facturas-08","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Escribe código limpio y legible.","expect":"cut","code":"generic-advice"}
-{"id":"facturas-09","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Siempre revisa tu trabajo antes de terminar.","expect":"cut","code":"generic-advice"}
+{"id":"facturas-09","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Siempre revisa tu trabajo antes de terminar.","expect":"keep"}
 {"id":"facturas-10","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Maneja los errores correctamente.","expect":"cut","code":"generic-advice"}
 {"id":"facturas-11","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Sigue las mejores prácticas de Python.","expect":"cut","code":"generic-advice"}
 {"id":"mono-08","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Mantén las funciones pequeñas.","expect":"cut","code":"generic-advice"}
@@ -219,7 +219,7 @@
 {"id":"api-34","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Handle errors properly and retry 3 times.","expect":"keep"}
 {"id":"api-35","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Do not edit tests to make them pass unless the spec changed.","expect":"keep"}
 {"id":"shop-62","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use branded types for ids.","expect":"keep"}
-{"id":"shop-63","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Follow best practices for security.","expect":"keep"}
+{"id":"shop-63","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Follow best practices for security.","expect":"keep","gap":"content-free advice; \"best practices\" without a practice says nothing checkable, but the phrase table only lists best practices for a language"}
 {"id":"facturas-12","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Siempre maneja los errores de firma con reintentos.","expect":"keep"}
 {"id":"facturas-13","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Sé cuidadoso con los certificados de la empresa.","expect":"keep"}
 {"id":"shop-64","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Keep this file up to date.","expect":"cut","code":"file-filler"}
@@ -306,7 +306,7 @@
 {"id":"mono-16","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"- Cada paquete se publica por separado; no publiques desde la raíz.","expect":"keep"}
 {"id":"shop-87","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use React 18 APIs only; React 19 features are not available.","expect":"keep"}
 {"id":"shop-88","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- We use React with the compiler turned off.","expect":"keep"}
-{"id":"shop-89","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use single quotes for imports.","expect":"keep"}
+{"id":"shop-89","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use single quotes for imports.","expect":"keep","gap":".prettierrc sets singleQuote true and a script runs prettier on every file, imports included; the scope \"for imports\" stops the table phrase from matching the whole rule"}
 {"id":"shop-90","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Use semicolons at the start of lines that begin with `(` or `[`.","expect":"keep"}
 {"id":"shop-91","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Always use `npm ci` in CI.","expect":"keep"}
 {"id":"shop-92","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `npm run build` while `npm run dev` is running.","expect":"keep"}
@@ -327,11 +327,11 @@
 {"id":"shop-107","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- `npm run build` fails on Windows; use WSL.","expect":"keep"}
 {"id":"shop-108","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Run `npm run lint` and fix every warning.","expect":"keep"}
 {"id":"api-57","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Use single quotes, even in JSON fixtures.","expect":"keep"}
-{"id":"api-58","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Avoid var in new files.","expect":"keep"}
+{"id":"api-58","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Avoid var in new files.","expect":"keep","gap":".eslintrc.json sets no-var to error for every file and `npm run lint` runs eslint, so new files are covered; the scope \"in new files\" stops the table phrase from matching the whole rule"}
 {"id":"api-59","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Prefer const over let.","expect":"cut","code":"enforced-config"}
 {"id":"api-60","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Use Express 4 routing; Express 5 is not supported by our middleware.","expect":"keep"}
 {"id":"api-61","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Use conventional commits with the scope set to the route name.","expect":"keep"}
-{"id":"api-62","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never run `git push` to main directly.","expect":"keep"}
+{"id":"api-62","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never run `git push` to main directly.","expect":"keep","gap":"the api repo denies every `git push` (Bash(git push:*)), so the narrower \"to main directly\" can never apply; the deny check abstains because \"to main directly\" is not a prohibition word"}
 {"id":"api-63","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Never run `npm run migrate` on production.","expect":"keep"}
 {"id":"api-64","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Always run `npm run migrate` after pulling.","expect":"keep"}
 {"id":"api-65","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Handle errors properly.","expect":"cut","code":"generic-advice"}
@@ -353,7 +353,7 @@
 {"id":"facturas-28","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Nunca edites `uv.lock` a mano.","expect":"move","code":"absolute-command"}
 {"id":"facturas-29","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Escribe código limpio en el módulo de firma.","expect":"keep"}
 {"id":"facturas-30","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Piensa paso a paso cuando cambies la firma.","expect":"keep"}
-{"id":"facturas-31","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Sé minucioso.","expect":"cut","code":"generic-advice"}
+{"id":"facturas-31","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Sé minucioso.","expect":"keep"}
 {"id":"facturas-32","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Usa nombres descriptivos en español.","expect":"keep"}
 {"id":"facturas-33","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Escrito en Python 3.12.","expect":"keep"}
 {"id":"facturas-34","repo":"tests/gate/repos/facturas","file":"CLAUDE.md","rule":"- Este proyecto usa Python y uv.","expect":"keep","gap":"Python is the only language and uv.lock sits at the root; uv is not in the alias table, so a word remains"}
@@ -366,7 +366,7 @@
 {"id":"gocli-13","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- Keep `internal/parse` free of I/O.","expect":"keep"}
 {"id":"gocli-14","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- See `internal/parse/parse.go` for the CSV rules.","expect":"keep"}
 {"id":"gocli-15","repo":"tests/gate/repos/gocli","file":"CLAUDE.md","rule":"- See `cmd/tool/flags.go` for the flags.","expect":"fix","code":"dead-reference"}
-{"id":"shop-109","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `git push --force` on main; the history is shared.","expect":"keep"}
+{"id":"shop-109","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never run `git push --force` on main; the history is shared.","expect":"keep","gap":"the shop repo denies `git push --force` everywhere (Bash(git push --force:*)); \"on main\" is narrower than the deny entry, and the deny check abstains on the extra words"}
 {"id":"shop-110","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Never call `Math.round` on prices.","expect":"keep"}
 {"id":"q1-react-01","repo":"tests/gate/repos/q1-react","file":"CLAUDE.md","rule":"We use React.","expect":"cut","code":"inferable-tech"}
 {"id":"q1-vitest-01","repo":"tests/gate/repos/q1-vitest","file":"CLAUDE.md","rule":"This project is built with Vitest.","expect":"cut","code":"inferable-tech"}
@@ -502,9 +502,9 @@
 {"id":"q2-deny-wildcard-01","repo":"tests/gate/repos/q2-deny-wildcard","file":"CLAUDE.md","rule":"Never run `git push`.","expect":"move","code":"absolute-command"}
 {"id":"q2-deny-read-01","repo":"tests/gate/repos/q2-deny-read","file":"CLAUDE.md","rule":"Never run `git push`.","expect":"move","code":"absolute-command"}
 {"id":"q2-deny-force-04","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Never run `git push --force` without asking me first.","expect":"keep"}
-{"id":"q2-deny-force-05","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Never run `git push --force` on main; the history is shared.","expect":"keep"}
+{"id":"q2-deny-force-05","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Never run `git push --force` on main; the history is shared.","expect":"keep","gap":"the repo denies `git push --force` everywhere (Bash(git push --force:*)); \"on main\" is narrower than the deny entry, and the deny check abstains on the extra words"}
 {"id":"q2-deny-force-06","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Run `git push --force` only after a backup.","expect":"keep"}
-{"id":"q2-deny-force-07","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Run `git push --force`.","expect":"keep"}
+{"id":"q2-deny-force-07","repo":"tests/gate/repos/q2-deny-force","file":"CLAUDE.md","rule":"Run `git push --force`.","expect":"keep","gap":"contradicts the deny entry Bash(git push --force:*), which blocks the command anyway: an unflagged conflict, since no check compares a rule that asks for a command with the deny list"}
 {"id":"q2-prettier-10","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Use semicolons only in `for` headers.","expect":"keep"}
 {"id":"q2-prettier-11","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Avoid semicolons in JSON fixtures.","expect":"keep"}
 {"id":"q2-prettier-12","repo":"tests/gate/repos/q2-prettier","file":"CLAUDE.md","rule":"Always use semicolons.","expect":"keep"}
@@ -545,19 +545,19 @@
 {"id":"q3-app-03","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Keep it updated.","expect":"cut","code":"file-filler"}
 {"id":"q3-app-04","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Este archivo proporciona contexto sobre el proyecto Ledger. Mantenlo actualizado.","expect":"cut","code":"file-filler"}
 {"id":"q3-app-05","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Remember to keep the code quality high and to communicate clearly about changes.","expect":"cut","code":"generic-advice"}
-{"id":"q3-app-06","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code. Handle errors properly. Be thorough.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-06","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code. Handle errors properly. Be thorough.","expect":"keep"}
 {"id":"q3-app-07","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Escribe código limpio y maneja los errores.","expect":"cut","code":"generic-advice"}
 {"id":"q3-app-08","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Piensa paso a paso antes de responder.","expect":"cut","code":"vendor-declared"}
 {"id":"q3-app-09","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Piensa con cuidado.","expect":"cut","code":"vendor-declared"}
-{"id":"q3-app-10","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Siempre revisa tu trabajo antes de terminar.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-10","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Siempre revisa tu trabajo antes de terminar.","expect":"keep"}
 {"id":"q3-app-11","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code.","expect":"cut","code":"generic-advice"}
 {"id":"q3-app-12","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Handle errors.","expect":"cut","code":"generic-advice"}
 {"id":"q3-app-13","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use TypeScript types.","expect":"cut","code":"generic-advice"}
-{"id":"q3-app-14","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Stay in scope.","expect":"cut","code":"generic-advice"}
-{"id":"q3-app-15","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Read files before editing.","expect":"cut","code":"generic-advice"}
-{"id":"q3-app-16","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Reuse existing code.","expect":"cut","code":"generic-advice"}
-{"id":"q3-app-17","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Double-check your work.","expect":"cut","code":"generic-advice"}
-{"id":"q3-app-18","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Be thorough.","expect":"cut","code":"generic-advice"}
+{"id":"q3-app-14","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Stay in scope.","expect":"keep"}
+{"id":"q3-app-15","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Read files before editing.","expect":"keep"}
+{"id":"q3-app-16","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Reuse existing code.","expect":"keep"}
+{"id":"q3-app-17","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Double-check your work.","expect":"keep"}
+{"id":"q3-app-18","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Be thorough.","expect":"keep"}
 {"id":"q3-app-19","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Think carefully before answering.","expect":"cut","code":"vendor-declared"}
 {"id":"q3-app-20","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Write clean code: no function over 40 lines in `src/core/`.","expect":"keep"}
 {"id":"q3-app-21","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Handle errors with `AppError` from src/errors.js.","expect":"keep"}
@@ -579,7 +579,7 @@
 {"id":"q3-app-37","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use branded types.","expect":"keep"}
 {"id":"q3-app-38","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use opaque types.","expect":"keep"}
 {"id":"q3-app-39","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use strict types.","expect":"keep"}
-{"id":"q3-app-40","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Follow best practices for security.","expect":"keep"}
+{"id":"q3-app-40","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Follow best practices for security.","expect":"keep","gap":"content-free advice; \"best practices\" without a practice says nothing checkable, but the phrase table only lists best practices for a language"}
 {"id":"q3-app-41","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Use latest Node features.","expect":"keep"}
 {"id":"q3-app-42","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"This file gives context about security.","expect":"keep"}
 {"id":"q3-app-43","repo":"tests/gate/repos/q3-app","file":"CLAUDE.md","rule":"Este archivo proporciona contexto sobre seguridad.","expect":"keep"}
