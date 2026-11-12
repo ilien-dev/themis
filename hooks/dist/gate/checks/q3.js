@@ -1,6 +1,6 @@
 import { NEGATION } from "../tables/alias.js";
 import { PHRASES } from "../tables/phrases.js";
-import { ABSOLUTE, citedPaths, onlyConnectives, spans } from "../text.js";
+import { ABSOLUTE, citedPaths, onlyConnectives, spans, words } from "../text.js";
 // Question 3: is this rule generic advice, file filler or something the vendor says to remove?
 const LIST_MARKER = /^\s*(?:[-*+]|\d+[.)])\s+/;
 // What may remain once the phrases are removed. Anything else is information.
@@ -10,9 +10,24 @@ const CONNECTIVES = new Set([
 ]);
 const CODES = { vendor: 'vendor-declared', filler: 'file-filler', generic: 'generic-advice' };
 const ORDER = ['vendor', 'filler', 'generic']; // the most specific reason first
+// All a level-1 heading may hold to be filler: rule file names and words that only say "instructions".
+const TITLE_FILLER = new Set([
+    'claude', 'agents', 'agent', 'md', 'gemini', 'copilot', 'codex', 'ai', 'project', 'repository', 'repo', 'codebase', 'instructions',
+    'guidance', 'guide', 'guidelines', 'rules', 'context', 'for', 'the', 'this', 'in', 'working', 'with',
+    'proyecto', 'repositorio', 'instrucciones', 'guía', 'guia', 'reglas', 'contexto', 'para', 'el', 'la', 'este', 'en', 'del', 'de',
+]);
+// "# CLAUDE.md", "# AGENTS.md", "# Project instructions": a title that names nothing but the file.
+function fillerHeading(rule) {
+    const w = words(rule.text.replace(/^#\s+/, ''));
+    if (w.length === 0 || /\d/.test(rule.text) || !w.every((x) => TITLE_FILLER.has(x)))
+        return null;
+    return { verdict: 'cut', code: CODES.filler, question: 3, evidence: `phrases: filler heading "${rule.text.replace(/^#\s+/, '').trim()}"` };
+}
 const GLOBAL = PHRASES.map((p) => new RegExp(p.pattern.source, 'giu')); // same order as PHRASES
 export const q3 = (rule) => {
-    if (rule.kind === 'heading' || rule.kind === 'code')
+    if (rule.kind === 'heading')
+        return fillerHeading(rule);
+    if (rule.kind === 'code')
         return null;
     const text = rule.text.replace(LIST_MARKER, '');
     if (spans(text).length > 0 || citedPaths(text).length > 0)

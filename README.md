@@ -109,14 +109,16 @@ A rule is a list item with its continuation lines, a paragraph, a numbered list 
 
 | # | Question | Verdict |
 |---|---|---|
-| 1 | Does the repo already show it? A project title, a folder tree, "use X" for a dependency that is the only one of its kind, a script with an obvious name and nothing added, a summary of the README. | `cut` |
+| 1 | Does the repo already show it? A project title, a folder tree, "use X" for a dependency that is the only one of its kind, an existing path with a short plain description, a list of the manifest's dependencies, a script described only by its own name and command, a summary made of the manifest's description and the README. A stack list whose version differs from `package.json` is a `conflict`. | `cut` or `conflict` |
 | 2 | Does a tool already enforce it? A lint or compiler setting that is configured, run by a script, a pre-commit hook or CI, with the same value; or a `permissions.deny` rule that covers the command. If the setting says the opposite, `conflict`. | `cut` or `conflict` |
-| 3 | Is it generic or filler? "Write clean code", "this file provides guidance", or a phrase a vendor guide for a current model asks to remove. English and Spanish. | `cut` |
+| 3 | Is it generic or filler? "Write clean code", "this file provides guidance", the heading and sentence `/init` writes (`# CLAUDE.md`, "This file provides guidance to Claude Code … when working with code in this repository"), or a phrase a vendor guide for a current model asks to remove. English and Spanish. | `cut` |
 | 5 | Is it an absolute ban on a command or path? "Never run `x`" is better as a hook or a `permissions.deny` rule. | `move` |
 | 6 | Is it a long procedure, or a passage copied from the README or `docs/`? | `move`, to a doc or a skill with a pointer |
 | 7 | Is it shouted, or does it name a command or path that does not exist? | `rewrite` or `fix` |
 
 Everything else is `keep`. A `keep` can carry a note (no evidence found, no anchor in the repo, an absolute without a reason); a note informs and never interrupts. A rule is kept when in doubt: a negation, a condition, a number or a word the tables do not know all count as information.
+
+The path, stack, script and summary checks use the repository as their dictionary (the files, the dependencies, the scripts and their commands, the README) and each abstains on a closed list: a status word such as generated, legacy or internal; an effect verb such as applied, loaded, required, shared or used by; a pronoun, a quantifier, a second sentence or clause, a code span that is not an existing path, and for scripts any word of deployment or data loss. In a repository with more than one `package.json` a described script is kept, since a sub-package may own it.
 
 Negative rules ("don't use X") are never cut by question 1, and "use pnpm, not npm" is kept even with a `pnpm-lock.yaml`, because naming a tool that is not the default changes what the model does.
 

@@ -10,7 +10,7 @@ import type { Check } from '../verdict.ts';
 
 const BUILTIN_SCRIPTS = new Set(['install', 'ci', 'test', 'start']); // npm brings these
 // Package manager subcommands that are not scripts (the extraction already drops the npm ones).
-const PM_COMMANDS = new Set([
+export const PM_COMMANDS: ReadonlySet<string> = new Set([
   'workspace', 'workspaces', 'filter', 'store', 'fetch', 'import', 'prune', 'rebuild', 'outdated', 'list', 'ls', 'why', 'env', 'setup',
   'patch', 'deploy', 'licenses', 'dedupe', 'login', 'logout', 'whoami', 'unlink', 'info', 'node', 'global', 'bin', 'set', 'plugin', 'upgrade',
   'upgrade-interactive', 'check', 'owner', 'team', 'tag', 'policies', 'unplug', 'autoclean', 'run',
@@ -68,7 +68,7 @@ function generated(p: string, facts: Facts): boolean {
 // A file or a directory that exists, tracked or on disk, from the repo root or from the rule file's directory.
 // A bare file name counts when any tracked file has that name, and a longer path when it is the tail of a
 // tracked path (`src/module.ts` of `packages/core/src/module.ts`): rules often cite paths from a package.
-function alive(p: string, facts: Facts): boolean {
+export function alive(p: string, facts: Facts): boolean {
   const starts = [p, posix(relative(facts.root, join(facts.dir, p)))];
   for (const f of facts.files) {
     if (starts.some((s) => f === s || f.startsWith(`${s}/`))) return true;
@@ -78,7 +78,7 @@ function alive(p: string, facts: Facts): boolean {
 }
 
 // The path as written, without a location suffix, a leading ./ or a trailing slash.
-function clean(raw: string): string {
+export function clean(raw: string): string {
   let p = posix(raw).replace(LOCATION, '');
   while (p.startsWith('./')) p = p.slice(2);
   return p.replace(/\/+$/, '');

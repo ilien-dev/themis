@@ -13,7 +13,7 @@
 {"id":"c14-31","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Be thorough and careful.","expect":"keep","line":31,"gap":"a behaviour instruction to the agent, likely redundant for current models; no vendor statement about a model released between 2026-09-12 and 2026-11-12 asks to remove it, so it stays until measured. The anti-laziness statement (\"reduce that guidance\") is about Claude 4.6, outside the window. The c14 grader does not look for it"}
 {"id":"c14-32","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Use modern ES features.","expect":"cut","code":"generic-advice","line":32}
 {"id":"c14-35","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Run unit tests: `npm run test:unit`","expect":"fix","code":"dead-reference","line":35}
-{"id":"c14-36","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Generate schema: `npm run gen`","expect":"keep","line":36}
+{"id":"c14-36","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Generate schema: `npm run gen`","expect":"cut","code":"inferable-script","line":36}
 {"id":"c14-37","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- Lint: `npm run lint`","expect":"cut","code":"inferable-script","line":37}
 {"id":"c14-40","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- All money values are integer cents; never floats.","expect":"keep","line":40}
 {"id":"c14-41","repo":"evals/cases/c14-themis-audit/fixture","file":"CLAUDE.md","rule":"- src/generated/ is produced by `npm run gen`. Do not edit it by hand.","expect":"keep","line":41}
@@ -229,7 +229,7 @@
 {"id":"mono-09","repo":"tests/gate/repos/mono","file":"CLAUDE.md","rule":"Mantén este archivo actualizado.","expect":"cut","code":"file-filler"}
 {"id":"shop-66","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"Keep it updated by running the sync job every Friday.","expect":"keep"}
 {"id":"api-37","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"This file gives context about security.","expect":"keep"}
-{"id":"shop-67","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"This file provides guidance to Claude Code when working with code in this repository.","expect":"keep","gap":"the sentence /init writes at the top of every file; the filler pattern ends at \"guidance\" and \"to Claude Code when working with code in this repository\" is not a connective"}
+{"id":"shop-67","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"This file provides guidance to Claude Code when working with code in this repository.","expect":"cut","code":"file-filler"}
 {"id":"shop-68","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Think carefully before answering.","expect":"cut","code":"vendor-declared"}
 {"id":"shop-69","repo":"tests/gate/repos/shop","file":"CLAUDE.md","rule":"- Think step by step.","expect":"cut","code":"vendor-declared"}
 {"id":"api-38","repo":"tests/gate/repos/api","file":"CLAUDE.md","rule":"- Think very carefully before making any changes.","expect":"cut","code":"vendor-declared"}
@@ -679,3 +679,82 @@
 {"id":"q567-69","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Always run `npm run lint` before committing.","expect":"move","code":"absolute-command"}
 {"id":"q567-70","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Siempre ejecuta `npm run lint`.","expect":"move","code":"absolute-command"}
 {"id":"q567-71","repo":"tests/gate/repos/q567","file":"CLAUDE.md","rule":"Never edit `src/missing.js` by hand.","expect":"fix","code":"dead-reference"}
+{"id":"cov-001","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"# CLAUDE.md","expect":"cut","code":"file-filler"}
+{"id":"cov-002","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"# AGENTS.md","expect":"cut","code":"file-filler"}
+{"id":"cov-003","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"# Project instructions","expect":"cut","code":"file-filler"}
+{"id":"cov-004","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.","expect":"cut","code":"file-filler"}
+{"id":"cov-005","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"This file provides guidance to Codex when working with code in this repository.","expect":"cut","code":"file-filler"}
+{"id":"cov-006","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"Este archivo proporciona orientación a Claude Code (claude.ai/code) cuando trabaja con código en este repositorio.","expect":"cut","code":"file-filler"}
+{"id":"cov-007","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"# Instrucciones del proyecto","expect":"cut","code":"file-filler"}
+{"id":"cov-008","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"# CLAUDE.md — payments rules","expect":"keep"}
+{"id":"cov-009","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"# AGENTS.md for the billing service","expect":"keep"}
+{"id":"cov-010","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"This file provides guidance to Claude Code when working with code in this repository. Migrations run at boot.","expect":"keep"}
+{"id":"cov-011","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"This file provides guidance to Claude Code when working with code in this repository, which has no tests.","expect":"keep"}
+{"id":"cov-012","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"# Reglas de pagos","expect":"keep"}
+{"id":"cov-013","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"Este archivo proporciona orientación a Claude Code cuando trabaja con código en este repositorio de facturas.","expect":"keep"}
+{"id":"cov-014","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/nvidia.js` — Executes nvidia-smi and parses CSV output","expect":"cut","code":"inferable-path"}
+{"id":"cov-015","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **TrackingCache** (lib/tracking-cache.js:5): In-memory LRU cache","expect":"cut","code":"inferable-path"}
+{"id":"cov-016","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/reporter.js` - Creates the StatsD client and sends gauges","expect":"cut","code":"inferable-path"}
+{"id":"cov-017","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **`/apps/web/`** - Web dashboard","expect":"cut","code":"inferable-path"}
+{"id":"cov-018","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `docs/architecture.md`: Architecture overview","expect":"cut","code":"inferable-path"}
+{"id":"cov-019","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **extension.ts** - Main entry point, handles activation","expect":"cut","code":"inferable-path"}
+{"id":"cov-020","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- `src/api/` — controladores HTTP de la API","expect":"cut","code":"inferable-path"}
+{"id":"cov-021","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/generated/` — auto-generated types","expect":"keep"}
+{"id":"cov-022","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/db/` — schema, applied by the migrator at boot","expect":"keep"}
+{"id":"cov-023","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/legacy/` — legacy billing code","expect":"keep"}
+{"id":"cov-024","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/api/` — do not import from here","expect":"keep"}
+{"id":"cov-025","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `lib/metrics.js` — metric definitions. Adding a metric is a one-line change.","expect":"keep"}
+{"id":"cov-026","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `src/api/` — handlers shared by the worker and the web app","expect":"keep"}
+{"id":"cov-027","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- `src/legado/` — código heredado, no lo toques","expect":"keep"}
+{"id":"cov-028","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest (unit + integration), ESLint + Prettier, Husky pre-commit","expect":"cut","code":"inferable-stack"}
+{"id":"cov-029","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"**Stack**: Next.js 15 · React 19 · Tailwind CSS · TypeScript","expect":"cut","code":"inferable-stack"}
+{"id":"cov-030","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **tsconfig-paths**: TypeScript path mapping support","expect":"cut","code":"inferable-stack"}
+{"id":"cov-031","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **pino**: Fast logger","expect":"cut","code":"inferable-stack"}
+{"id":"cov-032","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Testing**: Jest","expect":"cut","code":"inferable-stack"}
+{"id":"cov-033","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Stack**: Next.js, React, `@xyflow/react` and Dagre","expect":"cut","code":"inferable-stack"}
+{"id":"cov-034","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- Pruebas: Jest y Prettier","expect":"cut","code":"inferable-stack"}
+{"id":"cov-035","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- **zod**: validación de esquemas","expect":"cut","code":"inferable-stack"}
+{"id":"cov-036","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Zod for all request validation","expect":"keep"}
+{"id":"cov-037","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **zod**: validate every request body with it","expect":"keep"}
+{"id":"cov-038","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest, ESLint, Prettier, Stripe webhooks","expect":"keep"}
+{"id":"cov-039","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"Use debug and colors sparingly","expect":"keep"}
+{"id":"cov-040","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- debug and colors","expect":"keep"}
+{"id":"cov-041","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest, not Vitest","expect":"keep"}
+{"id":"cov-042","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- **pino**: logger compartido por todos los servicios","expect":"keep"}
+{"id":"cov-043","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"**Stack**: Next.js 15 · React 18 · Tailwind CSS · TypeScript","expect":"conflict","code":"stale-version"}
+{"id":"cov-044","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Stack**: Next.js 14, React 19","expect":"conflict","code":"stale-version"}
+{"id":"cov-045","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest 28, ESLint 9","expect":"conflict","code":"stale-version"}
+{"id":"cov-046","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Testing**: Jest 28","expect":"conflict","code":"stale-version"}
+{"id":"cov-047","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Language**: TypeScript 4","expect":"conflict","code":"stale-version"}
+{"id":"cov-048","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- Pila: Express 5, Zod 3","expect":"conflict","code":"stale-version"}
+{"id":"cov-049","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- React 18 for the legacy admin app","expect":"keep"}
+{"id":"cov-050","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Runtime**: Node.js 20, TypeScript 5","expect":"keep"}
+{"id":"cov-051","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Jest 28 and ESLint 9; Jest 29 breaks the snapshot serializer","expect":"keep"}
+{"id":"cov-052","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- **Stack**: React 18 → 19 migration in progress","expect":"keep"}
+{"id":"cov-053","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- Express 5 migration: do not mix routers","expect":"keep"}
+{"id":"cov-054","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- Pila: Express 5 en la rama next","expect":"keep"}
+{"id":"cov-055","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `npm run test:integration` - Run integration tests with coverage","expect":"cut","code":"inferable-script"}
+{"id":"cov-056","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `npm run db:backup` - Create database backup","expect":"cut","code":"inferable-script"}
+{"id":"cov-057","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `npm run format` - Format code with Prettier","expect":"cut","code":"inferable-script"}
+{"id":"cov-058","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `pnpm check-types` - Check types","expect":"cut","code":"inferable-script"}
+{"id":"cov-059","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `yarn db:backup`: database backup","expect":"cut","code":"inferable-script"}
+{"id":"cov-060","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- `npm run test:integration` — pruebas de integración con cobertura","expect":"cut","code":"inferable-script"}
+{"id":"cov-061","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `npm run deploy` deploys to production; ask first","expect":"keep"}
+{"id":"cov-062","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `npm run deploy` - Deploy to production","expect":"keep"}
+{"id":"cov-063","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `npm run test:integration` needs the Docker stack up","expect":"keep"}
+{"id":"cov-064","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `npm run db:migrate` - Run database migrations","expect":"keep"}
+{"id":"cov-065","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"- `npm run test:integration` - Run integration tests (takes 4 minutes)","expect":"keep"}
+{"id":"cov-066","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"- `npm run publicar` — publica la versión en npm","expect":"keep"}
+{"id":"cov-067","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"GPU Stats polls NVIDIA GPU metrics through the nvidia-smi tool and reports them as StatsD gauges to a Datadog agent.","expect":"cut","code":"inferable-overview"}
+{"id":"cov-068","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"GPU Stats reports NVIDIA GPU metrics as StatsD gauges to a Datadog agent.","expect":"cut","code":"inferable-overview"}
+{"id":"cov-069","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"`gpu-stats` polls GPU metrics and reports them as StatsD gauges.","expect":"cut","code":"inferable-overview"}
+{"id":"cov-070","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"GPU Stats polls NVIDIA metrics such as temperature, memory usage, fan speed and power draw.","expect":"cut","code":"inferable-overview"}
+{"id":"cov-071","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"GPU Stats reads GPU temperature, memory usage and power draw through nvidia-smi and reports StatsD gauges.","expect":"cut","code":"inferable-overview"}
+{"id":"cov-072","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"Facturas es un servicio de facturación para autónomos que registra facturas, pagos y gastos y genera informes mensuales.","expect":"cut","code":"inferable-overview"}
+{"id":"cov-073","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"GPU Stats polls NVIDIA GPU metrics and reports them as StatsD gauges to a Datadog agent. The admin UI lives in another repo.","expect":"keep"}
+{"id":"cov-074","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"GPU Stats polls NVIDIA GPU metrics and reports them as StatsD gauges. Alerts go to the ops channel.","expect":"keep"}
+{"id":"cov-075","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"GPU Stats polls GPU metrics.","expect":"keep"}
+{"id":"cov-076","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"GPU Stats polls NVIDIA GPU metrics and reports them as StatsD gauges with `pino`.","expect":"keep"}
+{"id":"cov-077","repo":"tests/gate/repos/cov-app","file":"CLAUDE.md","rule":"GPU Stats polls NVIDIA GPU metrics, never AMD ones, and reports StatsD gauges.","expect":"keep"}
+{"id":"cov-078","repo":"tests/gate/repos/cov-es","file":"CLAUDE.md","rule":"Facturas es un servicio de facturación para autónomos. La interfaz de administración vive en otro repositorio.","expect":"keep"}
+{"id":"cov-079","repo":"tests/gate/repos/q1-two-runners","file":"CLAUDE.md","rule":"- **Testing**: Jest","expect":"keep"}

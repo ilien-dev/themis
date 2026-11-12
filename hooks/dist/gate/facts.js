@@ -98,17 +98,23 @@ export function readFacts(ruleFile, override) {
     let pkg = null;
     if (pkgDir !== undefined && pj) {
         const deps = new Set();
+        const versions = {};
         for (const k of ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']) {
             const group = pj[k];
-            if (isRecord(group))
-                for (const name of Object.keys(group))
-                    deps.add(name);
+            if (!isRecord(group))
+                continue;
+            for (const [name, range] of Object.entries(group)) {
+                deps.add(name);
+                if (typeof range === 'string' && !Object.hasOwn(versions, name))
+                    versions[name] = range;
+            }
         }
         if (isRecord(pj['scripts']))
             for (const [k, v] of Object.entries(pj['scripts']))
                 if (typeof v === 'string')
                     scripts[k] = v;
-        pkg = { path: rel(pkgDir, 'package.json'), name: typeof pj['name'] === 'string' ? pj['name'] : null, deps, scripts };
+        const str = (k) => (typeof pj[k] === 'string' ? pj[k] : null);
+        pkg = { path: rel(pkgDir, 'package.json'), name: str('name'), description: str('description'), deps, versions, scripts };
     }
     const config = new Map();
     const unreadable = [];

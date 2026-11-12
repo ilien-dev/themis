@@ -27,7 +27,7 @@ Cap: 2500 estimated tokens (characters ÷ 3.6), including files pulled in with `
 
 To check new lines, write them to a temporary file and run `node ${CLAUDE_PLUGIN_ROOT}/hooks/dist/gate.js check --rules <temp file> --file <target>`.
 
-Reasons: inferable from the repo (title, folder tree, scripts, stack, overview); enforced by a setting, lint rule or deny rule, or contradicting one; generic advice, filler, or behavior current models already follow; an absolute command a hook or permission enforces better; a duplicated passage or long procedure; a dead reference or capitalised emphasis.
+Reasons: inferable from the repo (title, folder tree, described paths, scripts, stack lists, overview) or a stale version; enforced by a setting, lint rule or deny rule, or contradicting one; generic advice, filler, or behavior current models already follow; an absolute command a hook or permission enforces better; a duplicated passage or long procedure; a dead reference or capitalised emphasis.
 
 Verdicts: `keep`, `cut` (redundant, already enforced, or generic), `move` (belongs in a hook, `permissions.deny`, or a doc or skill plus a pointer), `fix` (a path or script that does not resolve), `rewrite` (drop the emphasis), `conflict` (contradicts the repo's configuration). Notes on a `keep` are information, not a reason to drop the rule.
 

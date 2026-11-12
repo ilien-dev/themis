@@ -97,3 +97,44 @@ export const NEGATION = new RegExp(
   `${B}(?:not|never|no|instead\\s+of|rather\\s+than|avoid|nunca|jamás|evita|en\\s+vez\\s+de|en\\s+lugar\\s+de|sin|salvo|excepto|sólo|solo|without|except|unless|only|dont|cannot|(?:do|does|did|is|are|was|were|should|would|could|must|have|has|had)n[’']t|can[’']?t|won[’']t)${E}`,
   'iu',
 );
+
+// Phase 1.1: the vocabularies of the shape detectors of question 1. Every list is closed: a word missing
+// from it makes the detector abstain.
+
+// Labels a stack line may start with ("**Stack**:", "Built with"). The verbal ones need no colon.
+export const STACK_LABELS: ReadonlySet<string> = new Set([
+  'stack', 'tech stack', 'technology stack', 'tech', 'technologies', 'technology', 'tooling', 'tools', 'toolchain', 'dependencies',
+  'key dependencies', 'main dependencies', 'libraries', 'key libraries', 'frameworks', 'framework', 'language', 'languages', 'runtime',
+  'testing', 'tests', 'test framework', 'test runner', 'unit tests', 'component tests', 'e2e tests', 'e2e', 'linting', 'linter',
+  'formatting', 'formatter', 'code quality', 'quality', 'build', 'build tool', 'build tools', 'bundler', 'styling', 'styles', 'css', 'ui',
+  'ui library', 'ui components', 'components', 'state', 'state management', 'backend', 'frontend', 'server', 'database', 'db', 'orm',
+  'validation', 'routing', 'router', 'logging', 'logger', 'cli', 'http', 'icons', 'charts', 'forms', 'i18n', 'animations',
+  'pila', 'stack tecnol\u00f3gico', 'tecnolog\u00edas', 'herramientas', 'dependencias', 'librer\u00edas', 'bibliotecas', 'pruebas', 'estilos',
+  'estado', 'base de datos', 'lenguaje',
+]);
+export const STACK_VERB_LABELS: readonly string[] = ['built with', 'built on', 'powered by', 'uses', 'using', 'construido con', 'hecho con', 'usa'];
+
+// Words that may follow a dependency or fill its parenthesis without saying anything of the project.
+export const STACK_NEUTRAL: ReadonlySet<string> = new Set([
+  'unit', 'integration', 'e2e', 'end', 'to', 'tests', 'test', 'testing', 'runner', 'pre', 'commit', 'hooks', 'hook', 'git', 'lint', 'linting',
+  'linter', 'format', 'formatting', 'formatter', 'types', 'typings', 'runtime', 'framework', 'library', 'cli', 'plugin', 'plugins', 'orm',
+  'client', 'components', 'ui', 'bundler', 'styling', 'state', 'management', 'validation', 'routing', 'router', 'logging', 'logger', 'icons',
+  'server', 'database', 'and', 'for', 'pruebas', 'unitarias', 'integraci\u00f3n', 'estilos', 'estado', 'tipos', 'formato', 'y', 'de',
+]);
+
+// Last parts of scoped package names too common to stand for the package ("@acme/core" is not "core").
+export const GENERIC_SUBPATHS: ReadonlySet<string> = new Set([
+  'core', 'cli', 'server', 'client', 'utils', 'util', 'config', 'types', 'common', 'plugin', 'shared', 'api', 'node', 'web', 'app', 'react',
+  'vue', 'test', 'tests', 'testing', 'kit', 'sdk', 'lib', 'base', 'runtime', 'compiler', 'parser', 'eslint', 'prettier', 'typescript',
+]);
+
+// Words a script description may use for a word of the script's name or command: abbreviations and
+// translations only. A tool is not a synonym of a job: `tsc` does not make "typecheck" a word of `build`.
+export const SCRIPT_SYNONYMS: readonly (readonly string[])[] = [
+  ['cov', 'coverage', 'cobertura'], ['int', 'integration', 'integración', 'integracion'], ['db', 'database', 'databases', 'datos'],
+  ['e2e', 'end'], ['ts', 'typescript'], ['js', 'javascript'], ['typecheck', 'type', 'types', 'tipos'],
+  ['fmt', 'format', 'formatting', 'formato'], ['lint', 'linter', 'linting'], ['test', 'tests', 'testing', 'pruebas', 'prueba'],
+  ['dev', 'development', 'desarrollo'], ['env', 'environment'], ['gen', 'generate', 'codegen'], ['deps', 'dependencies', 'dependencias'],
+  ['docs', 'documentation', 'documentación'], ['build', 'builds'], ['start', 'starts', 'inicia', 'arranca'],
+  ['watch', 'watcher', 'watching'], ['backup', 'backups', 'respaldo'], ['check', 'checks', 'comprueba'],
+];

@@ -1,0 +1,39 @@
+{
+  "name": "gpu-stats",
+  "description": "Polls GPU metrics and reports them as StatsD gauges",
+  "scripts": {
+    "test:integration": "vitest run --coverage tests/integration",
+    "db:backup": "node database/backup.mjs",
+    "deploy": "node scripts/deploy.js --env production",
+    "build": "tsc -p .",
+    "bench": "node bench/index.js",
+    "bench:watch": "nodemon bench/index.js",
+    "format": "prettier --write .",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrate": "node database/migrate.mjs",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "pino": "^9.4.0",
+    "yargs": "^17.7.2",
+    "ts-morph": "^24.0.0",
+    "zod": "^3.23.8",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "@xyflow/react": "^12.3.0",
+    "debug": "^4.3.7",
+    "colors": "^1.4.0",
+    "dagre": "^0.8.5"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^9.12.0",
+    "prettier": "^3.3.3",
+    "husky": "^9.1.6",
+    "typescript": "~5.7.2",
+    "tailwindcss": "^4.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "@types/node": "^24.0.0"
+  }
+}

@@ -5,7 +5,7 @@ import { citedPaths, citedScripts, spans } from "../text.js";
 // Question 7: does the rule point at something that is gone, or shout instead of explain?
 const BUILTIN_SCRIPTS = new Set(['install', 'ci', 'test', 'start']); // npm brings these
 // Package manager subcommands that are not scripts (the extraction already drops the npm ones).
-const PM_COMMANDS = new Set([
+export const PM_COMMANDS = new Set([
     'workspace', 'workspaces', 'filter', 'store', 'fetch', 'import', 'prune', 'rebuild', 'outdated', 'list', 'ls', 'why', 'env', 'setup',
     'patch', 'deploy', 'licenses', 'dedupe', 'login', 'logout', 'whoami', 'unlink', 'info', 'node', 'global', 'bin', 'set', 'plugin', 'upgrade',
     'upgrade-interactive', 'check', 'owner', 'team', 'tag', 'policies', 'unplug', 'autoclean', 'run',
@@ -64,7 +64,7 @@ function generated(p, facts) {
 // A file or a directory that exists, tracked or on disk, from the repo root or from the rule file's directory.
 // A bare file name counts when any tracked file has that name, and a longer path when it is the tail of a
 // tracked path (`src/module.ts` of `packages/core/src/module.ts`): rules often cite paths from a package.
-function alive(p, facts) {
+export function alive(p, facts) {
     const starts = [p, posix(relative(facts.root, join(facts.dir, p)))];
     for (const f of facts.files) {
         if (starts.some((s) => f === s || f.startsWith(`${s}/`)))
@@ -75,7 +75,7 @@ function alive(p, facts) {
     return existsSync(join(facts.root, p)) || existsSync(join(facts.dir, p));
 }
 // The path as written, without a location suffix, a leading ./ or a trailing slash.
-function clean(raw) {
+export function clean(raw) {
     let p = posix(raw).replace(LOCATION, '');
     while (p.startsWith('./'))
         p = p.slice(2);

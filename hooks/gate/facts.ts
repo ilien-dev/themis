@@ -9,7 +9,14 @@ export interface Facts {
   readonly root: string;
   readonly dir: string;
   readonly inRepo: boolean;
-  readonly pkg: { readonly path: string; readonly name: string | null; readonly deps: ReadonlySet<string>; readonly scripts: Readonly<Record<string, string>> } | null;
+  readonly pkg: {
+    readonly path: string;
+    readonly name: string | null;
+    readonly description: string | null;
+    readonly deps: ReadonlySet<string>;
+    readonly versions: Readonly<Record<string, string>>; // the range of each dependency, the first group naming it winning
+    readonly scripts: Readonly<Record<string, string>>;
+  } | null;
   readonly lockfiles: ReadonlySet<string>;
   readonly config: ReadonlyMap<string, unknown>;
   readonly unreadable: readonly string[];
@@ -116,12 +123,18 @@ export function readFacts(ruleFile: string, override?: { files?: readonly string
   let pkg: Facts['pkg'] = null;
   if (pkgDir !== undefined && pj) {
     const deps = new Set<string>();
+    const versions: Record<string, string> = {};
     for (const k of ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']) {
       const group = pj[k];
-      if (isRecord(group)) for (const name of Object.keys(group)) deps.add(name);
+      if (!isRecord(group)) continue;
+      for (const [name, range] of Object.entries(group)) {
+        deps.add(name);
+        if (typeof range === 'string' && !Object.hasOwn(versions, name)) versions[name] = range;
+      }
     }
     if (isRecord(pj['scripts'])) for (const [k, v] of Object.entries(pj['scripts'])) if (typeof v === 'string') scripts[k] = v;
-    pkg = { path: rel(pkgDir, 'package.json'), name: typeof pj['name'] === 'string' ? pj['name'] : null, deps, scripts };
+    const str = (k: string): string | null => (typeof pj[k] === 'string' ? pj[k] : null);
+    pkg = { path: rel(pkgDir, 'package.json'), name: str('name'), description: str('description'), deps, versions, scripts };
   }
 
   const config = new Map<string, unknown>();
