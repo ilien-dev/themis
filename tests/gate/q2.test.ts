@@ -66,8 +66,36 @@ test('a config in package.json counts and a husky hook proves the run', () => {
   const files = { 'package.json': '{"name":"app","prettier":{"singleQuote":true}}', '.husky/pre-commit': 'npx prettier --write .\n' };
   const a = ask('Usa comillas simples.', files);
   assert.equal(a?.code, 'enforced-config');
-  assert.match(a.evidence, /^package\.json: singleQuote = true; run by /);
+  assert.equal(a.evidence, 'package.json: singleQuote = true; run by .husky/pre-commit');
 });
+test('the evidence names the file that proves the run, never a generic place', () => {
+  const base = { 'package.json': '{"name":"app"}', '.prettierrc': '{"semi":true}' };
+  const sources: Record<string, string> = {
+    'lefthook.yml': 'pre-commit:\n  commands:\n    fmt:\n      run: npx prettier --check .\n',
+    '.pre-commit-config.yaml': 'repos:\n- repo: local\n  hooks:\n  - id: prettier\n',
+    '.github/workflows/ci.yml': 'jobs:\n  x:\n    steps:\n      - run: npx prettier --check .\n',
+    '.husky/pre-commit': 'npx lint-staged && prettier --check .\n',
+  };
+  for (const [file, body] of Object.entries(sources)) {
+    const a = ask('Use semicolons.', { ...base, [file]: body });
+    assert.equal(a?.evidence, `.prettierrc: semi = true; run by ${file}`, file);
+    assert.doesNotMatch(a.evidence, /scripts\/hooks\/CI/);
+  }
+});
+
+test('an override of the tool config keeps the rule', () => {
+  const overridden = '{"semi":true,"overrides":[{"files":"*.vue","options":{"semi":false}}]}';
+  assert.equal(ask('Use semicolons.', prettier(overridden)), null);
+  assert.equal(ask('Use semicolons.', { 'package.json': '{"name":"app","scripts":{"format":"prettier ."},"prettier":{"semi":true,"overrides":[]}}' }), null);
+  assert.equal(ask('Use semicolons.', { ...ESLINT('{"semi":"error"}'), '.eslintrc.json': '{"rules":{"semi":"error"},"overrides":[{"files":["*.ts"],"rules":{"semi":"off"}}]}' }), null);
+  assert.equal(ask('Use semicolons.', { 'package.json': PKG_FORMAT, '.prettierrc.yaml': 'semi: true\noverrides:\n  - files: "*.vue"\n' }), null);
+  assert.equal(ask('Use semicolons.', prettier('{"semi":true}'))?.code, 'enforced-config'); // no override: still cut
+});
+test('an editorconfig section other than [*] that sets the key silences the conflict', () => {
+  assert.equal(ask('Indent with 2 spaces.', { '.editorconfig': '[*]\nindent_size = 4\n[*.py]\nindent_size = 2\n' }), null);
+  assert.equal(ask('Indent with 2 spaces.', { '.editorconfig': '[*]\nindent_size = 4\n[*.md]\ntrim_trailing_whitespace = false\n' })?.verdict, 'conflict');
+});
+
 test('trailing commas accept every value that adds them', () => {
   assert.equal(ask('Use trailing commas.', prettier('{"trailingComma":"es5"}'))?.code, 'enforced-config');
   assert.equal(ask('Use trailing commas.', prettier('{"trailingComma":"all"}'))?.code, 'enforced-config');
@@ -83,7 +111,7 @@ test('numeric options are compared by value', () => {
 
 test('tsc always counts as running when a tsconfig exists', () => {
   const a = ask('Enable strict mode.', { 'tsconfig.json': '{"compilerOptions":{"strict":true}}' });
-  assert.deepEqual(a, { verdict: 'cut', code: 'enforced-config', question: 2, evidence: 'tsconfig.json: strict = true; run by tsc' });
+  assert.deepEqual(a, { verdict: 'cut', code: 'enforced-config', question: 2, evidence: 'tsconfig.json: strict = true; run by tsc (tsconfig.json)' });
   assert.equal(ask('Enable strict mode.', { 'tsconfig.json': '{"compilerOptions":{"strict":false}}' })?.verdict, 'conflict');
   assert.equal(ask('Enable strict mode.', { 'tsconfig.json': '{"compilerOptions":{}}' }), null);
 });
@@ -144,6 +172,11 @@ test('a prohibition without a deny rule is kept', () => {
   assert.equal(ask('Never run `git push --force`.', {}), null);
   assert.equal(ask('Never run `git push --force`.', {}, deny('Bash(rm -rf:*)')), null);
   assert.equal(ask('Never run `git push --force`.', {}, deny('Bash(git push:*)'))?.code, 'enforced-deny'); // the broader prefix blocks it too
+});
+test('a deny entry without a wildcard is an exact match', () => {
+  assert.equal(ask('Never run `npm run build --watch`.', {}, deny('Bash(npm run build)')), null);
+  assert.equal(ask('Never run `npm run build`.', {}, deny('Bash(npm run build)'))?.code, 'enforced-deny');
+  assert.equal(ask('Never run `npm run build --watch`.', {}, deny('Bash(npm run build:*)'))?.code, 'enforced-deny');
 });
 test('a deny rule only covers commands it really starts', () => {
   assert.equal(ask('Never run `git pushall`.', {}, deny('Bash(git push:*)')), null);

@@ -1,6 +1,9 @@
 import { LINT_MAP, type LintRule } from '../tables/lint-map.ts';
 import { NEGATION } from '../tables/alias.ts';
 import { ABSOLUTE, spans, words } from '../text.ts';
+import { join } from 'node:path';
+import { read } from '../../lib.ts';
+import { isRecord, parseJsonc } from '../read-config.ts';
 import type { Facts, Tool } from '../facts.ts';
 import type { Answer, Rule } from '../types.ts';
 import type { Check } from '../verdict.ts';
@@ -67,11 +70,47 @@ function configFile(tool: Tool, facts: Facts): string {
   return names[0] ?? tool;
 }
 
+// Files other than package.json scripts that can prove a tool runs, as the facts reader looks at them.
+const RUN_SOURCE = /(?:^|\/)(?:lefthook\.ya?ml|\.pre-commit-config\.yaml|\.husky\/[^/]+|\.github\/workflows\/[^/]+\.ya?ml)$/;
+
 function runsBy(tool: Tool, facts: Facts): string {
   const word = new RegExp(`(?<![\\w-])${tool}(?![\\w-])`);
   const script = facts.pkg === null ? undefined : Object.entries(facts.pkg.scripts).find(([, body]) => word.test(body));
   if (script !== undefined && facts.pkg !== null) return `${facts.pkg.path} scripts.${script[0]}`;
-  return tool === 'tsc' ? 'tsc' : `${tool} in scripts/hooks/CI`;
+  if (tool === 'tsc') return `tsc (${configFile('tsc', facts)})`;
+  const source = [...facts.files].filter((f) => RUN_SOURCE.test(f)).sort((a, b) => a.length - b.length || a.localeCompare(b))
+    .find((f) => word.test(read(join(facts.root, f)) ?? ''));
+  return source ?? `${tool} in scripts/hooks/CI`;
+}
+
+// Does the tool's config hold settings that apply to only part of the repository? Unknown counts as yes.
+function hasOverrides(tool: Tool, facts: Facts): boolean {
+  if (tool === 'tsc') return false;
+  const file = configFile(tool, facts);
+  const text = read(join(facts.root, file));
+  if (text === null) return true;
+  if (file.endsWith('package.json')) {
+    const pkg = parseJsonc(text);
+    const key = tool === 'prettier' ? 'prettier' : tool === 'eslint' ? 'eslintConfig' : 'commitlint';
+    const own = isRecord(pkg) ? pkg[key] : undefined;
+    return !isRecord(own) || Object.hasOwn(own, 'overrides');
+  }
+  return /(?:^|[\s{,])["']?overrides["']?\s*:/.test(text);
+}
+
+// Does an .editorconfig section other than [*] set `key`?
+function editorconfigSectionSets(key: string, facts: Facts): boolean {
+  const text = read(join(facts.root, configFile('editorconfig', facts)));
+  if (text === null) return true;
+  const name = key.slice('editorconfig.'.length);
+  let other = false;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    const section = /^\[(.*)\]$/.exec(line);
+    if (section) { other = section[1] !== '*'; continue; }
+    if (other && new RegExp(`^${name}\\s*[=:]`, 'i').test(line)) return true;
+  }
+  return false;
 }
 
 const shown = (entry: LintRule, facts: Facts): string => {
@@ -98,21 +137,24 @@ function enforcedConfig(rule: Rule, facts: Facts): Answer | null {
     if (!expresses(entry, text) || hasUnreadableConfig(entry.tool, facts)) continue;
     const got = actual(entry, facts);
     if (got === undefined) continue;
+    if (entry.tool === 'editorconfig' && editorconfigSectionSets(entry.key, facts)) continue;
     if (!satisfies(entry, got)) {
       return { verdict: 'conflict', code: 'config-conflict', question: 2, evidence: `${configFile(entry.tool, facts)}: ${keyOf(entry)} = ${shown(entry, facts)}; the rule says ${normalize(Array.isArray(entry.value) ? entry.value[0] : entry.value)}` };
     }
-    if (cut === null && entry.tool !== 'editorconfig' && facts.runs.has(entry.tool)) {
+    if (cut === null && entry.tool !== 'editorconfig' && facts.runs.has(entry.tool) && !hasOverrides(entry.tool, facts)) {
       cut = { verdict: 'cut', code: 'enforced-config', question: 2, evidence: `${configFile(entry.tool, facts)}: ${keyOf(entry)} = ${shown(entry, facts)}; run by ${runsBy(entry.tool, facts)}` };
     }
   }
   return cut; // a disagreement anywhere beats an agreement elsewhere
 }
 
-// `Bash(git push --force:*)` and `Bash(git push --force*)` both deny commands starting with the prefix.
-function denyPrefix(entry: string): string | null {
+// `Bash(git push --force:*)` and `Bash(git push --force*)` deny commands starting with the prefix;
+// without a wildcard the entry is an exact match.
+function denyPrefix(entry: string): { prefix: string; exact: boolean } | null {
   const m = /^Bash\((.*)\)$/s.exec(entry);
-  const prefix = (m?.[1] ?? '').replace(/(?::?\*)+$/, '').trim();
-  return prefix === '' || prefix.includes('*') ? null : prefix;
+  const body = (m?.[1] ?? '').trim();
+  const prefix = body.replace(/(?::?\*)+$/, '').trim();
+  return prefix === '' || prefix.includes('*') ? null : { prefix, exact: prefix === body };
 }
 
 function enforcedDeny(rule: Rule, facts: Facts): Answer | null {
@@ -123,8 +165,8 @@ function enforcedDeny(rule: Rule, facts: Facts): Answer | null {
   const outside = rule.text.replace(LIST_MARKER, '').replace(/`[^`\n]+`/, ' ');
   if (!words(outside).every((w) => PROHIBITION.has(w))) return null;
   for (const entry of facts.deny) {
-    const prefix = denyPrefix(entry);
-    if (prefix !== null && (command === prefix || command.startsWith(`${prefix} `))) {
+    const deny = denyPrefix(entry);
+    if (deny !== null && (command === deny.prefix || (!deny.exact && command.startsWith(`${deny.prefix} `)))) {
       return { verdict: 'cut', code: 'enforced-deny', question: 2, evidence: `permissions.deny: ${entry}` };
     }
   }
