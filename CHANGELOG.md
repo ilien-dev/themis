@@ -8,7 +8,7 @@
 - `gate` option: `report` (default; the edit goes through and Claude is told), `ask` (you confirm each flagged rule) or `off`. Where nobody can answer a prompt, `ask` acts as `report`.
 - `.claude/themis-accepted.json`: rules you approved after a flag are remembered by the hash of their text, so they are not flagged again until they change.
 - `hooks/dist/gate.js` with `check`, `audit` and `report` commands. `report` measures a labelled corpus.
-- A regression corpus of 671 cases on 66 small repositories, and a held-out corpus of 1,502 rules from 40 public repositories. The measurement is in [RESULTS.md](RESULTS.md): precision of interruption 62.0%, false-cut rate 6.3%, coverage 42.4%. That is below the 95% set as the condition for making `ask` the default, so the default is `report`. The labels have not been reviewed yet, so the numbers are provisional.
+- A regression corpus of 681 cases on 66 small repositories, and a held-out corpus of 1,502 rules from 40 public repositories (1,499 once three bare `---` lines stopped counting as rules). The blind measurement is in [RESULTS.md](RESULTS.md): precision of interruption 62.0%, false-cut rate 6.3%, coverage 42.4%. The checks that run showed to flag informative rules were then fixed; on the same corpus, not blind, precision is 87.7% on 65 interruptions and the false-cut rate 0.9%. Both are below the 95% on 100 interruptions set as the condition for making `ask` the default, so the default is `report`. The labels have not been reviewed yet, so the numbers are provisional.
 - A CI step that runs the gate on Node.js 18.
 
 ### Changed
@@ -19,7 +19,7 @@
 
 - Node, JavaScript and TypeScript repositories only; English and Spanish phrase tables.
 - The check on whether recent models already do something by default is not active yet.
-- A script or path in a sub-package of a monorepo can be flagged as missing.
+- In a repository with more than one `package.json` a missing script is not reported, and a path counts as present when a tracked path ends with it, so a dead reference there can go unreported.
 - The session evals c13 to c15 were not re-run with the gate. The c14 grader still requires removing "double-check" lines, which the gate keeps.
 
 ## 2.1.1 — 2026-10-10

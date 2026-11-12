@@ -157,7 +157,7 @@ The exit code is 0 for any valid input and 2 for wrong usage or an unreadable fi
 - **The model-default question is not active.** "Do recent models already do this by default?" needs measured data per model; it is planned next, and until then the gate does not cut a rule for that reason.
 - **Monorepos.** A script or path that lives in a sub-package can look missing from the root. The gate does not report a missing script when the repository has more than one `package.json`, and counts a path as present when a tracked path ends with it, so in a monorepo a reference that really is dead can go unreported.
 - **Node versions.** The compiled hooks run on Node.js 18. Contributors need Node.js 22.18 or later to run the tests, which execute the TypeScript sources.
-- **Measured on 1,502 rules from 40 public repositories**: of 150 interruptions, 62.0% were right, and 6.3% of the rules labelled keep were interrupted. It flags about one in six of the rules that should go. The labels are not yet reviewed, so those numbers are provisional.
+- **Measured blind on 1,502 rules from 40 public repositories**: of 150 interruptions, 62.0% deserved some interruption and 50.7% (76 of 150) got the same verdict as the label; 6.3% of the rules labelled keep were interrupted. The checks were then corrected on what that run showed; on the same corpus they now interrupt 65 rules with 87.7% deserving it and 0.9% of keeps interrupted, an upper bound rather than a validation. They flag about one in ten of the rules that should go. The labels are not yet reviewed, so these numbers are provisional.
 
 ## Install
 
