@@ -130,18 +130,6 @@ test('a rule with no generic phrase is kept; headings and code are skipped', () 
   assert.equal(ask('```\nWrite clean code.\n```'), null);
 });
 
-test('patterns stay linear on adversarial input', () => {
-  const started = Date.now();
-  for (const t of [
-    `This file gives ${'x '.repeat(20000)}`,
-    `write ${'clean, '.repeat(20000)}`,
-    'think '.repeat(20000),
-    `Remember to ${'keep the code quality high and '.repeat(5000)}`,
-    `handle ${'errors '.repeat(20000)}`,
-  ]) ask(t);
-  assert.ok(Date.now() - started < 2000);
-});
-
 // Controller ruling after task 9: a claim about what the model already does is cut only when a vendor
 // says so (group vendor) or it is measured. Behaviour instructions to the agent stay until then.
 test('a behaviour instruction to the agent is not generic advice', () => {

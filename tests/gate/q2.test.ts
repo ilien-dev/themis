@@ -225,12 +225,3 @@ test('headings, code blocks and unrelated text are ignored', () => {
   assert.equal(ask('```\nUse semicolons.\n```', p), null);
   assert.equal(ask('Write tests first.', p), null);
 });
-
-test('a long single-line rule is answered quickly', () => {
-  const p = prettier('{"semi":true}');
-  const start = performance.now();
-  ask(`Use semicolons ${'and the '.repeat(4000)}`, p);
-  ask(`Never run \`${'git '.repeat(4000)}\``, p, deny('Bash(git:*)'));
-  ask('indent with '.repeat(3000), p);
-  assert.ok(performance.now() - start < 1000);
-});

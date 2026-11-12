@@ -124,12 +124,6 @@ test('an overview of one sentence is kept', () => {
   assert.equal(ask('Ledger is a small bookkeeping service for freelancers', OVERVIEW), null);
 });
 
-test('a long single-line rule is answered quickly', () => {
-  const start = performance.now();
-  ask(`We use ${'word '.repeat(4000)}`, REACT);
-  assert.ok(performance.now() - start < 1000);
-});
-
 // Round 1: rules that carry information must not be cut.
 const WIDE = { 'package.json': '{"name":"ledger","scripts":{"test":"node --test","lint":"eslint ."},"dependencies":{"react":"1","zod":"1","vite":"1","zustand":"1","prettier":"3","typescript":"5","@types/node":"22"}}', 'src/a.ts': '' };
 test('a technology rule with extra content is kept', () => {

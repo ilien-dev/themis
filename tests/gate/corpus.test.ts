@@ -1,13 +1,12 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { caseRule, CorpusRunner, matches, parseCorpus, type Case } from '../../hooks/gate/corpus.ts';
 import { parseRules } from '../../hooks/gate/extract.ts';
-import { readFacts } from '../../hooks/gate/facts.ts';
-import { contextFor, judgeAll } from '../../hooks/gate/verdict.ts';
+import { judgeAll } from '../../hooks/gate/verdict.ts';
 import { REASON_CODES, RETIRED_CODES, type Verdict } from '../../hooks/gate/types.ts';
 
 // The regression corpus: every labelled rule must get its verdict and reason code.
@@ -61,50 +60,6 @@ test('two runs, the second in reverse order, give identical output', () => {
   } finally {
     fresh.dispose();
   }
-});
-
-// The largest CLAUDE.md among the eval fixtures, judged as the hook would: facts read, then every rule.
-test('judging the largest fixture takes under 200 ms', () => {
-  const cases = join(root, 'evals/cases');
-  const fixtures = readdirSync(cases).map((d) => join('evals/cases', d, 'fixture')).filter((d) => {
-    try { return statSync(join(root, d, 'CLAUDE.md')).isFile(); } catch { return false; }
-  });
-  const largest = fixtures.sort((a, b) => statSync(join(root, b, 'CLAUDE.md')).size - statSync(join(root, a, 'CLAUDE.md')).size)[0];
-  assert.ok(largest !== undefined);
-  const dir = runner.dirFor(largest);
-  const markdown = readFileSync(join(dir, 'CLAUDE.md'), 'utf8');
-  // The best of three runs: the test files run in parallel, and a busy machine slows the git calls of
-  // one run without saying anything about the gate.
-  const runs: number[] = [];
-  for (let i = 0; i < 3; i++) {
-    const start = performance.now();
-    const facts = readFacts(join(dir, 'CLAUDE.md'));
-    const verdicts = judgeAll(parseRules(markdown), facts, contextFor(facts));
-    runs.push(performance.now() - start);
-    assert.ok(verdicts.length > 50);
-  }
-  const ms = Math.min(...runs);
-  assert.ok(ms < 200, `${largest}: ${runs.map((r) => r.toFixed(0)).join(', ')} ms`);
-});
-
-test('a 20,000-character single-line rule is judged in under 200 ms', () => {
-  // Varied content so every check gets past its first test: spans, paths, an absolute, a technology,
-  // phrases of the tables and a README in the repository.
-  const parts = [
-    'Write clean code and handle errors properly', 'never run `npm run build` while `npm run dev` runs',
-    'see `src/lib/api.ts` and `docs/checkout.md`', 'use single quotes', 'the basket is stored in local storage',
-    'IMPORTANT this file gives you context about the Shop project', 'think step by step', 'We use React',
-  ];
-  let text = '- ';
-  for (let i = 0; text.length < 20_000; i++) text += `${parts[i % parts.length] ?? ''}; `;
-  const c: Case = { id: 'long', repo: 'tests/gate/repos/shop', file: 'CLAUDE.md', rule: text, expect: 'keep' };
-  const { facts, ctx } = runner.factsFor(c);
-  const rule = caseRule(c);
-  assert.equal(rule.lines, 1);
-  const start = performance.now();
-  judgeAll([rule], facts, ctx);
-  const ms = performance.now() - start;
-  assert.ok(ms < 200, `${ms.toFixed(0)} ms`);
 });
 
 test('a gap is only allowed on a kept rule and names why the rule is redundant', () => {

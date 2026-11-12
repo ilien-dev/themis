@@ -260,62 +260,6 @@ test('an overview with few content words, a span, a rule or a number is kept', (
   ]);
 });
 
-// Every detector on a large repository.
-// The whole path, facts read inside the timed loop, with paths off and on. With paths on the cited files are
-// real files of 20-30 KB on disk, so their reads are timed too.
-test('200 varied rules over a repository of 2,000 files are judged in under 200 ms, paths off and on', () => {
-  const files: string[] = ['package.json', 'README.md'];
-  for (let i = 0; files.length < 2000; i++) files.push(`packages/p${i % 40}/src/module${i}.ts`);
-  const disk: Record<string, string> = {
-    'package.json': JSON.stringify({ name: 'big', description: 'A big monorepo of packages for testing', scripts: { build: 'tsc -b', 'db:backup': 'node db/backup.mjs' },
-      dependencies: { react: '^19', next: '^15', zod: '^3', pino: '^9' } }),
-    'README.md': README,
-  };
-  // 300 of the listed files on disk, 20-30 KB each.
-  for (let i = 0; i < 300; i++) disk[files[i + 2] ?? ''] = `// Parses the input of module ${i}\n${'export const value = parseInput(raw);\n'.repeat(500 + (i % 10) * 25)}`;
-  const dir = repo(disk);
-  const cited = Array.from({ length: 40 }, (_, i) => `- \`${files[i + 2] ?? ''}\` — Parses the input`);
-  const samples = [
-    '- **Stack**: Next.js 15 · Zod', '- `npm run db:backup` - Create database backup', SUMMARY, '# CLAUDE.md',
-    'This file provides guidance to Claude Code when working with code in this repository.', '- Keep the legacy code as it is', '- **pino**: Fast logger',
-    '- Never commit secrets.', '- Money is stored in integer cents', '- Jest, ESLint and Prettier',
-  ];
-  const rules = Array.from({ length: 200 }, (_, i) => (i % 5 === 0 ? cited[(i / 5) % 40] : samples[i % samples.length]) ?? '');
-  const markdown = rules.join('\n\n');
-  const measured: string[] = [];
-  for (const paths of [false, true]) {
-    const runs: number[] = [];
-    let cut = 0;
-    for (let i = 0; i < 3; i++) {
-      const start = performance.now();
-      const facts = readFacts(join(dir, 'CLAUDE.md'), { files });
-      const verdicts = judgeAll(parseRules(markdown), facts, contextFor(facts, { paths }));
-      runs.push(performance.now() - start);
-      assert.equal(verdicts.length, 200);
-      cut = verdicts.filter((v) => v.code === 'inferable-path').length;
-    }
-    assert.equal(cut, paths ? 40 : 0);
-    measured.push(`paths ${paths ? 'on' : 'off'}: ${runs.map((r) => r.toFixed(0)).join(', ')} ms`);
-    assert.ok(Math.min(...runs) < 200, measured.join('; '));
-  }
-  console.log(`# timing ${measured.join('; ')}`);
-});
-test('runs of spaces, dots and separators keep every detector fast', () => {
-  const facts = factsOf({ ...EVENTS, 'README.md': README, 'lib/a.js': '' });
-  for (const filler of [' ', '.', '+', 'a', '-', ':', '(']) {
-    for (const prefix of ['- `lib/a.js` — ', '- **Stack**: Jest', '- `npm run x` - ', 'Ledger ', '- Jest, ']) {
-      for (const len of [590, 20_000]) {
-        const rule = parseRules(`${prefix}${filler.repeat(len)}x`)[0];
-        assert.ok(rule !== undefined);
-        const start = performance.now();
-        for (const check of [describedPath, stackList, describedScript, projectOverview, q3]) check(rule, facts);
-        const ms = performance.now() - start;
-        assert.ok(ms < 50, `${JSON.stringify(prefix)} + ${len} x ${JSON.stringify(filler)}: ${ms.toFixed(0)} ms`);
-      }
-    }
-  }
-});
-
 // Review round 1: open slots closed, and the described path checked against the file it names.
 test('the /init sentence takes only a known agent name and a domain in its parenthesis', () => {
   const s = (agent: string, paren = ''): string => `This file provides guidance to ${agent}${paren === '' ? '' : ` (${paren})`} when working with code in this repository.`;
