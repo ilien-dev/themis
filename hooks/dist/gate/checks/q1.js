@@ -234,6 +234,7 @@ const STATE = new Set([
     'vendored', 'vendor', 'temporary', 'temp', 'tmp', 'wip', 'readonly', 'draft', 'unstable', 'beta', 'alpha', 'unused', 'dead', 'old',
     'broken', 'flaky', 'fragile', 'sensitive', 'secret', 'secrets', 'manual', 'manually', 'handwritten', 'todo', 'fixme', 'hack', 'hacky',
     'workaround', 'critical', 'important', 'careful', 'caution', 'warning', 'danger', 'dangerous', 'risky', 'slow', 'fork', 'forked',
+    'truth', 'canonical', 'authoritative', 'canónico', 'canónica', 'verdad', // "single source of truth": edit here and nowhere else
     'patched', 'upstream', 'mirror', 'duplicate', 'production', 'prod', 'staging', 'live',
     'generado', 'generada', 'autogenerado', 'autogenerada', 'heredado', 'heredada', 'obsoleto', 'obsoleta', 'congelado', 'congelada',
     'experimentales', 'interno', 'interna', 'privado', 'privada', 'temporal', 'provisional', 'borrador', 'roto', 'rota', 'antiguo', 'viejo',
@@ -300,7 +301,11 @@ function plainDescription(text, allowedSpan) {
     const w = words(bare);
     if (w.length === 0 || w.length > 25)
         return false;
-    const gerund = (x) => x !== 'using' && x.endsWith('ing') && (IMPERATIVE.has(x.slice(0, -3)) || IMPERATIVE.has(`${x.slice(0, -3)}e`) || IMPERATIVE.has(x.slice(0, -4)));
+    // "for changing refund logic", "para cambiar…": the form of a trigger ("read it when…"), not of a description.
+    if (w[0] === 'for' || w[0] === 'para')
+        return false;
+    const verb = (x) => IMPERATIVE.has(x) || EFFECT.has(x);
+    const gerund = (x) => x !== 'using' && x.endsWith('ing') && (verb(x.slice(0, -3)) || verb(`${x.slice(0, -3)}e`) || verb(x.slice(0, -4)));
     return !w.some((x) => IMPERATIVE.has(x) || gerund(x) || TIMING.has(x) || CONDITION.has(x) || STATE.has(x) || EFFECT.has(x) || PRONOUN.has(x) || QUANTIFIER.has(x));
 }
 // The path a token names, or null when it does not look like one.
@@ -343,7 +348,16 @@ export const describedPath = (rule, facts) => {
         return null;
     if (!plainDescription(description, spanIsLivePath(facts)) || !toolsAreDeps(description, facts))
         return null;
-    return exists(path, facts) ? answer('inferable-path', `path: ${path}`) : null;
+    if (!exists(path, facts))
+        return null;
+    // A bare name that several files share ("index.ts"): the rule may be the only place that says which one.
+    if (!path.includes('/')) {
+        let n = 0;
+        for (const f of facts.files)
+            if ((f === path || f.endsWith(`/${path}`)) && ++n > 1)
+                return null;
+    }
+    return answer('inferable-path', `path: ${path}`);
 };
 const DEP_INDEX = new WeakMap();
 const depKey = (s) => s.toLowerCase().replace(/(?:\.?js)$/, (m) => (s.length - m.length >= 2 ? '' : m)).replace(/[\s._/@-]+/g, '');
@@ -404,13 +418,31 @@ function toolsAreDeps(text, facts) {
     }
     return true;
 }
-// The major version of a plain range ("^19.0.0", "~5.7", "18.x"), or null when the range is anything else.
-function majorOf(range) {
-    const m = /^[\^~]?v?(\d+)(?:\.(?:\d+|x|\*)){0,2}$/.exec(range.trim());
-    return m?.[1] === undefined ? null : Number(m[1]);
+// The major and minor version of a plain range ("^19.0.0", "~5.7", "18.x"), or null when the range is anything else.
+function versionOf(range) {
+    const m = /^[\^~]?v?(\d+)(?:\.(\d+|x|\*))?(?:\.(?:\d+|x|\*))?$/.exec(range.trim());
+    if (m?.[1] === undefined)
+        return null;
+    const minor = m[2] === undefined || !/^\d+$/.test(m[2]) ? null : Number(m[2]);
+    return { major: Number(m[1]), minor };
+}
+// Does the version a rule gives match the manifest's? Null when it cannot tell: below 1.0 a minor is a
+// major, so "0.x" claims are compared by minor and abstain without one.
+function sameVersion(seg, range) {
+    const v = versionOf(range);
+    if (v === null || seg.major === null)
+        return null;
+    if (v.major === 0 || seg.major === 0) {
+        if (v.minor === null || seg.minor === null)
+            return null;
+        if (v.major !== seg.major)
+            return false;
+        return seg.orLater ? v.minor >= seg.minor : v.minor === seg.minor;
+    }
+    return seg.orLater ? v.major >= seg.major : v.major === seg.major;
 }
 const LABEL = /^(?:\*\*([^*\n]{1,40}?):?\*\*:?|([\p{L}][\p{L} ]{0,30}?):)\s*/u;
-const VERSION = /\s+v?(\d+)(?:\.(?:\d+|x))*(\uE003)?$/;
+const VERSION = /\s+v?(\d+)(?:\.(\d+|x))?(?:\.(?:\d+|x))*(\uE003)?$/;
 // One segment of a stack list, or null when it is anything but a dependency with an optional version,
 // neutral role words and a parenthesis of neutral words or other dependencies.
 function segment(raw, held, restore, facts) {
@@ -440,7 +472,8 @@ function segment(raw, held, restore, facts) {
     const dep = s === '' ? null : resolveDep(s, facts); // a digit left in the name must belong to a dependency's name
     if (dep === null)
         return null;
-    return { dep, marked: marked || /^[\p{Lu}@]|[.\-/@]/u.test(s), major: v === null ? null : Number(v[1]), orLater: v?.[2] !== undefined, text: raw.trim() };
+    return { dep, marked: marked || /^[\p{Lu}@]|[.\-/@]/u.test(s), major: v === null ? null : Number(v[1]),
+        minor: v?.[2] === undefined || v[2] === 'x' ? null : Number(v[2]), orLater: v?.[3] !== undefined, text: raw.trim() };
 }
 export const stackList = (rule, facts) => {
     const pkg = facts.pkg;
@@ -508,10 +541,10 @@ export const stackList = (rule, facts) => {
         if (seg.major === null)
             continue;
         const range = pkg.versions[seg.dep] ?? '';
-        const major = majorOf(range);
-        if (major === null)
+        const same = sameVersion(seg, range);
+        if (same === null)
             return null; // a version the manifest cannot confirm is information
-        if (seg.orLater ? major < seg.major : major !== seg.major) {
+        if (!same) {
             return { verdict: 'conflict', code: 'stale-version', question: 1, evidence: `${pkg.path}: ${depGroup(facts, seg.dep)}.${seg.dep} is ${range}; the rule says "${seg.text}"` };
         }
     }
@@ -624,6 +657,10 @@ export const projectOverview = (rule, facts) => {
     // One sentence the README does not hold is new information, whatever the whole paragraph scores.
     for (const sentence of text.split(/[.!?:;]+(?:\s|$)/)) {
         if (words(sentence).filter((w) => !FUNCTION_WORDS.has(w) && !covered(w)).length >= 2)
+            return null;
+        // A capitalised word the sources lack ("…invoices in Stripe") is a new fact even alone.
+        const tokens = sentence.match(/[\p{L}\p{N}_]+/gu) ?? [];
+        if (tokens.slice(1).some((t) => /^\p{Lu}/u.test(t) && !covered(t.toLowerCase())))
             return null;
     }
     return answer('inferable-overview', sources);

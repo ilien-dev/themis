@@ -92,6 +92,19 @@ test('a described path with a status word, a command, an effect verb or an instr
     '- `src/api/` — 全局类型定义',
   ]);
 });
+test('a pointer that says when to read a file, or that it is the source of truth, is kept', () => {
+  const files = { ...PATHS, 'docs/refunds.md': '', 'prisma/schema.prisma': '' };
+  nulls(q1, files, [
+    '- `docs/refunds.md` — for changing refund logic', '- `docs/refunds.md` — for refund logic', '- `docs/refunds.md` — editing guide for refunds',
+    '- `prisma/schema.prisma` — single source of truth for the data model', '- `prisma/schema.prisma` — canonical data model',
+  ]);
+  assert.equal(code(q1, '- `docs/refunds.md` — refund rules and examples', files), 'inferable-path');
+});
+test('a bare file name that matches several files is kept: the rule says which one', () => {
+  const files = { ...PATHS, 'src/a/index.ts': '', 'src/b/index.ts': '' };
+  assert.equal(ask(q1, '- **index.ts** - Entry point', files), null);
+  assert.equal(code(q1, '- **extension.ts** - Entry point', files), 'inferable-path');
+});
 test('a described path naming a tool the manifest lacks is kept: the description may be stale', () => {
   const files = { ...PATHS, 'package.json': '{"name":"mcp","dependencies":{"@modelcontextprotocol/sdk":"^1","commander":"^12"}}', 'src/serve.ts': '', 'src/index.ts': '' };
   assert.equal(ask(q1, '- `src/serve.ts`: MCP server using fastmcp', files), null);
@@ -149,6 +162,12 @@ test('a stack line with an instruction, a non-dependency or prose is kept', () =
     '- Jest + ESLint: required before merge',
   ]);
   nulls(q1, EVENTS, ['Use debug and colors sparingly', '- debug and colors', '- express, ms', 'Jest, ESLint and Prettier']);
+});
+test('a 0.x version is compared by minor, and abstains without one', () => {
+  const zero = { 'package.json': '{"dependencies":{"dagre":"^0.8.5","pino":"^9"}}' };
+  assert.equal(ask(q1, '- **Stack**: Dagre 0.7, Pino', zero)?.code, 'stale-version');
+  assert.equal(code(q1, '- **Stack**: Dagre 0.8, Pino', zero), 'inferable-stack');
+  assert.equal(ask(q1, '- **Stack**: Dagre 0, Pino', zero), null);
 });
 test('a stack line naming one of two tools of a kind is kept: it says which one is used', () => {
   const both = { 'package.json': '{"devDependencies":{"jest":"^29","vitest":"^2","eslint":"^9"}}' };
@@ -210,6 +229,9 @@ test('a paragraph made of the README and manifest words is an inferable overview
   const a = ask(q1, SUMMARY, LEDGER);
   assert.ok(a !== null); assert.equal(a.code, 'inferable-overview'); assert.equal(a.verdict, 'cut');
   assert.equal(code(q1, '`ledger` is a service for freelancers: it tracks invoices and expenses and produces monthly reports.', LEDGER), 'inferable-overview');
+});
+test('an overview with one new proper noun is kept', () => {
+  assert.equal(ask(q1, 'Ledger is a bookkeeping service for freelancers that tracks invoices, payments and expenses in Stripe and produces monthly PDF reports.', LEDGER), null);
 });
 test('an overview with one new sentence is kept', () => {
   assert.equal(ask(q1, `${SUMMARY} The admin UI lives in another repo.`, LEDGER), null);
