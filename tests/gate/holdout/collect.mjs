@@ -1,4 +1,8 @@
-// Collects the snapshots of the held-out corpus: node tests/gate/holdout/collect.mjs [sources.json]
+// Collects the snapshots of a held-out corpus: node tests/gate/holdout/collect.mjs [sources.json] [--extras]
+// Without arguments it rebuilds the first corpus (sources.json next to this script, snapshots beside it).
+// The snapshots are written next to the sources file, so the second corpus is
+//   node tests/gate/holdout/collect.mjs tests/gate/holdout2/sources.json --extras
+// --extras also stores every package.json of the tree (up to 30, at its real path) and the licence file.
 // Each entry of sources.json is "owner/repo@sha", or "owner/repo@sha#AGENTS.md" to name the rule file
 // (the default is CLAUDE.md, then AGENTS.md). Everything is read with the authenticated `gh` CLI at that
 // exact commit and written to <owner>__<repo>/ next to this script:
@@ -10,10 +14,15 @@
 // lockfiles are stored as empty files: the gate only needs to know they exist.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join, posix } from 'node:path';
+import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
+const args = process.argv.slice(2);
+const EXTRAS = args.includes('--extras');
+const sourcesPath = resolve(args.find((a) => !a.startsWith('--')) ?? join(here, 'sources.json'));
+const outDir = dirname(sourcesPath);
+const MAX_PACKAGES = 30;
 const CAP = 200 * 1024;
 const MAX_DOCS = 20;
 
@@ -34,7 +43,7 @@ function collect(entry) {
   const m = /^([\w.-]+\/[\w.-]+)@([0-9a-f]{40})(?:#(CLAUDE\.md|AGENTS\.md))?$/.exec(entry);
   if (!m) throw new Error(`bad source ${entry}`);
   const [, repo, sha, named] = m;
-  const out = join(here, repo.replace('/', '__'));
+  const out = join(outDir, repo.replace('/', '__'));
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
 
@@ -83,12 +92,19 @@ function collect(entry) {
     store(next);
     current = next;
   }
+  if (EXTRAS) {
+    // .gitignore is in CONFIG for the root; the nested package.json files, shallowest first, and the licence.
+    const packages = blobs.map((e) => e.path).filter((p) => /(?:^|\/)package\.json$/.test(p) && !p.split('/').includes('node_modules') && p !== 'package.json');
+    packages.sort((a, b) => a.split('/').length - b.split('/').length || (a < b ? -1 : 1));
+    for (const p of packages.slice(0, MAX_PACKAGES - 1)) store(p);
+    for (const p of root) if (/^(?:LICEN[SC]E|COPYING)(?:\.md)?$/.test(p)) store(p);
+  }
   const docs = blobs.map((e) => e.path).filter((p) => /^docs\/[^/]+\.md$/i.test(p) && !/^(?:claude|agents)\.md$/i.test(posix.basename(p))).sort().slice(0, MAX_DOCS);
   for (const p of docs) store(p);
   return { repo, sha, ruleFile, truncated: tree.truncated === true, files: blobs.length };
 }
 
-const sources = JSON.parse(readFileSync(process.argv[2] ?? join(here, 'sources.json'), 'utf8'));
+const sources = JSON.parse(readFileSync(sourcesPath, 'utf8'));
 for (const entry of sources) {
   const r = collect(entry);
   console.log(`${r.repo}@${r.sha.slice(0, 7)} ${r.ruleFile} ${r.files} files${r.truncated ? ' (tree truncated)' : ''}`);
