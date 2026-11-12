@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { read } from "../lib.js";
 import { parseRules } from "./extract.js";
 import { readFacts } from "./facts.js";
 import { contextFor, judgeAll } from "./verdict.js";
@@ -88,7 +89,12 @@ export class CorpusRunner {
         const known = this.facts.get(key);
         if (known !== undefined)
             return known;
-        const facts = readFacts(join(this.dirFor(c.repo), c.file));
+        const dir = this.dirFor(c.repo);
+        // A snapshot of someone else's repository lists its files in files.txt (one path per line) and holds
+        // the rule file under another name: the case carries the rule, so the file need not exist.
+        const listing = read(join(dir, 'files.txt'));
+        const files = listing === null ? null : listing.split(/\r?\n/).filter((l) => l !== '');
+        const facts = readFacts(join(dir, c.file), files === null ? undefined : { files });
         const entry = { facts, ctx: contextFor(facts) };
         this.facts.set(key, entry);
         return entry;

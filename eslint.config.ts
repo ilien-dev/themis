@@ -4,8 +4,8 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  // Fixtures are test data: the JavaScript repos the eval cases hand to a session, and the gate corpus repos.
-  globalIgnores(['**/node_modules/', 'hooks/dist/', 'evals/results/', 'evals/cases/*/fixture/', 'evals/cases/*/worktree/', 'tests/gate/repos/']),
+  // Fixtures are test data: the JavaScript repos the eval cases hand to a session, the gate corpus repos and the held-out snapshots of third-party repos.
+  globalIgnores(['**/node_modules/', 'hooks/dist/', 'evals/results/', 'evals/cases/*/fixture/', 'evals/cases/*/worktree/', 'tests/gate/repos/', 'tests/gate/holdout/']),
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,

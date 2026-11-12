@@ -1,6 +1,7 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { caseRule, CorpusRunner, matches, parseCorpus, type Case } from '../../hooks/gate/corpus.ts';
@@ -108,4 +109,37 @@ test('a gap is only allowed on a kept rule and names why the rule is redundant',
   assert.ok(gaps.every((c) => c.expect === 'keep' && (c.gap ?? '').length > 20));
   assert.throws(() => parseCorpus('{"id":"x","repo":"r","file":"f","rule":"- a","expect":"cut","code":"emphasis","gap":"why it is redundant"}'), /gap/);
   assert.throws(() => parseCorpus('{"id":"x","repo":"r","file":"f","rule":"- a","expect":"cut"}'), /code is required/);
+});
+
+// A snapshot of a third-party repository: files.txt is its file listing, rules.md holds the rule file's
+// text, and the rule file itself need not exist under its real name.
+test('a repo with files.txt is judged against that listing, and its rule file need not exist', () => {
+  const base = mkdtempSync(join(tmpdir(), 'themis-snapshot-'));
+  try {
+    const repo = (name: string, listing: string | null): void => {
+      mkdirSync(join(base, name), { recursive: true });
+      writeFileSync(join(base, name, 'package.json'), '{"name":"snap","scripts":{}}');
+      writeFileSync(join(base, name, 'rules.md'), '- Entry point is `src/main.ts`\n');
+      if (listing !== null) writeFileSync(join(base, name, 'files.txt'), listing);
+    };
+    repo('listed', 'package.json\nsrc/main.ts\n');
+    repo('bare', null);
+    const rule = '- Entry point is `src/main.ts`';
+    const listed: Case = { id: 'listed-1', repo: 'listed', file: 'CLAUDE.md', rule, expect: 'keep' };
+    const bare: Case = { ...listed, id: 'bare-1', repo: 'bare' };
+    const snapshots = new CorpusRunner(base);
+    try {
+      const facts = snapshots.factsFor(listed).facts;
+      assert.equal(facts.inRepo, true);
+      assert.equal(facts.root, snapshots.dirFor('listed'));
+      assert.ok(facts.files.has('src/main.ts'));
+      assert.ok(facts.filesKnown);
+      assert.notEqual(snapshots.run(listed).code, 'dead-reference');
+      assert.equal(snapshots.run(bare).code, 'dead-reference');
+    } finally {
+      snapshots.dispose();
+    }
+  } finally {
+    rmSync(base, { recursive: true, force: true });
+  }
 });

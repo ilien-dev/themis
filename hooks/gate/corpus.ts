@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { read } from '../lib.ts';
 import { parseRules } from './extract.ts';
 import { readFacts, type Facts } from './facts.ts';
 import { contextFor, judgeAll, type Context } from './verdict.ts';
@@ -10,7 +11,7 @@ import type { Rule, Verdict, VerdictKind } from './types.ts';
 // A labelled rule of the regression corpus, one JSON object per line of a .jsonl file.
 export interface Case {
   readonly id: string;
-  readonly repo: string; // directory relative to the corpus base, copied to a fresh git repo
+  readonly repo: string; // directory relative to the corpus base, copied to a fresh git repo; its files.txt, when present, is the file listing
   readonly file: string; // where the rule would live, relative to the repo
   readonly rule: string; // markdown that parses to exactly one rule
   readonly expect: VerdictKind;
@@ -90,7 +91,12 @@ export class CorpusRunner {
     const key = `${c.repo}\0${c.file}`;
     const known = this.facts.get(key);
     if (known !== undefined) return known;
-    const facts = readFacts(join(this.dirFor(c.repo), c.file));
+    const dir = this.dirFor(c.repo);
+    // A snapshot of someone else's repository lists its files in files.txt (one path per line) and holds
+    // the rule file under another name: the case carries the rule, so the file need not exist.
+    const listing = read(join(dir, 'files.txt'));
+    const files = listing === null ? null : listing.split(/\r?\n/).filter((l) => l !== '');
+    const facts = readFacts(join(dir, c.file), files === null ? undefined : { files });
     const entry = { facts, ctx: contextFor(facts) };
     this.facts.set(key, entry);
     return entry;
