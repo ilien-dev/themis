@@ -100,3 +100,5 @@ Every candidate examined before the stopping point appears here by objective rea
 | primary language Elixir | 1 | `rpmessner/waveform` |
 | licence MPL-2.0 | 1 | `CornWorld/zod-codepen` |
 | primary language Vue | 1 | `mr-creative-hmh/laravel-vue-creative-starter-dashboard-kit` |
+
+Source files that the rules cite (backticked or bold paths, parenthesised paths, found in `files.txt`) are also stored, each at its real path and at most 64 KB, by `tests/gate/holdout/fetch-cited.mjs`: 279 files for this corpus (334 cited paths found; the rest were already stored, over 64 KB, lockfiles, binary types or named CLAUDE.md/AGENTS.md).

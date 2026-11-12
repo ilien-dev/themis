@@ -94,3 +94,5 @@ Only the candidates examined before the 40-repository minimum was reached appear
 | `2ue/ccman` | licence none |
 | `thoughtspot/ts-chart-sdk` | licence none |
 | `speedandfunction/automatization` | no root package.json |
+
+Source files that the rules cite (backticked or bold paths, parenthesised paths, found in `files.txt`) are also stored, each at its real path and at most 64 KB, by `fetch-cited.mjs`: 305 files for this corpus (371 cited paths found; the rest were already stored, over 64 KB, lockfiles or named CLAUDE.md/AGENTS.md).
