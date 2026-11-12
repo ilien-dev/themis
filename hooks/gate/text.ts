@@ -10,6 +10,11 @@ export function words(text: string): string[] {
   return text.replace(LIST_MARKER, '').toLowerCase().match(/[\p{L}\p{N}_]+/gu) ?? [];
 }
 
+// Is what remains of a rule once its matched phrase is removed only connective words, with no digits?
+export function onlyConnectives(rest: string, allowed: ReadonlySet<string>): boolean {
+  return !/\d/.test(rest) && words(rest).every((w) => allowed.has(w));
+}
+
 function trigrams(text: string): Set<string> {
   const w = [...new Set(words(text))]; // repetition adds nothing
   const out = new Set<string>();

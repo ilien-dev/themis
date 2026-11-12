@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { read } from '../../lib.ts';
 import { isRecord, parseJsonc } from '../read-config.ts';
 import { AFFIRM, NEGATION, OBVIOUS_SCRIPTS, TECH, type Tech } from '../tables/alias.ts';
-import { ABSOLUTE, citedPaths, mentions, similarity, spans, words } from '../text.ts';
+import { ABSOLUTE, citedPaths, mentions, onlyConnectives, similarity, spans, words } from '../text.ts';
 import type { Facts } from '../facts.ts';
 import type { Answer, Rule } from '../types.ts';
 import type { Check } from '../verdict.ts';
@@ -172,7 +172,7 @@ function inferableTech(rule: Rule, facts: Facts): Answer | null {
   let rest = plain;
   for (const r of AFFIRM_G) rest = rest.replace(r, ' ');
   for (const t of mentioned) rest = rest.replace(MENTION.get(t) ?? /$^/u, ' ');
-  return !/\d/.test(rest) && words(rest).every((w) => STOPWORDS.has(w)) ? answer('inferable-tech', evidence.join('; ')) : null;
+  return onlyConnectives(rest, STOPWORDS) ? answer('inferable-tech', evidence.join('; ')) : null;
 }
 
 function inferableOverview(rule: Rule, facts: Facts): Answer | null {

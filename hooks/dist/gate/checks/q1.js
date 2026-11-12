@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { read } from "../../lib.js";
 import { isRecord, parseJsonc } from "../read-config.js";
 import { AFFIRM, NEGATION, OBVIOUS_SCRIPTS, TECH } from "../tables/alias.js";
-import { ABSOLUTE, citedPaths, mentions, similarity, spans, words } from "../text.js";
+import { ABSOLUTE, citedPaths, mentions, onlyConnectives, similarity, spans, words } from "../text.js";
 // Question 1: does the repository already say what this rule says?
 const WB_BEFORE = String.raw `(?<![\p{L}\p{N}_-])`;
 const WB_AFTER = String.raw `(?![\p{L}\p{N}_-])`;
@@ -185,7 +185,7 @@ function inferableTech(rule, facts) {
         rest = rest.replace(r, ' ');
     for (const t of mentioned)
         rest = rest.replace(MENTION.get(t) ?? /$^/u, ' ');
-    return !/\d/.test(rest) && words(rest).every((w) => STOPWORDS.has(w)) ? answer('inferable-tech', evidence.join('; ')) : null;
+    return onlyConnectives(rest, STOPWORDS) ? answer('inferable-tech', evidence.join('; ')) : null;
 }
 function inferableOverview(rule, facts) {
     if (rule.kind !== 'paragraph')

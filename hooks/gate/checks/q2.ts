@@ -1,6 +1,6 @@
 import { LINT_MAP, type LintRule } from '../tables/lint-map.ts';
 import { NEGATION } from '../tables/alias.ts';
-import { ABSOLUTE, spans, words } from '../text.ts';
+import { ABSOLUTE, onlyConnectives, spans, words } from '../text.ts';
 import { join } from 'node:path';
 import { read } from '../../lib.ts';
 import { isRecord, parseJsonc } from '../read-config.ts';
@@ -127,7 +127,7 @@ function expresses(entry: LintRule, text: string): boolean {
   const m = entry.pattern.exec(text);
   if (m === null) return false;
   const rest = `${text.slice(0, m.index)} ${text.slice(m.index + m[0].length)}`;
-  return !/\d/.test(rest) && !ABSOLUTE.test(rest) && !NEGATION.test(rest) && words(rest).every((w) => CONNECTIVES.has(w));
+  return !ABSOLUTE.test(rest) && !NEGATION.test(rest) && onlyConnectives(rest, CONNECTIVES);
 }
 
 function enforcedConfig(rule: Rule, facts: Facts): Answer | null {

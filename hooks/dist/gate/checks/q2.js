@@ -1,6 +1,6 @@
 import { LINT_MAP } from "../tables/lint-map.js";
 import { NEGATION } from "../tables/alias.js";
-import { ABSOLUTE, spans, words } from "../text.js";
+import { ABSOLUTE, onlyConnectives, spans, words } from "../text.js";
 import { join } from 'node:path';
 import { read } from "../../lib.js";
 import { isRecord, parseJsonc } from "../read-config.js";
@@ -126,7 +126,7 @@ function expresses(entry, text) {
     if (m === null)
         return false;
     const rest = `${text.slice(0, m.index)} ${text.slice(m.index + m[0].length)}`;
-    return !/\d/.test(rest) && !ABSOLUTE.test(rest) && !NEGATION.test(rest) && words(rest).every((w) => CONNECTIVES.has(w));
+    return !ABSOLUTE.test(rest) && !NEGATION.test(rest) && onlyConnectives(rest, CONNECTIVES);
 }
 function enforcedConfig(rule, facts) {
     const text = plain(rule.text);

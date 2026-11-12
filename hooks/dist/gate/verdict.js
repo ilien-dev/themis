@@ -1,7 +1,8 @@
 import { q1 } from "./checks/q1.js";
 import { q2 } from "./checks/q2.js";
+import { q3 } from "./checks/q3.js";
 import { ABSOLUTE, citedPaths, citedScripts, hasAnchor, hasReason, mentions, ruleHash, spans } from "./text.js";
-export const CHECKS = [{ question: 1, run: q1 }, { question: 2, run: q2 }];
+export const CHECKS = [{ question: 1, run: q1 }, { question: 2, run: q2 }, { question: 3, run: q3 }];
 const OUTSIDE_REPO = new Set([3, 7]);
 function mentionsKnownThing(rule, facts, ctx) {
     const text = rule.text;
