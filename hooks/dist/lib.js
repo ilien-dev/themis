@@ -115,7 +115,7 @@ export function pairState(a, b) {
     const pulls = (from, buf, to) => imports(from, buf.toString('utf8')).some((p) => same(p, to));
     return pulls(a, ba, b) || pulls(b, bb, a) ? 'import' : 'differ';
 }
-function gitLines(cwd, args) {
+export function gitLines(cwd, args) {
     const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, windowsHide: true });
     return r.status === 0 ? r.stdout.split(/[\0\n]/).filter(Boolean) : null;
 }

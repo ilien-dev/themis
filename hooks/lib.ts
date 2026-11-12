@@ -144,7 +144,7 @@ export function pairState(a: string, b: string): PairState {
   return pulls(a, ba, b) || pulls(b, bb, a) ? 'import' : 'differ';
 }
 
-function gitLines(cwd: string, args: readonly string[]): string[] | null {
+export function gitLines(cwd: string, args: readonly string[]): string[] | null {
   const r = spawnSync('git', args, { cwd, encoding: 'utf8', timeout: 5000, windowsHide: true });
   return r.status === 0 ? r.stdout.split(/[\0\n]/).filter(Boolean) : null;
 }
