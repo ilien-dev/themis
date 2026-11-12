@@ -55,7 +55,7 @@ By the gate's verdict, how many of its answers matched the label exactly:
 | rewrite | 7 | 7 |
 | keep | 1,352 | 852 |
 
-Recall is low, by design: the gate is built to leave a rule alone when in doubt. Of the 593 rules labelled as anything other than keep, it flagged 93 (15.7%). Of the 475 labelled cut, it cut 16.
+Recall is low, by design: the gate is built to leave a rule alone when in doubt. Of the 593 rules labelled as anything other than keep, it flagged 93 (16%). Of the 475 labelled cut, it cut 16.
 
 The 57 false interruptions (rules labelled keep that the gate interrupted), by cause:
 
