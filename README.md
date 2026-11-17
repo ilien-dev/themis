@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
-    <img src="assets/hero-light.svg" alt="The themis coin and name over a moving picture: a long page of rules for an AI assistant keeps scrolling, its lines pass through a ring that keeps the few that matter and drops the rest, and those few land in two short pages with the same three lines, one read by Claude and one read by the other assistants. In trial runs the page came out short and complete 9 times out of 9; without themis, 0 out of 9." width="100%">
+    <img src="assets/hero-light.svg" alt="themis, a Claude Code plugin that keeps CLAUDE.md and AGENTS.md short and identical: an audit of the pair walks its rules and gives each a verdict (cut as generic advice, cut as a script the repo already shows, rewrite, keep); the cut ones drop into a tray, the kept ones land in a short CLAUDE.md and are copied to an identical AGENTS.md, about 1,065 tokens down to 172." width="100%">
   </picture>
 </p>
 
