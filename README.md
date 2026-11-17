@@ -1,13 +1,17 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/motion/hero-dark.gif">
-    <img src="assets/motion/hero-light.gif" width="820" alt="The themis coin, a blindfolded Themis in profile, next to the wordmark and the line: Two files, one text. Four cards follow: one skill creates, prunes and edits both; every edit is copied to the other file; a difference is reported and you are asked; both stay under about 2,500 tokens.">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
+    <img src="assets/hero-light.svg" alt="The themis coin and name over a moving picture: a long page of rules for an AI assistant keeps scrolling, its lines pass through a ring that keeps the few that matter and drops the rest, and those few land in two short pages with the same three lines, one read by Claude and one read by the other assistants. In trial runs the page came out short and complete 9 times out of 9; without themis, 0 out of 9." width="100%">
   </picture>
 </p>
 
-<h1 align="center">themis</h1>
+<h1 align="center">themis: the rules for your AI assistants, short and the same in both files</h1>
 
-A Claude Code plugin that manages a repository's rule files, `CLAUDE.md` and `AGENTS.md`. It keeps them short, and it keeps the two identical.
+<p align="center">
+  <b>A Claude Code plugin that looks after the page of rules you give your AI assistants.<br>
+  It keeps that page short, and keeps its two copies identical:<br>
+  <code>CLAUDE.md</code> for Claude Code, <code>AGENTS.md</code> for Codex, Cursor, Copilot and others.</b>
+</p>
 
 ## The problem
 
