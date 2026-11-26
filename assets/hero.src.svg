@@ -1,119 +1,138 @@
 <!--palette
-bg      #0C1420 #F2EEE6
-panel   #172538 #FFFDF8
-panel2  #1F3049 #E9E3D7
-line    #1C2939 #E1D9CB
-edge    #3A4F6B #B9AE9B
-ink     #ECE6DA #101B2D
-body    #B9BFC9 #3A4250
-muted   #8B93A1 #5F6673
-accent  #5BB0DD #1D6A99
-asoft   #173550 #D3E4EF
-warn    #E98A7C #A8392C
-wsoft   #3A1F22 #F3DAD4
-disc    #F2EEE6 #F2EEE6
-lgink   #101B2D #101B2D
-lgblue  #1D6A99 #1D6A99
+bg         #0C1420 #F2EEE6
+panel      #142033 #FBF9F4
+edge       #33465F #C9C0AE
+line       #162234 #E7E1D5
+ink        #ECE6DA #101B2D
+body       #C4BEB2 #2E3848
+muted      #8B93A1 #5F6673
+accent     #5BB0DD #1D6A99
+soft       #1B3A55 #D9E7F0
+marble     #F2EEE6 #F2EEE6
+coin       #101B2D #101B2D
+aegean     #1D6A99 #1D6A99
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-label="themis. Two files, one text. The themis rule gate audits a bloated CLAUDE.md and AGENTS.md pair of about 1,065 tokens rule by rule: generic advice and a script the manifest already shows are cut, a shouted rule is rewritten without emphasis, a real gotcha is kept. What stays lands in CLAUDE.md, about 172 tokens, and is copied to an identical AGENTS.md.">
+<!--brief
+Sentence: anyone who keeps written rules for coding agents gets one short text that Claude Code and every other agent read the same, instead of two files that drift apart and grow.
+Flow (hooks/hooks.json, hooks/pre-tool.ts, hooks/parity.ts): Claude edits CLAUDE.md -> PreToolUse checks the cap, the rule gate and the pair -> the edit lands -> PostToolUse copies the file to AGENTS.md -> Claude Code reads CLAUDE.md, other agents read AGENTS.md.
+Sample rule: "npm run check first" (npm run check is the repo's own check command, README Development).
+Every edit copied: hooks/parity.ts writes the twin after Edit/Write/MultiEdit.
+Stays under 2,500 tokens: hooks/pre-tool.ts denies an edit over claude_md_cap (default 2500, .claude-plugin/plugin.json).
+Differences never guessed: hooks/pre-tool.ts denies an Edit to a pair that already differs and asks which text is right.
+Each new rule checked: hooks/gate/ runs on the new rules of an edit (gate option, default report).
+Left out as unfinished: the model-default question of the gate.
+No strip: fewer than five facts remain once the key phrase, features and install are struck.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-label="Claude edits CLAUDE.md in a Claude Code session; the PreToolUse hook checks the size cap, the rule gate and that the pair is the same; the new rule lands in CLAUDE.md and the PostToolUse hook copies it to AGENTS.md; Claude Code reads CLAUDE.md and other agents read AGENTS.md.">
 <style>
-@keyframes ddrift{to{transform:translate(24px,24px)}}.ddrift{animation:ddrift 4s linear infinite}
-@keyframes dtick{to{transform:translateX(-1722px)}}.dtick{animation:dtick 28.7s linear infinite}
-@keyframes dturn{0%{transform:translateY(32px);opacity:0}3%,25%{transform:translateY(0);opacity:1}28%,100%{transform:translateY(-32px);opacity:0}}.dturn{animation:dturn 12s cubic-bezier(.4,0,.2,1) infinite}
-
-/* 12 s, one row every 3 s:  scan |-row-|  tag |in|=========(stays ~11 s)=========|out|
-                              parcel   |--down--|  result |in|====(stays ~10 s)====|out| */
-@keyframes dscan{0%,21.67%{transform:translateY(0)}25.00%,46.67%{transform:translateY(40px)}50.00%,71.67%{transform:translateY(80px)}75.00%,95.83%{transform:translateY(120px)}100%{transform:translateY(0)}}
-.dscan{animation:dscan 12s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes dtag{0%,3.33%{opacity:0;transform:translateX(-8px)}6.67%,91.67%{opacity:1;transform:translateX(0)}95.00%,100%{opacity:0;transform:translateX(0)}}
-.dtag{animation:dtag 12s cubic-bezier(0,0,.2,1) infinite}
-@keyframes dcutp{0%,6.67%{transform:translate(0,0);opacity:0}8.33%{transform:translate(0,0);opacity:1}16.67%{transform:translate(-120px,150px);opacity:1}19.17%,100%{transform:translate(-120px,150px);opacity:0}}
-.dcutp{animation:dcutp 12s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes dland{0%,11.67%{opacity:1;transform:translateY(0)}14.17%{opacity:0;transform:translateY(0)}15.83%{opacity:0;transform:translateY(-8px)}19.17%,100%{opacity:1;transform:translateY(0)}}
-.dland{animation:dland 12s cubic-bezier(0,0,.2,1) infinite}
-@keyframes dflow{to{stroke-dashoffset:-24}}
-.dflow{animation:dflow 1.2s linear infinite}
-@keyframes dkp2{0%,6.67%{transform:translate(0,0);opacity:0}8.33%{transform:translate(0,0);opacity:1}16.67%{transform:translate(0,70px);opacity:1}19.17%,100%{transform:translate(0,70px);opacity:0}}.dkp2{animation:dkp2 12s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes dkp3{0%,6.67%{transform:translate(0,0);opacity:0}8.33%{transform:translate(0,0);opacity:1}16.67%{transform:translate(0,70px);opacity:1}19.17%,100%{transform:translate(0,70px);opacity:0}}.dkp3{animation:dkp3 12s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes dcopy{0%,17.50%{transform:translateX(0);opacity:0}18.33%{transform:translateX(0);opacity:1}24.17%{transform:translateX(260px);opacity:1}25.83%,100%{transform:translateX(260px);opacity:0}}.dcopy{animation:dcopy 12s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes dland2{0%,19.17%{opacity:1;transform:translateY(0)}21.67%{opacity:0;transform:translateY(0)}23.33%{opacity:0;transform:translateY(-8px)}26.67%,100%{opacity:1;transform:translateY(0)}}.dland2{animation:dland2 12s cubic-bezier(0,0,.2,1) infinite}
-@keyframes dping{0%,24.17%{transform:scale(1);opacity:0}25.00%{transform:scale(1);opacity:.9}30.83%,100%{transform:scale(1.7);opacity:0}}.dping{animation:dping 12s cubic-bezier(0,0,.2,1) infinite;transform-box:fill-box;transform-origin:center}
-
+/* 12 s  p1      |in|--down--|=====rest=====|--down--|out|
+         checks            |c1|c2|c3|==============lit==============|off|
+         newC                                  |in|=========shown=========|out|
+         p2                                        |--copy--|
+         newA                                               |in|=====shown=====|out|
+         eyes                                  |C lit .............|  |A lit ......| */
+@keyframes p1{0%,6%{transform:translateY(0);opacity:0}9%{transform:translateY(0);opacity:1}18%,40%{transform:translateY(70px);opacity:1}50%{transform:translateY(136px);opacity:1}53%,100%{transform:translateY(136px);opacity:0}}
+@keyframes chk{0%,20%{opacity:.25}24%,90%{opacity:1}96%,100%{opacity:.25}}
+@keyframes newc{0%,50%{opacity:0}54%,92%{opacity:1}96%,100%{opacity:0}}
+@keyframes p2{0%,56%{transform:translateX(0);opacity:0}58%{transform:translateX(0);opacity:1}68%{transform:translateX(84px);opacity:1}71%,100%{transform:translateX(84px);opacity:0}}
+@keyframes newa{0%,68%{opacity:0}72%,95%{opacity:1}99%,100%{opacity:0}}
+@keyframes cp{0%,55%{opacity:.4}60%,74%{opacity:1}80%,100%{opacity:.4}}
+@keyframes eye{0%,52%{opacity:.35}56%,92%{opacity:1}97%,100%{opacity:.35}}
+@keyframes hl{0%,2%{opacity:0}5%,12%{opacity:1}18%,100%{opacity:0}}
+@keyframes flow{to{stroke-dashoffset:-24}}
+@keyframes caret{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes turn{0%{transform:translateY(32px);opacity:0}4%,25%{transform:translateY(0);opacity:1}29%,100%{transform:translateY(-32px);opacity:0}}
+.p1{animation:p1 12s cubic-bezier(.4,0,.2,1) infinite}
+.chk{animation:chk 12s ease-in-out infinite}
+.newc{animation:newc 12s ease-out infinite}
+.p2{animation:p2 12s cubic-bezier(.4,0,.2,1) infinite}
+.newa{animation:newa 12s ease-out infinite}
+.cp{animation:cp 12s ease-in-out infinite}
+.eye{animation:eye 12s ease-in-out infinite}
+.hl{animation:hl 12s ease-in-out infinite}
+.flow{animation:flow 1.2s linear infinite}
+.caret{animation:caret 1.1s steps(1,end) infinite}
+.turn{animation:turn 12s cubic-bezier(.4,0,.2,1) infinite}
 </style>
 <rect width="1280" height="640" fill="$bg"/>
-<defs><pattern id="dgrid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r="1.5" fill="$line"/></pattern></defs><g id="backdrop"><rect class="ddrift" x="-24" y="-24" width="1328" height="688" fill="url(#dgrid)"/></g>
-<g id="logo" transform="translate(64 110) scale(0.11719)"><circle cx="256" cy="256" r="250" fill="$disc"/><circle cx="256" cy="256" r="236" fill="none" stroke="$lgink" stroke-width="16"/><g fill-rule="evenodd"><path fill="$lgink" d="M215.6 97.5q-7.1 1.5-15.6 6.1c-1.8 1-5.3 2.7-7.8 3.8-4.7 2-7.4 3.5-6.3 3.2a56 56 0 0 1 17-1.2c25 2.5 48.7 20.4 72 54.4a200 200 0 0 0 12.3 17.3 48 48 0 0 0 11.7 9.8 44 44 0 0 1 19.4 20.4c3.9 7 5.7 9.5 9.8 13.7l3.5 3.6a38 38 0 0 1-16.5-16c-5-8.1-8-11.1-16.2-16.5a75 75 0 0 1-28.2-26.4c-8.7-12.6-8.3-12.1-15.3-19a145 145 0 0 0-31.4-25.3c-16-9.6-28.1-13-42.4-12-5.2.4-5.5.4-7.4-.3-11.5-4-19.5-.8-25.3 10.1-1.1 2.1-2 2.6-6.3 3.8q-11.9 3.2-14.8 14.2c-.5 2-.9 2.5-2.7 4.3-3 3-4 5.2-4 9.1 0 3 0 3.2 1.5 6l1.4 2.8-1.2 1.7q-6 8 1.9 15.3c3.2 3 3.2 3.2 1.8 9l-1 4.6 1.6-.5q16.3-5.4 54.8 1.6a216 216 0 0 1 36 9.8l15.8 5.2q.3 0-.7-.9l-4.8-4.4c-6.7-6.5-9.6-8-20.1-9.8-13.8-2.4-18.2-5-25.8-15.1-6.1-8.1-9-9.9-19-11.6-11.3-1.9-17-5.2-19.9-11.4q-2.6-5.2 1-1.2c5.5 6 10 7.7 22.5 8.6 8.8.7 13.7 3.7 20.2 12.5 7.6 10.2 11.4 12.4 24.1 14.2a34 34 0 0 1 12.1 3.2c3.1 1.5 3.5 1.8 9.6 8 11 11 15.9 13.3 33.4 15.1 15 1.6 16.6 1.8 27.9 4.9a116 116 0 0 0 19.4 4 63 63 0 0 1 25.8 7.9c3.7 1.8 3.6 1.5 2 7.2-1 4.5-1.1 4.6-5.6 6.9-6 3.2-16.1 5-28.9 5.5a75 75 0 0 1-27.5-3.8 66 66 0 0 0-33.2-3.2c-8.3 1-13 .9-25.9-1a475 475 0 0 0-36-3.8c-33.4-2.6-44-4.7-60.6-12l-3.4-1.6-1.5 3c-1.8 4-5.3 9.7-12 19.9-7.3 11.2-7.7 12.3-6.5 15.5 1 2.8 3.4 4.3 9.7 6 2 .4 4.1 1.2 4.7 1.5 3 1.9 3 6.1 0 10-1.3 1.5-1.4 2.1-.3 4.3q1.8 4.2 5.9 4.8l1.3.3-1.6 1.1c-2.1 1.6-3 3.3-3 6.1s.7 3.7 3.3 5.2c3.5 2 3.7 3.8 1.4 9.7a26 26 0 0 0-2.7 11.7q.7 10 12 13.6c5.5 2 8.6 2.2 25.2 2.2 14.8 0 15 0 16.6.8 3.7 1.7 5.5 4.7 7.2 12.2 2.8 11.6 6 24 8 31.7 2.9 9.9 3.3 12 3 16.3a39 39 0 0 1-5.5 16l-3.1 6.5c0 .2 28.7.3 72.7.3 72.2 0 72.6 0 72.6-.7 0-1-3.6-9.3-6.4-14.7a204 204 0 0 0-10.5-18c-5.8-9-9.4-17-12.6-27.3-1.4-4.8-4.7-17.7-4.7-18.8 0-.2 1.2.6 2.6 1.7 13.5 11.4 33 9.8 39.7-3.1l1.2-2.2 2.3-.2c5.3-.5 10-3.7 12.9-8.7.4-.8 1.2-2 1.7-2.5 5.3-5.8 6.4-16.3 2.7-24l-1.3-2.6.8-2.4a18 18 0 0 0-13-23.8l-2.4-.7 1.5-1a20 20 0 0 0 7.9-11.2c1.4-5.5-.3-13.9-3.7-17.6-.6-.8-.6-.8 0-1 7-2.6 11.7-17 7.3-22.8l-1.1-1.8c0-.6 2.7-3.3 4-3.9 3.4-1.5 6.5-10.5 6.4-18.5 0-2.2 0-5.3.2-6.9a31 31 0 0 0-6.2-20c-.8-1.3-3.4-4.2-5.8-6.6a29 29 0 0 1-9.4-15.7 44 44 0 0 0-15.5-25.1c-4.2-3.2-8-4.9-15.1-6.6-9.3-2.3-11.1-3.3-17-9.2a37 37 0 0 0-16.1-11.4 50 50 0 0 0-18.7-1.4c-1.4.2-3.7.2-6 0-4.2-.3-10.2 0-15.8.9l-3.7.6-2.5-1c-5.2-1.8-11-2.3-15.8-1.3m131 127.1c-3.3 1.3-4.8 5.8-3.1 9 .6 1.2.3 6-.7 9.4l-.9 2.7.7.5c1 .7 3 .7 4.2 0 3.4-1.7 7.1-9.3 7.1-14.6 0-5.6-3.2-8.7-7.4-7m18.3 13.8c-2.8 3.9-3.1 4.4-3 4.7.4.6 2.9-2.5 4.5-5.7q1.7-3.6-1.5 1m-144.2 10.3q2.3 4 8.8 8c5.9 3.6 7.2 5.4 7.2 9.5 0 4.3-1.4 6.3-6.4 9.6-5.6 3.7-7.7 7-7.7 12.4 0 5.2 2 8.4 7.9 11.7 4 2.3 5.6 4.5 6 7.9.1 1.9 0 2.4-2.3 8.4-1.4 3.7-.7 6.5 2.3 9.5q4 4.2 1.7.5c-2.8-4.3-2.9-6.5-.4-11.8 3.8-8.4 2.4-13.6-5-18.3-4-2.6-5.3-4.6-5.3-7.8 0-3.7 2-6.4 7-9.2q5.4-3 7.7-7.8c1.1-2.4 1.2-2.8 1.2-6 0-6.1-2.3-9.1-9.8-12.7-2.4-1.2-5-2.7-5.7-3.3-1.2-1-1.8-1.3-4.2-1.7-4.2-.8-4-.8-3 1m127.3 2c0 .9 5 1.7 5.7 1q.6-.5-1-.3t-4.1-.7q-.6-.2-.6 0"/><path fill="$lgblue" d="M138.6 191.4c-3.6.3-8.9 1.3-11.6 2.2-2.8.9-3.7 3.1-4 10.7-.2 4-.5 6.2-1.2 8.9-1 3.6-1.9 14.5-1.3 15 .4.4 7.6 3.6 11 4.8 13 4.8 23.5 6.6 52.7 8.9a475 475 0 0 1 36.1 3.8 80 80 0 0 0 25.9 1 66 66 0 0 1 33.2 3.2 73 73 0 0 0 27.5 3.8 72 72 0 0 0 28.9-5.5c4.5-2.3 4.5-2.4 5.7-6.9 1.5-5.7 1.6-5.4-2-7.2-10-5-14.4-6.4-25.9-7.9-7-.8-10-1.5-19.4-4a125 125 0 0 0-27.7-4.9A89 89 0 0 1 252 215l-19-5-16.2-5.4a202 202 0 0 0-26-7.7c-20-4.5-40.1-6.6-52.2-5.5m218.5 28c-1.8 1-4.5 3.4-4.5 4.2q.1.4 1.1 1.8c4.4 5.8-.2 20.2-7.3 22.8-.6.2-.6.2 0 1 .4.4 1.2 1.6 1.8 2.7l2.2 4a39 39 0 0 1 6.5 21 34 34 0 0 0 6.2 21.1 35 35 0 0 1 6 18.4c.7 8.6 2 12.8 5.3 16.4a70 70 0 0 0 31.4 16.9 145 145 0 0 1-6.7-21 63 63 0 0 0-13.7-28.8 90 90 0 0 1-13-23.5 42 42 0 0 0-11.6-18.1c-3-2.8-6.6-7-6.2-7.3l1.9-1.2c2.3-1.4 5.8-6 5.4-6.7-.2-.3 0-.8 2.9-4.7 1-1.6 2-2.7 2.1-2.6.3.2-1.8 3.9-3.3 5.9l-1.4 1.8 1.6 1.4c3 2.8 4.8 6.3 8 15.5A48 48 0 0 0 384 282a43 43 0 0 0 23.9 12.4c5.1 1 15.4 1.5 16.2.6l-5.2-5.7a78 78 0 0 1-19.1-27.5c-6.5-15.4-11.2-20-25.3-24.4l-5.9-1.8q-1.6-.3-1.2-1c2.2-7 .9-13.4-3.2-15.4-2-1-4.7-.9-7.2.3m-10.6 5.1c-3.2 1.3-4.7 5.8-3 9 .6 1.2.3 6-.7 9.4l-.9 2.7.7.5c1 .7 3 .7 4.2 0 3.4-1.7 7.1-9.3 7.1-14.6 0-5.6-3.2-8.7-7.4-7m1.4 26c0 .9 5 1.7 5.7 1q.6-.5-1-.3t-4.1-.7q-.6-.2-.6 0"/></g></g>
-<text id="name" x="140" y="153" class="b" font-size="40" fill="$ink">themis</text>
-<text id="tagline" class="b" font-size="64" fill="$ink"><tspan x="64" y="254">Two files,</tspan> <tspan x="64" y="326" fill="$accent">one text.</tspan></text>
-<text id="about" class="s" font-size="21" fill="$body"><tspan x="64" y="378">A Claude Code plugin that keeps CLAUDE.md and</tspan> <tspan x="64" y="408">AGENTS.md short, and the two identical.</tspan></text>
-<defs><clipPath id="dfeat"><rect x="64" y="434" width="470" height="44"/></clipPath></defs>
-<g id="facts" clip-path="url(#dfeat)">
-<g class="dturn" opacity="0" style="animation-delay:0s"><rect x="64" y="450" width="12" height="12" rx="3" fill="$accent"/><text x="88" y="464" class="s" font-size="20" fill="$ink">Every edit copied to AGENTS.md</text></g>
-<g class="dturn" opacity="0" style="animation-delay:-9s"><rect x="64" y="450" width="12" height="12" rx="3" fill="$accent"/><text x="88" y="464" class="s" font-size="20" fill="$ink">Kept under about 2,500 tokens</text></g>
-<g class="dturn" opacity="0" style="animation-delay:-6s"><rect x="64" y="450" width="12" height="12" rx="3" fill="$accent"/><text x="88" y="464" class="s" font-size="20" fill="$ink">A difference is never resolved for you</text></g>
-<g class="dturn" style="animation-delay:-3s"><rect x="64" y="450" width="12" height="12" rx="3" fill="$accent"/><text x="88" y="464" class="s" font-size="20" fill="$ink">Flags rules the repo already shows</text></g>
+<g id="backdrop" data-backdrop="grid still"><defs><pattern id="bd-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0 0H40M0 0V40" fill="none" stroke="$line" stroke-width="1"/></pattern></defs><rect x="-40" y="-40" width="1360" height="720" fill="url(#bd-grid)"/></g>
+
+<!-- text block -->
+<g id="logo" transform="translate(72 52) scale(0.109375)"><circle cx="256" cy="256" r="250" fill="$marble"/><circle cx="256" cy="256" r="236" fill="none" stroke="$coin" stroke-width="16"/><g fill-rule="evenodd"><path fill="$coin" d="M215.6 97.5q-7.1 1.5-15.6 6.1c-1.8 1-5.3 2.7-7.8 3.8-4.7 2-7.4 3.5-6.3 3.2a56 56 0 0 1 17-1.2c25 2.5 48.7 20.4 72 54.4a200 200 0 0 0 12.3 17.3 48 48 0 0 0 11.7 9.8 44 44 0 0 1 19.4 20.4c3.9 7 5.7 9.5 9.8 13.7l3.5 3.6a38 38 0 0 1-16.5-16c-5-8.1-8-11.1-16.2-16.5a75 75 0 0 1-28.2-26.4c-8.7-12.6-8.3-12.1-15.3-19a145 145 0 0 0-31.4-25.3c-16-9.6-28.1-13-42.4-12-5.2.4-5.5.4-7.4-.3-11.5-4-19.5-.8-25.3 10.1-1.1 2.1-2 2.6-6.3 3.8q-11.9 3.2-14.8 14.2c-.5 2-.9 2.5-2.7 4.3-3 3-4 5.2-4 9.1 0 3 0 3.2 1.5 6l1.4 2.8-1.2 1.7q-6 8 1.9 15.3c3.2 3 3.2 3.2 1.8 9l-1 4.6 1.6-.5q16.3-5.4 54.8 1.6a216 216 0 0 1 36 9.8l15.8 5.2q.3 0-.7-.9l-4.8-4.4c-6.7-6.5-9.6-8-20.1-9.8-13.8-2.4-18.2-5-25.8-15.1-6.1-8.1-9-9.9-19-11.6-11.3-1.9-17-5.2-19.9-11.4q-2.6-5.2 1-1.2c5.5 6 10 7.7 22.5 8.6 8.8.7 13.7 3.7 20.2 12.5 7.6 10.2 11.4 12.4 24.1 14.2a34 34 0 0 1 12.1 3.2c3.1 1.5 3.5 1.8 9.6 8 11 11 15.9 13.3 33.4 15.1 15 1.6 16.6 1.8 27.9 4.9a116 116 0 0 0 19.4 4 63 63 0 0 1 25.8 7.9c3.7 1.8 3.6 1.5 2 7.2-1 4.5-1.1 4.6-5.6 6.9-6 3.2-16.1 5-28.9 5.5a75 75 0 0 1-27.5-3.8 66 66 0 0 0-33.2-3.2c-8.3 1-13 .9-25.9-1a475 475 0 0 0-36-3.8c-33.4-2.6-44-4.7-60.6-12l-3.4-1.6-1.5 3c-1.8 4-5.3 9.7-12 19.9-7.3 11.2-7.7 12.3-6.5 15.5 1 2.8 3.4 4.3 9.7 6 2 .4 4.1 1.2 4.7 1.5 3 1.9 3 6.1 0 10-1.3 1.5-1.4 2.1-.3 4.3q1.8 4.2 5.9 4.8l1.3.3-1.6 1.1c-2.1 1.6-3 3.3-3 6.1s.7 3.7 3.3 5.2c3.5 2 3.7 3.8 1.4 9.7a26 26 0 0 0-2.7 11.7q.7 10 12 13.6c5.5 2 8.6 2.2 25.2 2.2 14.8 0 15 0 16.6.8 3.7 1.7 5.5 4.7 7.2 12.2 2.8 11.6 6 24 8 31.7 2.9 9.9 3.3 12 3 16.3a39 39 0 0 1-5.5 16l-3.1 6.5c0 .2 28.7.3 72.7.3 72.2 0 72.6 0 72.6-.7 0-1-3.6-9.3-6.4-14.7a204 204 0 0 0-10.5-18c-5.8-9-9.4-17-12.6-27.3-1.4-4.8-4.7-17.7-4.7-18.8 0-.2 1.2.6 2.6 1.7 13.5 11.4 33 9.8 39.7-3.1l1.2-2.2 2.3-.2c5.3-.5 10-3.7 12.9-8.7.4-.8 1.2-2 1.7-2.5 5.3-5.8 6.4-16.3 2.7-24l-1.3-2.6.8-2.4a18 18 0 0 0-13-23.8l-2.4-.7 1.5-1a20 20 0 0 0 7.9-11.2c1.4-5.5-.3-13.9-3.7-17.6-.6-.8-.6-.8 0-1 7-2.6 11.7-17 7.3-22.8l-1.1-1.8c0-.6 2.7-3.3 4-3.9 3.4-1.5 6.5-10.5 6.4-18.5 0-2.2 0-5.3.2-6.9a31 31 0 0 0-6.2-20c-.8-1.3-3.4-4.2-5.8-6.6a29 29 0 0 1-9.4-15.7 44 44 0 0 0-15.5-25.1c-4.2-3.2-8-4.9-15.1-6.6-9.3-2.3-11.1-3.3-17-9.2a37 37 0 0 0-16.1-11.4 50 50 0 0 0-18.7-1.4c-1.4.2-3.7.2-6 0-4.2-.3-10.2 0-15.8.9l-3.7.6-2.5-1c-5.2-1.8-11-2.3-15.8-1.3m131 127.1c-3.3 1.3-4.8 5.8-3.1 9 .6 1.2.3 6-.7 9.4l-.9 2.7.7.5c1 .7 3 .7 4.2 0 3.4-1.7 7.1-9.3 7.1-14.6 0-5.6-3.2-8.7-7.4-7m18.3 13.8c-2.8 3.9-3.1 4.4-3 4.7.4.6 2.9-2.5 4.5-5.7q1.7-3.6-1.5 1m-144.2 10.3q2.3 4 8.8 8c5.9 3.6 7.2 5.4 7.2 9.5 0 4.3-1.4 6.3-6.4 9.6-5.6 3.7-7.7 7-7.7 12.4 0 5.2 2 8.4 7.9 11.7 4 2.3 5.6 4.5 6 7.9.1 1.9 0 2.4-2.3 8.4-1.4 3.7-.7 6.5 2.3 9.5q4 4.2 1.7.5c-2.8-4.3-2.9-6.5-.4-11.8 3.8-8.4 2.4-13.6-5-18.3-4-2.6-5.3-4.6-5.3-7.8 0-3.7 2-6.4 7-9.2q5.4-3 7.7-7.8c1.1-2.4 1.2-2.8 1.2-6 0-6.1-2.3-9.1-9.8-12.7-2.4-1.2-5-2.7-5.7-3.3-1.2-1-1.8-1.3-4.2-1.7-4.2-.8-4-.8-3 1m127.3 2c0 .9 5 1.7 5.7 1q.6-.5-1-.3t-4.1-.7q-.6-.2-.6 0"/><path fill="$aegean" d="M138.6 191.4c-3.6.3-8.9 1.3-11.6 2.2-2.8.9-3.7 3.1-4 10.7-.2 4-.5 6.2-1.2 8.9-1 3.6-1.9 14.5-1.3 15 .4.4 7.6 3.6 11 4.8 13 4.8 23.5 6.6 52.7 8.9a475 475 0 0 1 36.1 3.8 80 80 0 0 0 25.9 1 66 66 0 0 1 33.2 3.2 73 73 0 0 0 27.5 3.8 72 72 0 0 0 28.9-5.5c4.5-2.3 4.5-2.4 5.7-6.9 1.5-5.7 1.6-5.4-2-7.2-10-5-14.4-6.4-25.9-7.9-7-.8-10-1.5-19.4-4a125 125 0 0 0-27.7-4.9A89 89 0 0 1 252 215l-19-5-16.2-5.4a202 202 0 0 0-26-7.7c-20-4.5-40.1-6.6-52.2-5.5m218.5 28c-1.8 1-4.5 3.4-4.5 4.2q.1.4 1.1 1.8c4.4 5.8-.2 20.2-7.3 22.8-.6.2-.6.2 0 1 .4.4 1.2 1.6 1.8 2.7l2.2 4a39 39 0 0 1 6.5 21 34 34 0 0 0 6.2 21.1 35 35 0 0 1 6 18.4c.7 8.6 2 12.8 5.3 16.4a70 70 0 0 0 31.4 16.9 145 145 0 0 1-6.7-21 63 63 0 0 0-13.7-28.8 90 90 0 0 1-13-23.5 42 42 0 0 0-11.6-18.1c-3-2.8-6.6-7-6.2-7.3l1.9-1.2c2.3-1.4 5.8-6 5.4-6.7-.2-.3 0-.8 2.9-4.7 1-1.6 2-2.7 2.1-2.6.3.2-1.8 3.9-3.3 5.9l-1.4 1.8 1.6 1.4c3 2.8 4.8 6.3 8 15.5A48 48 0 0 0 384 282a43 43 0 0 0 23.9 12.4c5.1 1 15.4 1.5 16.2.6l-5.2-5.7a78 78 0 0 1-19.1-27.5c-6.5-15.4-11.2-20-25.3-24.4l-5.9-1.8q-1.6-.3-1.2-1c2.2-7 .9-13.4-3.2-15.4-2-1-4.7-.9-7.2.3m-10.6 5.1c-3.2 1.3-4.7 5.8-3 9 .6 1.2.3 6-.7 9.4l-.9 2.7.7.5c1 .7 3 .7 4.2 0 3.4-1.7 7.1-9.3 7.1-14.6 0-5.6-3.2-8.7-7.4-7m1.4 26c0 .9 5 1.7 5.7 1q.6-.5-1-.3t-4.1-.7q-.6-.2-.6 0"/></g></g>
+<text id="name" x="140" y="94" class="b" font-size="40" fill="$ink">themis</text>
+<text id="tagline" class="b" font-size="64" fill="$ink"><tspan x="72" y="228">Two files,</tspan><tspan x="72" y="300" fill="$accent">one text.</tspan></text>
+<text id="about" class="s" font-size="20" fill="$body"><tspan x="72" y="360">A Claude Code plugin that keeps CLAUDE.md</tspan><tspan x="72" y="390">and AGENTS.md short and identical.</tspan></text>
+<g id="facts">
+<defs><clipPath id="feat"><rect x="72" y="436" width="480" height="48"/></clipPath></defs>
+<g clip-path="url(#feat)">
+<g class="turn" opacity="0" style="animation-delay:-9s"><circle cx="84" cy="460" r="6" fill="$accent"/><text x="104" y="467" class="s" font-size="22" fill="$ink">Every edit copied</text></g>
+<g class="turn" opacity="0" style="animation-delay:-6s"><circle cx="84" cy="460" r="6" fill="$accent"/><text x="104" y="467" class="s" font-size="22" fill="$ink">Stays under 2,500 tokens</text></g>
+<g class="turn" opacity="0" style="animation-delay:-3s"><circle cx="84" cy="460" r="6" fill="$accent"/><text x="104" y="467" class="s" font-size="22" fill="$ink">Differences never guessed</text></g>
+<g class="turn" style="animation-delay:0s"><circle cx="84" cy="460" r="6" fill="$accent"/><text x="104" y="467" class="s" font-size="22" fill="$ink">Each new rule checked</text></g>
 </g>
+</g>
+
 <g id="stage">
-<!-- the audit table: the bloated pair, rule by rule -->
-<rect x="580" y="36" width="656" height="262" rx="14" fill="$panel" stroke="$edge" stroke-width="1.5"/>
-<rect x="580" y="36" width="656" height="44" rx="14" fill="$panel2"/><rect x="580" y="66" width="656" height="14" fill="$panel2"/>
-<text x="598" y="64" class="m" font-size="16" fill="$ink">gate audit CLAUDE.md = AGENTS.md</text>
-<text x="1218" y="64" class="m" font-size="16" fill="$body" text-anchor="end">~1,065 tokens</text>
-<g transform="translate(0 106)"><rect class="dscan" x="588" y="0" width="640" height="32" rx="8" fill="$panel2" stroke="$accent" stroke-width="1.5"/></g>
-<text x="600" y="128" class="m" font-size="16" fill="$body">- Use meaningful variable names.</text>
-<g class="dtag" style="animation-delay:0s"><rect x="980" y="111" width="190" height="24" rx="12" fill="$wsoft"/><text x="991" y="128" class="m" font-size="14" fill="$ink">cut · generic-advice</text></g>
-<text x="600" y="168" class="m" font-size="16" fill="$body">- Lint: `npm run lint`</text>
-<g class="dtag" style="animation-delay:-9s"><rect x="980" y="151" width="207" height="24" rx="12" fill="$wsoft"/><text x="991" y="168" class="m" font-size="14" fill="$ink">cut · inferable-script</text></g>
-<text x="600" y="208" class="m" font-size="16" fill="$body">- IMPORTANT: Use semicolons.</text>
-<g class="dtag" style="animation-delay:-6s"><rect x="980" y="191" width="173" height="24" rx="12" fill="$asoft"/><text x="991" y="208" class="m" font-size="14" fill="$ink">rewrite · emphasis</text></g>
-<text x="600" y="248" class="m" font-size="16" fill="$body">- All money values are integer cents; never floats.</text>
-<g class="dtag" style="animation-delay:-3s"><rect x="1110" y="231" width="56" height="24" rx="12" fill="$asoft"/><text x="1121" y="248" class="m" font-size="14" fill="$ink">keep</text></g>
-<text x="600" y="284" class="m" font-size="16" fill="$muted">… 23 more rules</text>
-<!-- two ways out of the gate -->
-<path class="dflow" d="M680 304V430" fill="none" stroke="$warn" stroke-width="2" stroke-dasharray="8 16"/>
-<path d="M674 424l6 8 6-8" fill="none" stroke="$warn" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path class="dflow" d="M902 304V338" fill="none" stroke="$accent" stroke-width="2" stroke-dasharray="8 16"/>
-<path d="M896 332l6 8 6-8" fill="none" stroke="$accent" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<!-- the cut tray -->
-<rect x="580" y="440" width="160" height="144" rx="14" fill="$panel" stroke="$warn" stroke-width="1.5" stroke-dasharray="6 6"/>
-<text x="596" y="470" class="b" font-size="16" fill="$warn">cut</text>
-<g class="dland" style="animation-delay:0s"><rect x="592" y="494" width="136" height="26" rx="6" fill="$wsoft"/><rect x="602" y="503" width="100" height="8" rx="4" fill="$warn"/><path d="M598 507h116" stroke="$warn" stroke-width="2"/></g>
-<g class="dland" style="animation-delay:-9s"><rect x="592" y="528" width="136" height="26" rx="6" fill="$wsoft"/><rect x="602" y="537" width="70" height="8" rx="4" fill="$warn"/><path d="M598 541h86" stroke="$warn" stroke-width="2"/></g>
-<!-- the short pair: CLAUDE.md, then the copy to AGENTS.md -->
-<rect x="756" y="344" width="220" height="240" rx="14" fill="$panel" stroke="$edge" stroke-width="1.5"/>
-<rect x="756" y="344" width="220" height="40" rx="14" fill="$panel2"/><rect x="756" y="370" width="220" height="14" fill="$panel2"/>
-<text x="770" y="370" class="b" font-size="16" fill="$ink">CLAUDE.md</text>
-<rect x="770" y="398" width="170" height="8" rx="4" fill="$edge"/>
-<rect x="770" y="414" width="120" height="8" rx="4" fill="$edge"/>
-<g class="dland" style="animation-delay:-6s"><rect x="760" y="428" width="212" height="28" rx="8" fill="$asoft"/><text x="768" y="447" class="m" font-size="14" fill="$ink">- Use semicolons.</text></g>
-<g class="dland" style="animation-delay:-3s"><rect x="760" y="462" width="212" height="64" rx="8" fill="$asoft"/><text class="m" font-size="14" fill="$ink"><tspan x="768" y="481">- All money values are</tspan> <tspan x="768" y="499">  integer cents;</tspan> <tspan x="768" y="517">  never floats.</tspan></text></g>
-<rect x="770" y="538" width="150" height="8" rx="4" fill="$edge"/>
-<text x="770" y="570" class="m" font-size="14" fill="$accent">~172 tokens</text>
-<rect x="1016" y="344" width="220" height="240" rx="14" fill="$panel" stroke="$edge" stroke-width="1.5"/>
-<rect x="1016" y="344" width="220" height="40" rx="14" fill="$panel2"/><rect x="1016" y="370" width="220" height="14" fill="$panel2"/>
-<text x="1030" y="370" class="b" font-size="16" fill="$ink">AGENTS.md</text>
-<rect x="1030" y="398" width="170" height="8" rx="4" fill="$edge"/>
-<rect x="1030" y="414" width="120" height="8" rx="4" fill="$edge"/>
-<g class="dland2" style="animation-delay:-6s"><rect x="1020" y="428" width="212" height="28" rx="8" fill="$asoft"/><text x="1028" y="447" class="m" font-size="14" fill="$ink">- Use semicolons.</text></g>
-<g class="dland2" style="animation-delay:-3s"><rect x="1020" y="462" width="212" height="64" rx="8" fill="$asoft"/><text class="m" font-size="14" fill="$ink"><tspan x="1028" y="481">- All money values are</tspan> <tspan x="1028" y="499">  integer cents;</tspan> <tspan x="1028" y="517">  never floats.</tspan></text></g>
-<rect x="1030" y="538" width="150" height="8" rx="4" fill="$edge"/>
-<text x="1030" y="570" class="m" font-size="14" fill="$accent">~172 tokens</text>
-<!-- the seal between them -->
-<circle cx="996" cy="464" r="15" fill="$panel" stroke="$accent" stroke-width="2"/>
-<path d="M989 459h14M989 469h14" stroke="$accent" stroke-width="2.5" stroke-linecap="round"/>
-<circle class="dping" style="animation-delay:-6s" opacity="0" cx="996" cy="464" r="15" fill="none" stroke="$accent" stroke-width="2"/>
-<circle class="dping" style="animation-delay:-3s" opacity="0" cx="996" cy="464" r="15" fill="none" stroke="$accent" stroke-width="2"/>
-<!-- the rules in transit -->
-<g transform="translate(800 282)"><g class="dcutp" opacity="0" style="animation-delay:0s"><rect width="44" height="28" rx="6" fill="$warn"/><path d="M12 14h20" stroke="$bg" stroke-width="3" stroke-linecap="round"/></g></g>
-<g transform="translate(800 282)"><g class="dcutp" opacity="0" style="animation-delay:-9s"><rect width="44" height="28" rx="6" fill="$warn"/><path d="M12 14h20" stroke="$bg" stroke-width="3" stroke-linecap="round"/></g></g>
-<g transform="translate(880 282)"><g class="dkp2" opacity="0" style="animation-delay:-6s"><rect width="44" height="28" rx="6" fill="$accent"/><rect x="9" y="8" width="26" height="4" rx="2" fill="$bg"/><rect x="9" y="16" width="18" height="4" rx="2" fill="$bg"/></g></g>
-<g transform="translate(880 350)"><g class="dcopy" opacity="0" style="animation-delay:-6s"><rect width="44" height="28" rx="6" fill="$accent"/><rect x="9" y="8" width="26" height="4" rx="2" fill="$bg"/><rect x="9" y="16" width="18" height="4" rx="2" fill="$bg"/></g></g>
-<g transform="translate(880 282)"><g class="dkp3" opacity="0" style="animation-delay:-3s"><rect width="44" height="28" rx="6" fill="$accent"/><rect x="9" y="8" width="26" height="4" rx="2" fill="$bg"/><rect x="9" y="16" width="18" height="4" rx="2" fill="$bg"/></g></g>
-<g transform="translate(880 350)"><g class="dcopy" opacity="0" style="animation-delay:-3s"><rect width="44" height="28" rx="6" fill="$accent"/><rect x="9" y="8" width="26" height="4" rx="2" fill="$bg"/><rect x="9" y="16" width="18" height="4" rx="2" fill="$bg"/></g></g>
+<!-- Claude Code session -->
+<rect x="620" y="40" width="616" height="124" rx="14" fill="$panel" stroke="$edge" stroke-width="1.5"/>
+<path d="M620 68H1236" stroke="$edge" stroke-width="1.5"/>
+<circle cx="640" cy="54" r="5" fill="$muted"/><circle cx="658" cy="54" r="5" fill="$muted"/><circle cx="676" cy="54" r="5" fill="$muted"/>
+<text x="700" y="59" class="m" font-size="14" fill="$muted">Claude Code</text>
+<text x="644" y="102" class="m" font-size="16" fill="$body">&gt; add the test command to CLAUDE.md</text>
+<rect class="caret" x="986" y="89" width="9" height="17" fill="$accent"/>
+<rect class="hl" x="636" y="120" width="290" height="28" rx="6" fill="$soft"/>
+<text x="644" y="139" class="m" font-size="16" fill="$accent">Edit</text>
+<text x="694" y="139" class="m" font-size="16" fill="$ink">CLAUDE.md  +1 line</text>
+
+<!-- down to the check -->
+<path class="flow" d="M668 168V208" fill="none" stroke="$muted" stroke-width="2" stroke-dasharray="8 16"/>
+<path d="M660 204l8 10 8-10" fill="none" stroke="$muted" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="712" y="198" class="m" font-size="16" fill="$accent">PreToolUse</text>
+
+<!-- the check -->
+<rect x="620" y="220" width="616" height="72" rx="14" fill="$panel" stroke="$edge" stroke-width="1.5"/>
+<rect x="636" y="236" width="64" height="40" rx="8" fill="none" stroke="$edge" stroke-width="1.5" stroke-dasharray="4 4"/>
+<g class="chk"><g data-asset="lucide:check" data-icon="check passed" data-size="24" transform="translate(720 244) scale(1)" fill="$accent"><path fill="none" stroke="$accent" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5"/></g></g>
+<text x="750" y="262" class="m" font-size="16" fill="$ink">1,840 / 2,500</text>
+<g class="chk" style="animation-delay:-11.4s"><g data-asset="lucide:check" data-icon="check passed" data-size="24" transform="translate(888 244) scale(1)" fill="$accent"><path fill="none" stroke="$accent" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5"/></g></g>
+<text x="918" y="262" class="m" font-size="16" fill="$ink">gate: keep</text>
+<g class="chk" style="animation-delay:-10.8s"><g data-asset="lucide:check" data-icon="check passed" data-size="24" transform="translate(1036 244) scale(1)" fill="$accent"><path fill="none" stroke="$accent" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5"/></g></g>
+<text x="1066" y="262" class="m" font-size="16" fill="$ink">pair: same</text>
+
+<!-- down to CLAUDE.md -->
+<path class="flow" d="M668 296V324" fill="none" stroke="$muted" stroke-width="2" stroke-dasharray="8 16"/>
+<path d="M660 320l8 10 8-10" fill="none" stroke="$muted" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+<!-- CLAUDE.md -->
+<rect x="620" y="336" width="240" height="216" rx="12" fill="$panel" stroke="$edge" stroke-width="1.5"/>
+<rect x="636" y="352" width="14" height="16" rx="3" fill="$accent"/>
+<text x="660" y="366" class="m" font-size="16" fill="$ink">CLAUDE.md</text>
+<rect x="636" y="386" width="180" height="8" rx="4" fill="$edge"/><rect x="636" y="404" width="150" height="8" rx="4" fill="$edge"/><rect x="636" y="422" width="196" height="8" rx="4" fill="$edge"/><rect x="636" y="440" width="120" height="8" rx="4" fill="$edge"/>
+<g class="newc"><rect x="632" y="460" width="216" height="32" rx="6" fill="$soft"/><text x="644" y="481" class="m" font-size="16" fill="$ink">npm run check first</text></g>
+<rect x="636" y="508" width="160" height="8" rx="4" fill="$edge"/><rect x="636" y="526" width="100" height="8" rx="4" fill="$edge"/>
+
+<!-- copy -->
+<g class="cp"><g data-asset="lucide:copy" data-icon="copied to the other file" data-size="24" transform="translate(916 424) scale(1)" fill="$accent"><g fill="none" stroke="$accent" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></g></g></g>
+<path class="flow" d="M868 476H978" fill="none" stroke="$muted" stroke-width="2" stroke-dasharray="8 16"/>
+<path d="M976 468l10 8-10 8" fill="none" stroke="$muted" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="928" y="520" class="m" font-size="16" fill="$accent" text-anchor="middle">PostToolUse</text>
+
+<!-- AGENTS.md -->
+<rect x="996" y="336" width="240" height="216" rx="12" fill="$panel" stroke="$edge" stroke-width="1.5"/>
+<rect x="1012" y="352" width="14" height="16" rx="3" fill="$accent"/>
+<text x="1036" y="366" class="m" font-size="16" fill="$ink">AGENTS.md</text>
+<rect x="1012" y="386" width="180" height="8" rx="4" fill="$edge"/><rect x="1012" y="404" width="150" height="8" rx="4" fill="$edge"/><rect x="1012" y="422" width="196" height="8" rx="4" fill="$edge"/><rect x="1012" y="440" width="120" height="8" rx="4" fill="$edge"/>
+<g class="newa"><rect x="1008" y="460" width="216" height="32" rx="6" fill="$soft"/><text x="1020" y="481" class="m" font-size="16" fill="$ink">npm run check first</text></g>
+<rect x="1012" y="508" width="160" height="8" rx="4" fill="$edge"/><rect x="1012" y="526" width="100" height="8" rx="4" fill="$edge"/>
+
+<!-- readers -->
+<g class="eye"><g data-asset="lucide:eye" data-icon="read by" data-size="24" transform="translate(620 572) scale(1)" fill="$accent"><g fill="none" stroke="$accent" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></g></g></g>
+<text x="654" y="590" class="m" font-size="16" fill="$body">read by Claude Code</text>
+<g class="eye" style="animation-delay:-10.2s"><g data-asset="lucide:eye" data-icon="read by" data-size="24" transform="translate(996 572) scale(1)" fill="$accent"><g fill="none" stroke="$accent" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></g></g></g>
+<text x="1030" y="590" class="m" font-size="16" fill="$body">read by other agents</text>
+
+<!-- parcels -->
+<g transform="translate(636 172)"><g class="p1" opacity="0"><rect width="64" height="28" rx="8" fill="$accent"/><text x="21" y="20" class="m" font-size="16" fill="$bg">+1</text></g></g>
+<g transform="translate(872 462)"><rect class="p2" opacity="0" width="28" height="28" rx="7" fill="$accent"/></g>
 </g>
-<g id="ticker"><defs><clipPath id="dband"><rect x="0" y="598" width="1280" height="42"/></clipPath></defs><rect x="0" y="598" width="1280" height="42" fill="$panel"/><rect x="0" y="598" width="1280" height="1" fill="$edge"/><g clip-path="url(#dband)"><g class="dtick" fill="$ink">
-<text x="24" y="624" class="m" font-size="14" xml:space="preserve">install <tspan fill="$accent">/plugin install themis@themis</tspan>      for <tspan fill="$accent">Claude Code</tspan>      AGENTS.md read by <tspan fill="$accent">Codex, Cursor, Copilot</tspan>      needs <tspan fill="$accent">Node.js 18+</tspan>      network calls <tspan fill="$accent">none</tspan>      modes <tspan fill="$accent">init · audit · sync</tspan>      licence <tspan fill="$accent">MIT</tspan>      </text>
-<text x="1746" y="624" class="m" font-size="14" xml:space="preserve">install <tspan fill="$accent">/plugin install themis@themis</tspan>      for <tspan fill="$accent">Claude Code</tspan>      AGENTS.md read by <tspan fill="$accent">Codex, Cursor, Copilot</tspan>      needs <tspan fill="$accent">Node.js 18+</tspan>      network calls <tspan fill="$accent">none</tspan>      modes <tspan fill="$accent">init · audit · sync</tspan>      licence <tspan fill="$accent">MIT</tspan>      </text>
-<text x="3468" y="624" class="m" font-size="14" xml:space="preserve">install <tspan fill="$accent">/plugin install themis@themis</tspan>      for <tspan fill="$accent">Claude Code</tspan>      AGENTS.md read by <tspan fill="$accent">Codex, Cursor, Copilot</tspan>      needs <tspan fill="$accent">Node.js 18+</tspan>      network calls <tspan fill="$accent">none</tspan>      modes <tspan fill="$accent">init · audit · sync</tspan>      licence <tspan fill="$accent">MIT</tspan>      </text>
-</g></g></g>
 </svg>

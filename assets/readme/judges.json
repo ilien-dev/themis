@@ -1,0 +1,80 @@
+{
+  "picture:cap.src.svg": {
+    "sha": "7b6b44a25f09acc1",
+    "pass": true,
+    "answer": "size cap: over 2,760 denied, condensed, lands at 2,470",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "section:How an edit goes through": {
+    "sha": "b2f8cbd051501ea6",
+    "pass": true,
+    "answer": "over the cap the edit is denied and Claude condenses",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "picture:audit.src.svg": {
+    "sha": "aae6b13f595bb40b",
+    "pass": true,
+    "answer": "audit tags each line, asks, applies after Yes",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "section:Use it": {
+    "sha": "75bdcd61e677b9a7",
+    "pass": true,
+    "answer": "audit marks each line and applies what you approve",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "icon:hero.src.svg#1": {
+    "sha": "fb22e5aeb8c3e943",
+    "pass": true,
+    "answer": "checkmark: done/passed",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "icon:hero.src.svg#2": {
+    "sha": "2b6d57b257e8850c",
+    "pass": true,
+    "answer": "checkmark: done/passed",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "icon:hero.src.svg#3": {
+    "sha": "df0aa0c5a3c47718",
+    "pass": true,
+    "answer": "checkmark: done/passed",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "icon:hero.src.svg#4": {
+    "sha": "80f2d94bfb25b4a0",
+    "pass": true,
+    "answer": "two squares: copy",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "icon:hero.src.svg#5": {
+    "sha": "96cdb3f8d8d4c48e",
+    "pass": true,
+    "answer": "eye: view",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "icon:hero.src.svg#6": {
+    "sha": "b5fdd4eb413e95ec",
+    "pass": true,
+    "answer": "eye: view",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "icon:cap.src.svg#1": {
+    "sha": "9ce26c7c73fb7391",
+    "pass": true,
+    "answer": "X in circle: denied",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "icon:cap.src.svg#2": {
+    "sha": "2aab78b6f889ae55",
+    "pass": true,
+    "answer": "check in circle: success",
+    "why": "graded pass by a fresh grader agent"
+  },
+  "readme": {
+    "sha": "d6051486eb118723",
+    "pass": true,
+    "answer": "keeps CLAUDE.md and AGENTS.md identical and under ~2,500 tokens for developers using several agents",
+    "why": "graded pass by a fresh grader agent"
+  }
+}
