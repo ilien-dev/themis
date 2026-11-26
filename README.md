@@ -1,231 +1,162 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
-    <img src="assets/hero-light.svg" alt="themis, a Claude Code plugin that keeps CLAUDE.md and AGENTS.md short and identical: an audit of the pair walks its rules and gives each a verdict (cut as generic advice, cut as a script the repo already shows, rewrite, keep); the cut ones drop into a tray, the kept ones land in a short CLAUDE.md and are copied to an identical AGENTS.md, about 1,065 tokens down to 172." width="100%">
+    <img src="assets/hero-light.svg" alt="Claude edits CLAUDE.md in a Claude Code session. The PreToolUse hook checks the size (1,840 of 2,500 tokens), the rule gate (keep) and the pair (same). The new rule lands in CLAUDE.md and the PostToolUse hook copies it to AGENTS.md. Claude Code reads CLAUDE.md; other agents read AGENTS.md." width="100%">
   </picture>
 </p>
 
-<h1 align="center">themis: the rules for your AI assistants, short and the same in both files</h1>
+<p align="center"><b>English</b> · <a href="README.es.md">Español</a></p>
+
+<h1 align="center">themis: one rule file for every coding agent</h1>
+
+<p align="center"><b>CLAUDE.md and AGENTS.md, short and identical, without keeping them in step by hand.</b></p>
 
 <p align="center">
-  <b>A Claude Code plugin that looks after the page of rules you give your AI assistants.<br>
-  It keeps that page short, and keeps its two copies identical:<br>
-  <code>CLAUDE.md</code> for Claude Code, <code>AGENTS.md</code> for Codex, Cursor, Copilot and others.</b>
+  <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude_Code-plugin-1D6A99">
+  <img alt="Version 2.3.0" src="https://img.shields.io/badge/version-2.3.0-1D6A99">
+  <img alt="Node.js 18 or later" src="https://img.shields.io/badge/node-%E2%89%A518-1D6A99">
+  <img alt="MIT licence" src="https://img.shields.io/badge/license-MIT-1D6A99">
 </p>
 
-## The problem
+<p align="center"><a href="#what-it-does">What it does</a> · <a href="#how-an-edit-goes-through">How it works</a> · <a href="#install">Install</a> · <a href="#use-it">Use it</a> · <a href="#options">Options</a> · <a href="#what-was-measured">Results</a> · <a href="#limits">Limits</a></p>
 
-Rule files go wrong in two ways.
+---
 
-**They grow.** Every correction becomes another line, and nobody removes the lines the model would follow anyway. A long file costs tokens in every session and buries the few lines that matter: the test command that isn't guessable, the generated directory that must not be edited.
+**themis is a Claude Code plugin for the rule files coding agents read.** Claude Code reads `CLAUDE.md`; Codex, Cursor, Copilot and others read `AGENTS.md`. Left alone, the two drift apart, and every correction adds a line that costs tokens in every session. themis gives you one skill that writes and prunes them, and three hooks that copy each edit to the other file, hold both under about 2,500 tokens and check each new rule against the repository.
 
-**They fork.** Claude Code reads `CLAUDE.md`. Codex, Cursor, Copilot and others read `AGENTS.md`. A repository that wants both ends up with two files that someone has to keep in step by hand, and one of them is always a few edits behind.
+## What it does
 
-themis handles both with one skill and three hooks, and a gate that checks each new rule before it goes in.
+- **One text in two files.** After Claude edits `CLAUDE.md` or `AGENTS.md`, a hook copies it over its twin, byte for byte. A tool that reads only one of them still gets the whole text.
+- **A size cap.** An edit that would take a rule file past about 2,500 tokens, `@path` imports included, is denied with instructions to condense.
+- **Differences reported, never resolved for you.** When someone changed one file outside Claude, themis says so and asks which text is right.
+- **A gate for new rules.** Fixed checks, with no model, flag a rule the repository already shows, a tool already enforces, generic advice, a ban that belongs in a hook, a long procedure or shouting.
+- **One skill.** `/themis:themis` creates, audits, edits and syncs the pair.
 
-## Which file Claude Code reads
+## How an edit goes through
 
-As of Claude Code v2.1.277, from the [memory documentation](https://code.claude.com/docs/en/memory):
+<p align="center"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/cap-dark.svg">
+  <img src="assets/readme/cap-light.svg" alt="Four new lines would take CLAUDE.md to about 2,760 tokens, past the 2,500 cap, so the edit is denied. Three lines are merged into one, the release steps move to docs/release.md, and the edit lands at about 2,470 tokens." width="100%">
+</picture></p>
 
-| The repository has | Claude Code reads |
-|---|---|
-| `AGENTS.md` and no `CLAUDE.md` or `CLAUDE.local.md` in the working directory or above it | `AGENTS.md` |
-| `AGENTS.md` and a `CLAUDE.md` or `CLAUDE.local.md` | the `CLAUDE.md` files only |
+1. Claude calls `Edit`, `Write` or `MultiEdit` on `CLAUDE.md`, `AGENTS.md` or `CLAUDE.local.md`.
+2. The `PreToolUse` hook measures the result. Over the cap, the edit is denied and Claude condenses: it merges lines that repeat one pattern, or moves a long procedure to a doc and leaves a pointer. An edit to a pair that already differs is denied too, and you are asked which text is right.
+3. The rule gate judges the new rules. By default the edit goes through and Claude tells you what was flagged and why.
+4. The edit lands, and the `PostToolUse` hook copies the file over its twin, so the pair stays byte for byte the same.
+5. At every session start, the `SessionStart` hook checks each pair in the project and reports the ones that differ.
 
-So with the pair themis maintains, Claude Code reads `CLAUDE.md` and ignores `AGENTS.md`, which is there for every other tool. Nothing is loaded twice.
-
-One setting changes that. If you set **Project instructions** to `claude-md-and-agents-md` in `/config`, Claude Code loads both files. It skips an `AGENTS.md` that `CLAUDE.md` imports or symlinks to, but two separate identical files are both loaded, and the rules cost twice the tokens. Leave the setting on its default with themis.
-
-Versions before v2.1.277 never read `AGENTS.md` on their own.
-
-## The skill
-
-`/themis:themis [init | audit | sync]`. Claude also loads it by itself before it creates or edits a `CLAUDE.md`, `AGENTS.md` or `CLAUDE.local.md`, so its description (about 125 tokens) stays in context.
-
-| Mode | What it does |
-|---|---|
-| `init` | Reads the manifest, scripts, CI config and a few source files, runs the test and build commands it finds, and writes a file with only the lines that pass one test: *would the model make a mistake in this repo without it?* |
-| `audit` | Checks every line and command of the existing files against the repo and marks each keep, cut, move, rewrite or conflict, with a note on references that do not resolve. Shows the table, how many rules no check judged and the token estimate, then applies what you approve. |
-| edit | The default when Claude is about to change a rule file in the middle of other work. Adds what was asked in the shortest form, and condenses nearby lines when the result would pass the cap. It does not audit the rest. |
-| `sync` | Brings a pair back to identical: creates the missing file, or shows how two files differ and asks you which text is right. |
-
-What it keeps: commands that aren't guessable, conventions that differ from the framework default, gotchas, repo etiquette, and pointers to docs. What it cuts: project overviews, anything the code already shows, generic advice, phrases a vendor guide for current models asks to remove (whether the model already does something by default is not checked yet), and long procedures (those move to a doc, with a pointer).
-
-## The size cap
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/motion/cap-dark.gif">
-    <img src="assets/motion/cap-light.gif" width="760" alt="An edit adds 10 lines to CLAUDE.md and would take it to about 2,760 tokens; the PreToolUse hook denies it, the skill merges and moves lines, and the edit lands at about 2,470 tokens, under the 2,500 cap, and is copied to AGENTS.md.">
-  </picture>
-</p>
-
-An `Edit`, `Write` or `MultiEdit` that would take `CLAUDE.md`, `AGENTS.md` or `CLAUDE.local.md` past about 2,500 tokens is denied, with instructions to condense instead. Files pulled in with `@path` count toward the total. An edit that shrinks a file already over the cap is allowed.
-
-Shell commands that write to those files (`>`, `>>`, `tee`, `sed -i`, `perl -i`, `Set-Content`, `Add-Content`, `Out-File`) are denied, so the cap can't be bypassed from the shell.
-
-2,500 tokens is the size Boris Cherny reports for his own CLAUDE.md; the official guidance is "under 200 lines". The estimate is characters ÷ 3.6, and `gate audit` and `gate check` print it with the same arithmetic the hook uses, so the skill does not estimate by hand. Configure it with `claude_md_cap` (0 disables it).
-
-## Parity
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/motion/parity-dark.gif">
-    <img src="assets/motion/parity-light.gif" width="760" alt="An edit adds a line to CLAUDE.md and the PostToolUse hook copies the file to AGENTS.md. Later AGENTS.md is edited by hand outside Claude; at session start themis reports that the two differ and asks which text is right: keep CLAUDE.md, keep AGENTS.md, or merge. The chosen text is written to both.">
-  </picture>
-</p>
-
-`CLAUDE.md` and `AGENTS.md` in the same directory are two real files with the same bytes. Not an `@AGENTS.md` import and not a symlink: a tool that reads only one of them gets the whole text.
-
-**Edits are copied.** After Claude edits either file, a `PostToolUse` hook copies it over the other one, byte for byte, and creates the other one if it doesn't exist. Claude edits one file; there is no second step to forget.
-
-**A difference is never resolved for you.** If the two files already differ when Claude tries to edit one, somebody changed one of them outside themis: in an editor, with `git checkout`, in a merge. Copying would silently discard one side, so the `PreToolUse` hook stops instead:
-
-- `Edit` and `MultiEdit` are denied. Claude is told which two files differ and to ask you which text is right.
-- `Write`, which replaces the whole file, raises a permission prompt that says both files will get this text. This is how a difference gets resolved: the skill shows you the diff, you choose one side or a merge, and you approve the write. In an unattended `claude -p` run nobody can answer the prompt, so the write is denied and the difference stays for a person to resolve.
-- Creating the missing file of a pair is allowed only as an exact copy of the one that exists.
-
-**Differences are reported.** At session start, and after any shell command that names one of the files, themis checks every pair in the project: the working directory up to the repository root, and every directory below it (from `git ls-files`, so ignored directories are skipped). Outside a git repository it checks the working directory only, so a session opened in your home directory says nothing about the projects under it. A directory with only one of the two files is not reported. If all pairs match it says nothing. Otherwise Claude gets one line per pair, such as `differ: CLAUDE.md (modified 2026-10-08 07:59 UTC) and AGENTS.md (modified 2026-10-07 18:02 UTC)`, with the instruction to tell you and not to choose a version.
-
-What parity covers:
-
-| File | Cap | Parity |
-|---|---|---|
-| `CLAUDE.md` ⇄ `AGENTS.md`, in the repository root and any subdirectory | yes | yes |
-| `.claude/CLAUDE.md` ⇄ `.claude/AGENTS.md` in a project | yes | yes |
-| `CLAUDE.local.md` | yes | no. It is personal and uncommitted, and no tool reads an `AGENTS.local.md` |
-| `~/.claude/CLAUDE.md` and the managed-policy `CLAUDE.md` | yes | no. Those directories belong to Claude Code |
-| A pair linked by an `@AGENTS.md` import or a symlink | yes | left as it is and reported; `sync` offers to turn it into two copies |
-
-Limits worth knowing:
-
-- The hooks see Claude's tool calls. A change made in your editor or by git is not blocked; it is reported at the next session start, or the next time Claude touches the files.
-- The shell block matches common write commands, not every program that can write a file. What it misses is caught by the report after the command.
-- Outside a git repository the check walks four directory levels below the working directory.
-
-Turn parity off with the `parity` option if you want only one of the two files; the cap keeps working.
-
-## The rule gate
-
-The skill used to decide by judgment what belongs in a rule file, so the same rule could be accepted one day and cut the next. The gate decides with fixed checks instead: no model, the same answer every time. It reads the repository's `package.json`, lint and TypeScript configuration, CI and hook files, README and docs, and judges each new rule against them.
-
-A rule is a list item with its continuation lines, a paragraph, a numbered list or a code block with the paragraph that introduces it. Six questions are active:
-
-| # | Question | Verdict |
-|---|---|---|
-| 1 | Does the repo already show it? A project title, a folder tree, "use X" for a dependency that is the only one of its kind, with `gate_paths` on, an existing path whose short description uses only words of the path and of the file (or the file names under the folder), a list of two or more of the manifest's dependencies with nothing but names and versions, a script described only by its own name and command, a summary made of the manifest's description and the README. A stack list whose version differs from `package.json` is a `conflict`. | `cut` or `conflict` |
-| 2 | Does a tool already enforce it? A lint or compiler setting that is configured, run by a script, a pre-commit hook or CI, with the same value; or a `permissions.deny` rule that covers the command. If the setting says the opposite, `conflict`. | `cut` or `conflict` |
-| 3 | Is it generic or filler? "Write clean code", "this file provides guidance", the heading and sentence `/init` writes (`# CLAUDE.md`, "This file provides guidance to Claude Code … when working with code in this repository"), or a phrase a vendor guide for a current model asks to remove. English and Spanish. | `cut` |
-| 5 | Is it an absolute ban on a command or path? "Never run `x`" is better as a hook or a `permissions.deny` rule. | `move` |
-| 6 | Is it a long procedure, or a passage copied from the README or `docs/`? | `move`, to a doc or a skill with a pointer |
-| 7 | Is it shouted? Capitalised emphasis such as IMPORTANT or NEVER. | `rewrite` |
-
-The reason codes of question 1 are `inferable-title`, `inferable-tree`, `inferable-tech`, `inferable-script`, `inferable-overview`, `inferable-stack`, `inferable-path` (only with `gate_paths` on) and, for a stack list with a version that disagrees with the manifest, `conflict` · `stale-version`.
-
-Everything else is `keep`. A `keep` can carry a note (no evidence found, no anchor in the repo, an absolute without a reason, or `unresolved-reference`); a note informs and never interrupts. `unresolved-reference` means the rule names a path or a `run` script that the repository does not have, and says which; the skill checks it and repairs the reference if it moved. Earlier builds of the gate gave such a rule the verdict `fix` · `dead-reference`; on two held-out corpora most of those rules were labelled keep, so it no longer interrupts. Rules accepted under the old verdict still load. A rule is kept when in doubt: a negation, a condition, a number or a word the tables do not know all count as information.
-
-The path, stack, script and summary checks use the repository as their dictionary: a described path may only use words of its own path, of the first 32 KB of the file it names (or of the file names under a folder), and a closed list of neutral words and role nouns such as helpers or handlers; a script, words of its name and command; a summary, words of the manifest's description and the README's first paragraphs, every one of them. A "**dependency**: description" line is not judged, since nothing in the repository checks the description. On top of that each abstains on a closed list: a status word such as generated, legacy or internal; an effect verb such as applied, loaded, required, shared or used by; a pronoun, a quantifier, a second sentence or clause, a code span, and for scripts any word of deployment or data loss. In a repository with more than one `package.json` a described script is kept, since a sub-package may own it. Described paths are judged only with the `gate_paths` option (or `--paths`), because a description built from words of the file is not proof the file says it; a set of rules citing more than 40 distinct paths is not judged for paths at all. A stack list is kept when it names two tools of one kind or adds any word to a name ("Jest for unit tests, Vitest for integration").
-
-Negative rules ("don't use X") are never cut by question 1, and "use pnpm, not npm" is kept even with a `pnpm-lock.yaml`, because naming a tool that is not the default changes what the model does.
-
-### Modes
-
-The `gate` option sets what happens when a rule written to `CLAUDE.md` or `AGENTS.md` gets a verdict other than `keep`.
-
-| `gate` | What happens |
-|---|---|
-| `report` (default) | The edit goes through. Claude is shown the verdicts and told to tell you which rules were flagged and why. It may apply a `rewrite` itself, but removes or moves a rule only after telling you. |
-| `ask` | The edit stops and you are asked. The prompt lists each rule with its verdict, reason and evidence; approving writes the rule as given. |
-| `off` | The gate does nothing. |
-
-The default is `report` because the gate has not earned the right to interrupt you: see [RESULTS.md](RESULTS.md) for its measured precision.
-
-The gate never denies an edit. In sessions where nobody can answer a prompt (permission mode `dontAsk` or `bypassPermissions`, subagents), `ask` falls back to `report`. A headless `claude -p` session cannot be recognized from the hook input, so there `ask` is denied by Claude Code and Claude reads the reason.
-
-### Accepted rules
-
-When you approve a rule that the gate had flagged, themis records it in `.claude/themis-accepted.json`, which belongs in version control: the hash of the normalized text, the original verdict and the date. From then on that rule is `keep` with an `accepted` note, in the hook and in `audit`. If its text changes, the hash changes and it is judged again. `gate audit --prune` removes entries that no longer match any rule. Nothing is recorded in `report` mode, because nobody approved anything, nor outside a git repository, where there is no project to record it in.
-
-### Command line
-
-The skill calls these; you can too.
-
-```
-node hooks/dist/gate.js check  [--rules <file>] [--file CLAUDE.md] [--json] [--paths]   # Markdown from --rules (read as UTF-8) or stdin; --file says which repository
-node hooks/dist/gate.js audit  <file> [--json] [--prune] [--paths]     # a verdict for every rule, the coverage, the rules not judged and the token estimate
-node hooks/dist/gate.js report <corpus.jsonl> [--json] [--paths]       # precision, false-cut rate and coverage of a labelled corpus
-```
-
-Prefer `--rules` to a pipe: Windows PowerShell 5.1 re-encodes piped text, so accented letters arrive changed and can change a verdict. `--paths` turns on the described-path check, as `gate_paths` does for the hook. `check` ends with the tokens the target file holds now and the size of the text checked. Under its table `audit` prints a `Not judged:` line when rules matched nothing, since a rule kept for lack of a check is not a rule approved, and says so when the repository has no `package.json`. The exit code is 0 for any valid input and 2 for wrong usage or an unreadable file.
-
-### Limits
-
-- **Node, JavaScript and TypeScript repositories only.** The checks read `package.json`; elsewhere they find no evidence and keep the rule.
-- **English and Spanish.** The phrase tables cover those two languages.
-- **The model-default question is not active.** "Do recent models already do this by default?" needs measured data per model; it is planned next, and until then the gate does not cut a rule for that reason.
-- **Monorepos.** A script or path that lives in a sub-package can look missing from the root. The gate does not report a missing script when the repository has more than one `package.json`, and counts a path as present when a tracked path ends with it, so in a monorepo a reference that really is dead can go without a note.
-- **Node versions.** The compiled hooks run on Node.js 18. Contributors need Node.js 22.18 or later to run the tests, which execute the TypeScript sources.
-- **It finds about one redundant rule in five.** Measured blind on a second corpus of 1,223 rules from 40 public repositories, with the detectors frozen first: 99 interruptions, of which 73.7% deserved one; 3.1% of the rules labelled keep were interrupted; 19.5% of the rules labelled anything other than keep were flagged. The new detectors had been estimated to reach about 50%. After that run one change was made, so the next figures are not blind and the gate as shipped has no blind measurement: unresolved references became a note (a rule with one is still checked for emphasis), and the gate now interrupts 81 rules, 84.0% of them deserving it, with 1.5% of keeps interrupted and 18.2% recall. Nine of the 13 wrong interruptions left are bare titles that these labellers kept and the first corpus's labellers cut. Its verdicts are a floor for what can go, not a full audit.
-- **Described paths are off by default.** The largest family of redundant rules, a path with a short description, could not be made safe by script: a description built from words that are in the file is not proof the file says it. `gate_paths` turns the check on. It fired 4 times on the second corpus, all correctly, which is too few to measure.
-- **The first corpus is development data.** The first blind run (1,502 rules) gave 62.0% precision, 6.3% false cuts and 16% recall. The detectors were then built on that corpus, so its current numbers are an upper bound. The labels of neither corpus are reviewed yet, so all these numbers are provisional. See [RESULTS.md](RESULTS.md).
-- **The held-out snapshots are not in the repository.** The rules, labels, commits and licences are stored here; `tests/gate/holdout/collect.mjs` and `fetch-cited.mjs` rebuild the third-party snapshots from GitHub.
+Shell writes to rule files (`>`, `tee`, `sed -i`, `Set-Content` and the like) are denied, so the cap cannot be skipped from the shell. What parity covers, file by file, is in [docs/hooks.md](docs/hooks.md).
 
 ## Install
 
-Requires [Node.js](https://nodejs.org) 18 or later on `PATH` (the hooks are Node scripts, compiled from TypeScript and shipped in `hooks/dist/`; installing needs no build step).
-
-```
+```text
 /plugin marketplace add ilien-dev/themis
 /plugin install themis@themis
 ```
 
+> [!IMPORTANT]
+> The hooks are Node scripts. They need Node.js 18 or later on `PATH`; nothing is built at install.
+
 Then run `/themis:themis` once in each repository. It creates whichever of the two files is missing, or audits the ones you have.
 
-Updates: `/plugin marketplace update themis`, then `/plugin update themis@themis`. Auto-update is off by default for third-party marketplaces; turn it on in `/plugin` if you want it.
+<details><summary><b>Updates, a local clone, and coming from 1.x</b></summary>
 
-For one session from a local clone: `claude --plugin-dir <path-to-clone>`.
+- Updates: `/plugin marketplace update themis`, then `/plugin update themis@themis`. Auto-update is off by default for third-party marketplaces; turn it on in `/plugin`.
+- For one session from a local clone: `claude --plugin-dir <path-to-clone>`.
+- Version 2.0.0 removed five skills; the migration notes are in [CHANGELOG.md](CHANGELOG.md).
 
-Coming from 1.x? Version 2.0.0 removes five skills and the resident rule; see the migration notes in [CHANGELOG.md](CHANGELOG.md).
+</details>
+
+## Use it
+
+<p align="center"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/audit-dark.svg">
+  <img src="assets/readme/audit-light.svg" alt="In Claude Code, /themis:themis audit is typed. Each rule of CLAUDE.md gets a verdict: cut, cut, rewrite, move, keep. A card asks to apply the changes, Yes is clicked, the cut and moved rules are struck through, NEVER skip the tests becomes Don't skip the tests, and the card says 4 changes applied." width="100%">
+</picture></p>
+
+`/themis:themis [init | audit | sync]`. Claude also loads the skill by itself before it creates or edits a rule file.
+
+| Mode | What it does |
+|---|---|
+| `init` | Reads the manifest, scripts, CI and a few source files, runs the test and build commands, and writes only the lines the model would get wrong without. |
+| `audit` | Marks every line keep, cut, move, rewrite or conflict, shows the table and the token estimate, then applies what you approve. |
+| *edit* | No argument: what the skill does when Claude changes a rule file during other work. It adds what was asked in the shortest form. |
+| `sync` | Brings a pair back to identical: creates the missing file, or shows the difference and asks which text is right. |
+
+It keeps commands nobody could guess, conventions that differ from the framework default, gotchas and pointers to docs. It cuts overviews, what the code already shows, generic advice and long procedures, which move to a doc.
 
 ## Options
 
-| Option | Default | |
+They are the plugin's `userConfig` options, declared in `.claude-plugin/plugin.json`.
+
+| Option | Default | What it does |
 |---|---|---|
-| `claude_md_cap` | `2500` | Maximum estimated tokens for a rule file including its imports. `0` disables the cap. |
+| `claude_md_cap` | `2500` | Maximum estimated tokens for a rule file with its imports. `0` turns the cap off. |
 | `parity` | `true` | Copy edits between `CLAUDE.md` and `AGENTS.md` and report pairs that differ. |
-| `gate` | `report` | What to do with a new rule that is inferable, already enforced, generic or badly formed: `ask`, `report` or `off`. |
-| `gate_paths` | `false` | Also flag a line that describes an existing path in words of that file. Off by default: a description built from words of the file is not proof the file says it. The CLI takes `--paths`. |
+| `gate` | `report` | What to do with a flagged rule: `report` (tell Claude, do not interrupt), `ask` (you confirm) or `off`. |
+| `gate_paths` | `false` | Also flag a line such as "`src/x.ts`: parses the CSV" whose words all come from that file. |
 
-## What the hooks do
+Every check of the gate, its verdicts, the accepted-rules file and the `gate.js` command line are in [docs/gate.md](docs/gate.md).
 
-| Event | Runs on | Does |
-|---|---|---|
-| `PreToolUse` | `Edit`, `Write`, `MultiEdit`; shell commands that mention `CLAUDE` or `AGENTS` | Denies an edit over the cap, a shell write to a rule file, and an edit to a pair that already differs. Asks you to confirm a `Write` to such a pair. Runs the rule gate on the new rules of an edit. |
-| `PostToolUse` | `Edit`, `Write`, `MultiEdit`; shell commands that mention `CLAUDE` or `AGENTS` | Copies the edited file to its twin and records the rules you approved. After a shell command, reports pairs that differ. |
-| `SessionStart` | every start, resume, `/clear` and compaction | Reports pairs that differ or are linked instead of copied. Silent otherwise. |
+## What was measured
 
-The hooks write three things: the `CLAUDE.md` or `AGENTS.md` next to the one Claude just edited; `.claude/themis-accepted.json` in the repository, when you approve a rule the gate asked about; and a pending-approval file under the OS temp directory in `themis-gate/`, removed once used or after 24 hours. Besides the rule files, the gate reads `package.json`, tool configs, `.claude/settings*.json`, `.gitignore`, the README, `docs/`, husky and workflow files, and the output of `git ls-files`; with `gate_paths` on, also the first 32 KB of each source file a rule describes. The hooks make no network calls and fail silent on unexpected input. See [SECURITY.md](SECURITY.md).
+Headless sessions on `claude-opus-5-5`, three runs per cell, fresh repositories, from [RESULTS.md](RESULTS.md):
+
+| Case | Without themis | With themis |
+|---|---:|---:|
+| `init` writes a lean file with the real gotchas | 0/3 | 3/3 |
+| `audit` prunes a bloated file and fixes stale commands | 0/3 | 3/3 |
+| An addition near the cap stays under it | 0/3 | 3/3 |
+
+*Without themis* is the same request to plain Claude Code (`/init` for `init`). On 1,223 rules from 40 public repositories, the gate as shipped flags 81 rules for an interruption in `ask` mode, 84% of them rightly. That is precision: of all the redundant rules, it catches about one in five. The figure was measured after a fix, not blind, and the labels are not reviewed yet; the blind run and its caveats are in [RESULTS.md](RESULTS.md).
+
+## Questions
+
+<details><summary><b>Which file does Claude Code read?</b></summary>
+
+Since Claude Code v2.1.277, it reads `AGENTS.md` only when there is no `CLAUDE.md` or `CLAUDE.local.md`. With the pair themis keeps, it reads `CLAUDE.md`, and `AGENTS.md` is there for the other tools. Earlier versions never read `AGENTS.md`. Source: the [memory documentation](https://code.claude.com/docs/en/memory).
+
+</details>
+
+<details><summary><b>Are the rules loaded twice?</b></summary>
+
+Not by default. If you set **Project instructions** to `claude-md-and-agents-md` in `/config`, Claude Code loads both files, and the rules cost twice the tokens. Leave that setting on its default with themis.
+
+</details>
+
+<details><summary><b>Why two copies, not a symlink or an <code>@AGENTS.md</code> import?</b></summary>
+
+A tool that reads only one of the files gets the whole text, on every platform. A linked pair is left as it is and reported; `sync` offers to turn it into two copies.
+
+</details>
+
+<details><summary><b>What if I edit one file in my editor?</b></summary>
+
+The hooks see only Claude's tool calls, so nothing stops you. The difference is reported at the next session start, or the next time Claude touches the files, and Claude asks you which text is right.
+
+</details>
+
+## Limits
+
+- **The gate reads Node projects.** Its checks use `package.json`; in other repositories they find no evidence and keep the rule.
+- **English and Spanish.** The gate's phrase tables cover those two languages.
+- **The gate misses most redundant rules.** It catches about one in five; what it flags is usually right. Its numbers are provisional.
+- **The cap and parity work in any repository.** Only the gate depends on `package.json`.
+- **Only Claude's tool calls are blocked.** Changes from your editor, git, `cp` or `mv` are reported afterwards, not stopped.
+
+The full list, with the measurements behind it, is in [docs/gate.md](docs/gate.md#limits).
 
 ## Development
 
-Everything is strict TypeScript. The hooks in `hooks/*.ts` are compiled to `hooks/dist/`, which is committed because Claude Code runs a plugin straight from its repository. The tests and the scripts in `evals/` and `assets/` run as `.ts` files, which needs Node.js 22.18 or later.
+The tests need Node.js 22.18 or later, and the lint also covers `assets/`, so install there too:
 
-```
-npm ci
-npm run check                              # typecheck, lint, build and test, in that order
-npm run build                              # hooks/*.ts -> hooks/dist/*.js; commit the result
-npm test                                   # hook and gate tests: cap, shell block, parity, rule gate
-claude plugin validate . --strict          # manifest and components
+```bash
+npm ci && (cd assets/source && npm ci) && (cd assets/motion/source && npm ci)
+npm run check    # typecheck, lint, build and test, in that order
 ```
 
-`npm run typecheck` and `npm run lint` also cover the scripts in `assets/`, so they need `npm ci` in `assets/source` and `assets/motion/source` first.
-
-CI runs the same checks on every pull request and fails when `hooks/dist/` does not match its source. To release, raise `version` in `.claude-plugin/plugin.json` and `package.json` and add a section to `CHANGELOG.md`: when that reaches `main`, CI creates the tag `v<version>` and publishes the GitHub release.
-
-What was measured in real sessions, and what was not, is in [RESULTS.md](RESULTS.md).
+The hooks are strict TypeScript in `hooks/*.ts`, compiled to `hooks/dist/`, which is committed because Claude Code runs a plugin straight from its repository. CI fails when `hooks/dist/` does not match its source. To release, raise `version` in `.claude-plugin/plugin.json` and `package.json` and add a section to `CHANGELOG.md`; CI tags and publishes it once it reaches `main`.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
-
-The logo and animations are in [assets/](assets/README.md).
+MIT, see [LICENSE](LICENSE). The logo and pictures are described in [assets/README.md](assets/README.md).

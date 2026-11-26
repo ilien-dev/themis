@@ -1,0 +1,112 @@
+{
+  "audience": "technical",
+  "audience_confirmed": true,
+  "sentence": "Anyone who keeps written rules for coding agents gets one short text that Claude Code and every other agent read the same, instead of two files that drift apart and grow.",
+  "language": "en",
+  "translations": ["README.es.md"],
+  "unfinished": [
+    {
+      "item": "the gate question whether recent models already follow a rule by default",
+      "source": "README.md:161",
+      "match": "model-default question",
+      "decision": "drop"
+    }
+  ],
+  "captures_agreed": false,
+  "backdrop": "grid still",
+  "hero": {
+    "file": "assets/hero.src.svg",
+    "shows": [
+      "Claude Code session",
+      "Edit of CLAUDE.md",
+      "PreToolUse checks",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "PostToolUse copy",
+      "readers of each file"
+    ]
+  },
+  "sections": [
+    {
+      "heading": "What it does",
+      "role": "features",
+      "docs": null
+    },
+    {
+      "heading": "How an edit goes through",
+      "role": "how",
+      "docs": "docs/hooks.md",
+      "picture": {
+        "file": "assets/readme/cap.src.svg",
+        "type": "drawn",
+        "claim": "An edit that would take CLAUDE.md past the token cap is denied until lines are merged or moved to a doc, then it lands under the cap.",
+        "shows": [
+          "token meter with the cap",
+          "denied edit",
+          "lines merged into one",
+          "release steps moved to docs/release.md",
+          "edit allowed under the cap"
+        ]
+      }
+    },
+    {
+      "heading": "Install",
+      "role": "install",
+      "docs": null
+    },
+    {
+      "heading": "Use it",
+      "role": "use",
+      "docs": null,
+      "picture": {
+        "file": "assets/readme/audit.src.svg",
+        "type": "drawn",
+        "claim": "/themis:themis audit gives every rule a verdict and applies the changes only after you say yes.",
+        "shows": [
+          "/themis:themis audit typed",
+          "rules with verdict chips cut, rewrite, move, keep",
+          "Apply these changes? card",
+          "Yes clicked",
+          "struck and rewritten rules"
+        ]
+      }
+    },
+    {
+      "heading": "Options",
+      "role": "reference",
+      "docs": "docs/gate.md"
+    },
+    {
+      "heading": "What was measured",
+      "role": "results",
+      "docs": null
+    },
+    {
+      "heading": "Questions",
+      "role": "faq",
+      "docs": null
+    },
+    {
+      "heading": "Limits",
+      "role": "limits",
+      "docs": "docs/gate.md"
+    },
+    {
+      "heading": "Development",
+      "role": "develop",
+      "docs": null
+    },
+    {
+      "heading": "License",
+      "role": "license",
+      "docs": null
+    }
+  ],
+  "assets": {
+    "icons": {
+      "family": "lucide",
+      "variant": null,
+      "why": "2 px round-capped line icons match the even engraved line of the themis coin and sit well in a developer-tool scene"
+    }
+  }
+}

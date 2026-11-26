@@ -1,0 +1,88 @@
+<!--palette
+bg         #0C1420 #F2EEE6
+panel      #142033 #FBF9F4
+edge       #33465F #C9C0AE
+line       #162234 #E7E1D5
+ink        #ECE6DA #101B2D
+body       #C4BEB2 #2E3848
+muted      #8B93A1 #5F6673
+accent     #5BB0DD #1D6A99
+soft       #1B3A55 #D9E7F0
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 448" role="img" aria-label="Cuatro líneas nuevas llevarían CLAUDE.md a unos 2760 tokens, por encima del tope de 2500, así que la edición se deniega; tres líneas se fusionan en una, los pasos de release pasan a docs/release.md y la edición entra con unos 2470 tokens.">
+<style>
+/* 12 s  before  |in|=======shown=======|out|
+         fill       |----grow over----|==|--shrink--|=====|back|
+         over           |in|========shown=====|out|
+         deny             |in|=======shown====|out|
+         after                           |in|=========shown=========|out|
+         parcel                              |--to docs--|
+         under                                     |in|=====shown=====|out|
+         allow                                       |in|====shown====|out| */
+@keyframes before{0%,4%{opacity:0}8%,44%{opacity:1}50%,100%{opacity:0}}
+@keyframes after{0%,46%{opacity:0}52%,94%{opacity:1}98%,100%{opacity:0}}
+@keyframes fill{0%,4%{transform:scaleX(.77)}18%,46%{transform:scaleX(1.119)}66%,94%{transform:scaleX(1)}100%{transform:scaleX(.77)}}
+@keyframes over{0%,16%{opacity:0}20%,94%{opacity:1}98%,100%{opacity:0}}
+@keyframes under{0%,62%{opacity:0}68%,94%{opacity:1}98%,100%{opacity:0}}
+@keyframes parcel{0%,42%{transform:translateX(0);opacity:0}45%{transform:translateX(0);opacity:1}58%{transform:translateX(510px);opacity:1}61%,100%{transform:translateX(510px);opacity:0}}
+@keyframes ring{0%,57%{opacity:0}62%,90%{opacity:1}96%,100%{opacity:0}}
+.before{animation:before 12s ease-in-out infinite}
+.after{animation:after 12s ease-in-out infinite}
+.fill{animation:fill 12s cubic-bezier(.4,0,.2,1) infinite;transform-box:fill-box;transform-origin:0 50%}
+.over{animation:over 12s ease-in-out infinite}
+.under{animation:under 12s ease-in-out infinite}
+.parcel{animation:parcel 12s cubic-bezier(.4,0,.2,1) infinite}
+.ring{animation:ring 12s ease-in-out infinite}
+</style>
+<rect width="1280" height="448" fill="$bg"/>
+<g id="backdrop" data-backdrop="grid still"><defs><pattern id="bd-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0 0H40M0 0V40" fill="none" stroke="$line" stroke-width="1"/></pattern></defs><rect x="-40" y="-40" width="1360" height="528" fill="url(#bd-grid)"/></g>
+
+<text id="eyebrow" x="64" y="56" class="m" font-size="15" fill="$accent" letter-spacing="2">EL TOPE DE TAMAÑO</text>
+<text id="title" x="64" y="108" class="b" font-size="42" fill="$ink">Sobre el tope, la edición se deniega</text>
+<text id="sub" x="64" y="146" class="s" font-size="20" fill="$body">Entra cuando se fusionan líneas o se mueven a un doc.</text>
+
+<g id="stage">
+<!-- CLAUDE.md -->
+<rect x="64" y="180" width="420" height="244" rx="12" fill="$panel" stroke="$edge" stroke-width="1.5"/>
+<rect x="80" y="196" width="14" height="16" rx="3" fill="$accent"/>
+<text x="104" y="210" class="m" font-size="16" fill="$ink">CLAUDE.md</text>
+<rect x="80" y="232" width="300" height="8" rx="4" fill="$edge"/><rect x="80" y="250" width="240" height="8" rx="4" fill="$edge"/><rect x="80" y="268" width="330" height="8" rx="4" fill="$edge"/>
+
+<g class="before" opacity="0">
+<rect x="76" y="290" width="396" height="28" rx="6" fill="$soft"/><text x="88" y="310" class="m" font-size="16" fill="$ink">npm test antes del PR</text>
+<rect x="76" y="322" width="396" height="28" rx="6" fill="$soft"/><text x="88" y="342" class="m" font-size="16" fill="$ink">npm run lint antes del PR</text>
+<rect x="76" y="354" width="396" height="28" rx="6" fill="$soft"/><text x="88" y="374" class="m" font-size="16" fill="$ink">npm run build antes del PR</text>
+<rect x="76" y="386" width="396" height="28" rx="6" fill="$soft"/><text x="88" y="406" class="m" font-size="16" fill="$ink">release: versión, tag, push</text>
+</g>
+<g class="after">
+<rect x="76" y="290" width="396" height="28" rx="6" fill="$soft"/><text x="88" y="310" class="m" font-size="16" fill="$ink">npm run check antes del PR</text>
+<text x="88" y="342" class="m" font-size="16" fill="$body">release: docs/release.md</text>
+<rect x="80" y="362" width="260" height="8" rx="4" fill="$edge"/><rect x="80" y="380" width="200" height="8" rx="4" fill="$edge"/>
+</g>
+
+<!-- the meter -->
+<text x="560" y="210" class="m" font-size="16" fill="$muted">tokens, con imports</text>
+<rect x="560" y="226" width="420" height="20" rx="10" fill="$panel" stroke="$edge" stroke-width="1.5"/>
+<rect class="fill" x="560" y="226" width="329" height="20" rx="10" fill="$accent"/>
+<path d="M893 218V254" stroke="$ink" stroke-width="2"/>
+<text x="905" y="210" class="m" font-size="16" fill="$ink">tope 2500</text>
+
+<g class="over">
+<text x="560" y="296" class="b" font-size="26" fill="$ink">≈2760</text>
+<g data-asset="lucide:x-circle" data-icon="edición denegada" data-size="24" transform="translate(668 276) scale(1)" fill="$ink"><g fill="none" stroke="$ink" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9l-6 6m0-6l6 6"/></g></g>
+<text x="702" y="295" class="s" font-size="20" fill="$ink">Edición denegada: condensa antes</text>
+</g>
+<g class="under">
+<text x="560" y="340" class="b" font-size="26" fill="$accent">≈2470</text>
+<g data-asset="lucide:check-circle" data-icon="edición permitida" data-size="24" transform="translate(668 320) scale(1)" fill="$accent"><g fill="none" stroke="$accent" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11l3 3L22 4"/></g></g>
+<text x="702" y="339" class="s" font-size="20" fill="$ink">La edición entra bajo el tope</text>
+</g>
+
+<!-- the doc -->
+<g class="ring"><rect x="1000" y="352" width="200" height="60" rx="12" fill="none" stroke="$accent" stroke-width="2"/></g>
+<g data-kit="file"><path d="M1010.0 368.0a6 6 0 0 1 6-6H1178.0L1188.0 372.0V396.0a6 6 0 0 1-6 6H1016.0a6 6 0 0 1-6-6Z" fill="$panel" stroke="$edge" stroke-width="1.5"/><rect x="1022.0" y="374.0" width="14" height="16" rx="3" fill="$accent"/><text x="1046.0" y="387.0" class="m" font-size="14" fill="$ink">docs/release.md</text></g>
+
+<!-- what travels -->
+<g transform="translate(470 368)"><g class="parcel" opacity="0"><path d="M0 4a4 4 0 0 1 4-4H18L26 8V28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4Z" fill="$accent"/></g></g>
+</g>
+</svg>
